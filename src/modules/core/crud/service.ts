@@ -1,4 +1,4 @@
-import { ForbiddenException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ObjectLiteral, SelectQueryBuilder, Not, IsNull } from 'typeorm';
 import { BaseRepository } from './repository';
 import { BaseTreeRepository } from './tree.repository';
@@ -12,7 +12,7 @@ import { paginate, treePaginate } from '@/modules/database/paginate';
  * @template P 查询参数类型
  * @template M 分页查询返回的meta类型
  */
-export abstract class BaseServce<
+export abstract class BaseService<
     E extends ObjectLiteral,
     R extends BaseRepository<E> | BaseTreeRepository<E>,
     P extends QueryListParams<E> = QueryListParams<E>,
@@ -22,6 +22,11 @@ export abstract class BaseServce<
      * repo，由继承的子类传入
      */
     protected repo: R;
+
+    /**
+     * 是否开启软删除功能
+     */
+    protected enable_trash = false;
 
     constructor(repo: R) {
         this.repo = repo;
@@ -43,7 +48,7 @@ export abstract class BaseServce<
     /**
      * update方法服务类自己实现
      */
-    update(): Promise<E> {
+    update(data: any): Promise<E> {
         throw new ForbiddenException(`Can not to update ${this.repo.getAlias()}!`);
     }
 
@@ -61,7 +66,8 @@ export abstract class BaseServce<
             return treePaginate(options, data);
         }
         // 普通的repository
-        const qb = await this.buildListQuery(this.repo.buildBaseQuery(), queryOptions, callback);
+        // const qb = await this.buildListQuery(this.repo.buildBaseQuery(), queryOptions, callback);
+        const qb = (await this.list(queryOptions, callback)) as SelectQueryBuilder<E>;
         return paginate(qb, options);
     }
 
@@ -97,6 +103,123 @@ export abstract class BaseServce<
         // 普通
         const qb = await this.buildListQuery(this.repo.buildBaseQuery(), options, callback);
         return qb;
+    }
+
+    /**
+     * 查询entity
+     * @param id
+     * @param trashed
+     * @param callback
+     * @returns
+     */
+    async detail(id: string, trashed?: boolean, callback?: QueryHook<E>) {
+        let qb = await this.buildItemQuery(
+            this.repo.buildBaseQuery(this.repo.createQueryBuilder(this.repo.getAlias())),
+            callback,
+        );
+        qb = qb.where(`${this.repo.getAlias()}.id = :id`, { id });
+        if (trashed) {
+            qb.withDeleted();
+        }
+        const item = await qb.getOne();
+        if (isNil(item))
+            throw new NotFoundException(`${this.repo.getAlias()} with id does not exist`);
+        return item;
+    }
+
+    /**
+     * 删除数据
+     * @param id
+     * @param trashed 是否为软删除
+     * @returns
+     */
+    async delete(id: string, trashed?: boolean) {
+        const item = await this.repo.findOneOrFail({
+            where: { id } as any,
+            withDeleted: this.enable_trash ? true : false,
+        });
+        // 软删除
+        if (this.enable_trash && trashed && isNil((item as any).deletetAt)) {
+            await this.repo.softRemove(item);
+        }
+        return this.repo.delete(id);
+    }
+
+    /**
+     * 批量删除
+     * @returns 返回删除后的剩余数据列表
+     */
+    async deleteList(ids: string[], params?: P, trash?: boolean, callback?: QueryHook<E>) {
+        // 默认是软删除
+        const isTrash = trash === undefined ? true : trash;
+        for (const id of ids) {
+            await this.delete(id, isTrash);
+        }
+        // 返回删除后的数据列表
+        return this.list(params, callback);
+    }
+
+    /**
+     * 批量删除
+     * @returns 删除后，对返回的数据进行分页
+     */
+    async deletePaginate(
+        ids: string[],
+        params?: PaginateOptions & P,
+        trash?: boolean,
+        callback?: QueryHook<E>,
+    ) {
+        // 默认是软删除
+        const isTrash = trash === undefined ? true : trash;
+        for (const id of ids) {
+            await this.delete(id, isTrash);
+        }
+        return this.paginate(params, callback);
+    }
+
+    /**
+     *
+     */
+    async restore(id: string, callback?: QueryHook<E>) {
+        if (!this.enable_trash) {
+            // 默认不开启软删除
+            throw new ForbiddenException(
+                `Can not to restore ${this.repo.getAlias()}, because trash not enabled!`,
+            );
+        }
+        const item = await this.repo.findOneOrFail({
+            where: {
+                id,
+            } as any,
+            withDeleted: true,
+        });
+        // deletedAt有值表示确实是软删除
+        if ((item as any).deletedAt) {
+            await this.repo.restore(item.id);
+        }
+        return this.detail(item.id, false, callback);
+    }
+
+    /**
+     * 恢复数据
+     * @returns 返回恢复后的数据列表
+     */
+    async restoreList(ids: string[], params?: P, callback?: QueryHook<E>) {
+        for (const id of ids) {
+            await this.restore(id);
+        }
+        return this.list(params, callback);
+    }
+
+    /**
+     * 恢复数据
+     * @returns 返回恢复后的数据列表
+     */
+    async restorePaginate(ids: string[], params?: PaginateOptions & P, callback?: QueryHook<E>) {
+        for (const id of ids) {
+            await this.restore(id);
+        }
+        return this.paginate(params, callback);
     }
 
     /**

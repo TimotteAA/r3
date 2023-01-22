@@ -27,11 +27,11 @@ export class QueryCategoryDto implements PaginateOptions {
 
     @Transform(({ value }) => toNumber(value))
     @IsNumber()
-    @Min(10, {
+    @Min(5, {
         message: '每页数量最小为$constraint1',
     })
     @IsOptional()
-    limit = 10;
+    limit = 5;
 }
 
 @CustomDtoValidation({ groups: ['create'] })
@@ -39,12 +39,12 @@ export class QueryCategoryDto implements PaginateOptions {
  * 在某一分类下创建分类，不需要children
  */
 export class CreateCategoryDto {
-    @IsUniqueTreeUpdate(CategoryEntity, {
-        groups: ['update'],
-        message: '分类名在同层分类中重复！',
-    })
     @IsUniqueTree(CategoryEntity, {
         groups: ['create'],
+        message: '分类名在同层分类中重复！',
+    })
+    @IsUniqueTreeUpdate(CategoryEntity, {
+        groups: ['update'],
         message: '分类名在同层分类中重复！',
     })
     @MaxLength(30, {

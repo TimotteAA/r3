@@ -5,13 +5,10 @@ import { CategoryRepository } from '../repositorys';
 import { treePaginate } from '@/modules/database/paginate';
 import { CategoryEntity } from '../entities';
 import { isNil, omit } from 'lodash';
-import { BaseService } from '@/modules/core/crud/service';
 
 @Injectable()
-export class CategoryService extends BaseService<CategoryEntity, CategoryRepository> {
-    constructor(protected repo: CategoryRepository) {
-        super(repo);
-    }
+export class CategoryService {
+    constructor(private repo: CategoryRepository) {}
 
     /**
      * 返回分类树
@@ -19,7 +16,6 @@ export class CategoryService extends BaseService<CategoryEntity, CategoryReposit
      */
     async findTrees() {
         const res = await this.repo.findTrees();
-        // console.log('data', res);
         return res;
     }
 
@@ -37,14 +33,14 @@ export class CategoryService extends BaseService<CategoryEntity, CategoryReposit
         return treePaginate(options, data);
     }
 
-    // /**
-    //  * 获取数据详情
-    //  * @param id
-    //  * @returns
-    //  */
-    // async detail(id: string) {
-    //     return this.repo.findOneOrFail({ where: { id } });
-    // }
+    /**
+     * 获取数据详情
+     * @param id
+     * @returns
+     */
+    async detail(id: string) {
+        return this.repo.findOneOrFail({ where: { id } });
+    }
 
     async create(data: CreateCategoryDto) {
         const item = await this.repo.save({
@@ -54,24 +50,21 @@ export class CategoryService extends BaseService<CategoryEntity, CategoryReposit
         return item;
     }
 
-    // @ts-ignore
-    async delete(id: string, trashed?: boolean) {
+    async delete(id: string) {
         // 子分类不删除，而是提升一级
         const cat = await this.repo.findOneOrFail({
             where: { id },
             relations: ['parent', 'children'],
         });
-        const res = await super.delete(id);
 
-        const children = cat.children;
-        const parent = cat.parent;
-        if (!isNil(children) && children.length > 0) {
-            children.forEach(async (c) => {
-                c.parent = parent;
-                await this.repo.save(c);
+        if (!isNil(cat.children) && cat.children.length > 0) {
+            const nchildren = [...cat.children].map((c) => {
+                c.parent = cat.parent;
+                return cat;
             });
+            await this.repo.save(nchildren);
         }
-        return res;
+        await this.repo.remove(cat);
     }
 
     async update(data: UpdateCategoryDto) {
@@ -102,26 +95,25 @@ export class CategoryService extends BaseService<CategoryEntity, CategoryReposit
         return updatedCat;
     }
 
-    protected async getParent(current?: string, parentId?: string) {
-        // 传进来一样的参数
-        if (current === parentId) return undefined;
-        // 刚创建Entity，父parent也没有
-        if (current === undefined && parentId === undefined) return undefined;
-        let parent: CategoryEntity | null;
-        if (parentId !== undefined) {
-            // 顶级分类
-            if (parentId === null) return null;
+    /**
+     *
+     * @param current 当前分类的id
+     * @param id 当前分类的父分类的id
+     * @returns
+     */
+    protected async getParent(current?: string, id?: string) {
+        // 刚创建，且没有父分类
+        if (current === undefined && id === undefined) return undefined;
+        // 传入了一样的值
+        if (current === id) return undefined;
 
-            parent = await this.repo.findOne({
-                where: {
-                    id: parentId,
-                },
-            });
+        let parent: CategoryEntity | undefined;
+        if (id !== undefined) {
+            // 父分类顶级分类
+            if (id === null) return null;
+            parent = await this.repo.findOne({ where: { id } });
             if (!parent)
-                throw new EntityNotFoundError(
-                    CategoryEntity,
-                    `Parent category ${parentId} not exists!`,
-                );
+                throw new EntityNotFoundError(CategoryEntity, `Parent category ${id} not exists!`);
         }
         return parent;
     }

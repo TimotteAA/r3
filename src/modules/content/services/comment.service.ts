@@ -77,7 +77,7 @@ export class CommentService {
      * @returns
      */
     async delete(id: string) {
-        const comment = await this.repo.findOneOrFail({ where: { id: id ?? null } });
+        const comment = await this.repo.findOneOrFail({ where: { id: id } });
         return this.repo.remove(comment);
     }
 

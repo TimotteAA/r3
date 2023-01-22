@@ -51,13 +51,12 @@ export class IsUniqueTreeUpdateConstraint implements ValidatorConstraintInterfac
         // 忽视字段的值
         const toIgnoreValue = dtoObj[condition.ignore];
         if (!toFindValue || !toIgnoreValue) return false;
-
         try {
             const repo = this.dataSource.getTreeRepository(condition.entity);
-            // 要更新的对象
+            // 要更新的对象，根据id查询
             const item = await repo.findOne({
                 where: {
-                    [condition.property]: toFindValue,
+                    [condition.ignore]: dtoObj[condition.ignore],
                 },
                 relations: [condition.parentField],
             });

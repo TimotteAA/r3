@@ -59,7 +59,7 @@ export class CommentController {
     // }
 
     @SerializeOptions({ groups: ['comment-detail'] })
-    @Delete()
+    @Delete(':id')
     async delete(@Param('id', new ParseUUIDPipe()) id: string) {
         return this.commentService.delete(id);
     }

@@ -7,6 +7,7 @@ import {
     Tree,
     TreeChildren,
     TreeParent,
+    DeleteDateColumn,
 } from 'typeorm';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { PostEntity } from './post.entity';
@@ -44,4 +45,7 @@ export class CategoryEntity extends BaseEntity {
     // 多对多中，另一方删除了，这一方将自己所属的字段设为null
     @ManyToMany(() => PostEntity, (post) => post.comments)
     posts!: PostEntity[];
+
+    @DeleteDateColumn()
+    deletetAt!: Date;
 }

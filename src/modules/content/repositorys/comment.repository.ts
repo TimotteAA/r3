@@ -13,7 +13,7 @@ export class CommentRepository extends BaseTreeRepository<CommentEntity> {
     buildBaseQuery(qb: SelectQueryBuilder<CommentEntity>): SelectQueryBuilder<CommentEntity> {
         return qb
             .leftJoinAndSelect(`${this.alias}.parent`, 'parent')
-            .leftJoinAndSelect(`${this.alias}.post`, 'post')
+            .leftJoinAndSelect(`${this.getAlias()}.post`, 'post')
             .orderBy(`${this.alias}.createdAt`, 'ASC');
     }
 

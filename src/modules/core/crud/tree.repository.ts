@@ -92,7 +92,9 @@ export class BaseTreeRepository<E extends ObjectLiteral> extends TreeRepository<
      */
     createDtsQueryBuilder(closureTableAlias: string, entity: E, options: QueryTreeOptions<E> = {}) {
         const { addQuery, orderBy } = options;
-        let qb = super.createDescendantsQueryBuilder(this.alias, closureTableAlias, entity);
+        let qb = this.buildBaseQuery(
+            super.createDescendantsQueryBuilder(this.alias, closureTableAlias, entity),
+        );
         qb = !isNil(addQuery) ? addQuery(qb) : qb;
         qb = !isNil(orderBy) ? getQrderByQuery(qb, this.alias, orderBy) : qb;
         return qb;
@@ -108,7 +110,9 @@ export class BaseTreeRepository<E extends ObjectLiteral> extends TreeRepository<
      */
     createAtsQueryBuilder(closureTableAlias: string, entity: E, options: QueryTreeOptions<E> = {}) {
         const { addQuery, orderBy } = options;
-        let qb = super.createAncestorsQueryBuilder(this.alias, closureTableAlias, entity);
+        let qb = this.buildBaseQuery(
+            super.createAncestorsQueryBuilder(this.alias, closureTableAlias, entity),
+        );
         qb = !isNil(addQuery) ? addQuery(qb) : qb;
         qb = !isNil(orderBy) ? getQrderByQuery(qb, this.alias, orderBy) : qb;
         return qb;
@@ -122,6 +126,7 @@ export class BaseTreeRepository<E extends ObjectLiteral> extends TreeRepository<
      */
     async findDescendantsTree(entity: E, options: QueryTreeOptions<E> = {}) {
         const qb = this.createDtsQueryBuilder('treeClosure', entity, options);
+
         FindOptionsUtils.applyOptionsToTreeQueryBuilder(qb, options);
         const entities = await qb.getRawAndEntities();
         const relationMaps = TreeRepositoryUtils.createRelationMaps(
