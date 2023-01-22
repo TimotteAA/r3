@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { Not, SelectQueryBuilder, IsNull, In, EntityNotFoundError } from 'typeorm';
+import { Not, SelectQueryBuilder, IsNull, In } from 'typeorm';
 import { PostRepository, CategoryRepository } from '@/modules/content/repositorys';
 import { CategoryService } from './';
 import { OrderField } from '../constants';
 import { isFunction, omit, isNil } from 'lodash';
 import { QueryHook } from '@/modules/database/types';
 import { PostEntity } from '../entities';
-import { paginate } from '@/modules/database/paginate';
+// import { paginate } from '@/modules/database/paginate';
 import { CreatePostDto, QueryPostDto, UpdatePostDto } from '../dtos';
+import { BaseService } from '@/modules/core/crud/service';
 
 // 文章查询接口
 type FindParams = {
@@ -15,19 +16,21 @@ type FindParams = {
 };
 
 @Injectable()
-export class PostService {
+export class PostService extends BaseService<PostEntity, PostRepository, FindParams> {
     constructor(
-        private repo: PostRepository,
+        protected repo: PostRepository,
         private categoryRepository: CategoryRepository,
         private categoryService: CategoryService,
-    ) {}
-
-    async paginate(options: QueryPostDto, callback?: QueryHook<PostEntity>) {
-        let qb = this.repo.buildBaseQuery();
-        qb = await this.buildListQuery(qb, options, callback);
-
-        return paginate(qb, options);
+    ) {
+        super(repo);
     }
+
+    // async paginate(options: QueryPostDto, callback?: QueryHook<PostEntity>) {
+    //     let qb = this.repo.buildBaseQuery();
+    //     qb = await this.buildListQuery(qb, options, callback);
+
+    //     return paginate(qb, options);
+    // }
 
     async create(data: CreatePostDto) {
         const post = await this.repo.save({
@@ -40,25 +43,6 @@ export class PostService {
                     : [],
         });
         return post;
-    }
-
-    /**
-     * 基础的详情查询仅针对id，可以通过回调的方式添加别的查询
-     * @param id
-     * @param callback
-     * @returns
-     */
-    async detail(id: string, callback?: QueryHook<PostEntity>) {
-        // 查询语句
-        let qb = this.repo.buildBaseQuery();
-        // 添加额外的查询
-        qb = !isNil(callback) && isFunction(callback) ? await callback(qb) : qb;
-        // 根据id进行查询
-        qb.where('post.id = :id', { id });
-        const res = await qb.getOne();
-        if (isNil(res))
-            throw new EntityNotFoundError(PostEntity, `the post with id ${id} not exits!`);
-        return res;
     }
 
     /**
@@ -82,17 +66,17 @@ export class PostService {
         return this.detail(data.id);
     }
 
-    async delete(id: string) {
-        const toDelete = await this.repo.findOneOrFail({
-            where: {
-                id,
-            },
-        });
-        if (isNil(toDelete))
-            throw new EntityNotFoundError(PostEntity, `the post with id ${id} not exits!`);
-        await this.repo.delete(toDelete.id);
-        return toDelete;
-    }
+    // async delete(id: string) {
+    //     const toDelete = await this.repo.findOneOrFail({
+    //         where: {
+    //             id,
+    //         },
+    //     });
+    //     if (isNil(toDelete))
+    //         throw new EntityNotFoundError(PostEntity, `the post with id ${id} not exits!`);
+    //     await this.repo.delete(toDelete.id);
+    //     return toDelete;
+    // }
 
     /**
      * 构建列表查询的sql语句，并得到结果
@@ -137,7 +121,7 @@ export class PostService {
         const list = await this.categoryRepository.toFlatTrees(tree.children, 0);
         // 所有的分类id
         const ids = [tree.id, ...list.map((item) => item.id)];
-        qb.where('categories.id in (:...ids)', {
+        qb.andWhere('categories.id in (:...ids)', {
             ids,
         });
         return qb;

@@ -4,7 +4,10 @@ import {
     ClassSerializerContextOptions,
     ClassSerializerInterceptor,
     StreamableFile,
+    ExecutionContext,
 } from '@nestjs/common';
+import { ClassTransformOptions } from '@nestjs/common/interfaces/external/class-transform-options.interface';
+import { CLASS_SERIALIZER_OPTIONS } from '@nestjs/common/serializer/class-serializer.constants';
 import { isObject, isNil } from 'lodash';
 
 @Injectable()
@@ -44,5 +47,20 @@ export class AppInterceptor extends ClassSerializerInterceptor {
 
         // 普通对象
         return this.transformToPlain(response, options);
+    }
+
+    protected getContextOptions(context: ExecutionContext): ClassTransformOptions | undefined {
+        const crudOptions = Reflect.getMetadata(
+            CLASS_SERIALIZER_OPTIONS,
+            context.getClass().prototype,
+            context.getHandler().name,
+        );
+        return (
+            crudOptions ??
+            this.reflector.getAllAndOverride(CLASS_SERIALIZER_OPTIONS, [
+                context.getHandler(),
+                context.getClass(),
+            ])
+        );
     }
 }

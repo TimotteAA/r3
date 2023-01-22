@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { EntityNotFoundError } from 'typeorm';
-import { QueryCategoryDto, CreateCategoryDto, UpdateCategoryDto } from '../dtos';
+import { CreateCategoryDto, UpdateCategoryDto } from '../dtos';
 import { CategoryRepository } from '../repositorys';
-import { treePaginate } from '@/modules/database/paginate';
+// import { treePaginate } from '@/modules/database/paginate';
 import { CategoryEntity } from '../entities';
 import { isNil, omit } from 'lodash';
 import { BaseService } from '@/modules/core/crud/service';
@@ -23,19 +23,19 @@ export class CategoryService extends BaseService<CategoryEntity, CategoryReposit
         return res;
     }
 
-    /**
-     * 对分页列表分页
-     * @param options：页数与每页数量
-     * @returns
-     */
-    async paginate(options: QueryCategoryDto) {
-        // 评论树
-        const tree = await this.findTrees();
-        // 展平评论树
-        const data = await this.repo.toFlatTrees(tree, 0);
-        // 分页函数分页
-        return treePaginate(options, data);
-    }
+    // /**
+    //  * 对分页列表分页
+    //  * @param options：页数与每页数量
+    //  * @returns
+    //  */
+    // async paginate(options: QueryCategoryDto) {
+    //     // 评论树
+    //     const tree = await this.findTrees();
+    //     // 展平评论树
+    //     const data = await this.repo.toFlatTrees(tree, 0);
+    //     // 分页函数分页
+    //     return treePaginate(options, data);
+    // }
 
     // /**
     //  * 获取数据详情
@@ -56,22 +56,20 @@ export class CategoryService extends BaseService<CategoryEntity, CategoryReposit
 
     // @ts-ignore
     async delete(id: string, trashed?: boolean) {
-        // 子分类不删除，而是提升一级
-        const cat = await this.repo.findOneOrFail({
+        const item = await this.repo.findOneOrFail({
             where: { id },
             relations: ['parent', 'children'],
         });
-        const res = await super.delete(id);
-
-        const children = cat.children;
-        const parent = cat.parent;
-        if (!isNil(children) && children.length > 0) {
-            children.forEach(async (c) => {
-                c.parent = parent;
-                await this.repo.save(c);
+        // 把子分类提升一级
+        if (!isNil(item.children) && item.children.length > 0) {
+            const nchildren = [...item.children].map((c) => {
+                c.parent = item.parent;
+                return item;
             });
+
+            await this.repo.save(nchildren);
         }
-        return res;
+        return super.delete(id, trashed);
     }
 
     async update(data: UpdateCategoryDto) {

@@ -5,6 +5,8 @@ import { BaseRepository } from '@/modules/core/crud/repository';
 
 @CustomRepository(PostEntity)
 export class PostRepository extends BaseRepository<PostEntity> {
+    protected alias = 'post';
+
     buildBaseQuery() {
         return this.createQueryBuilder('post')
             .leftJoinAndSelect('post.categories', 'categories')

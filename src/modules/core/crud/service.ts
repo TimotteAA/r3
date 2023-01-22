@@ -59,6 +59,7 @@ export abstract class BaseService<
      * @returns
      */
     async paginate(options: PaginateOptions & P, callback?: QueryHook<E>) {
+        console.log('service', options);
         const queryOptions = options ?? ({} as P);
         if (this.repo instanceof BaseTreeRepository) {
             // 树形的repository，得先拿到树
@@ -142,7 +143,7 @@ export abstract class BaseService<
         if (this.enable_trash && trashed && isNil((item as any).deletetAt)) {
             await this.repo.softRemove(item);
         }
-        return this.repo.delete(id);
+        return this.repo.remove(item);
     }
 
     /**

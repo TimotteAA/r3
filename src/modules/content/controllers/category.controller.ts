@@ -1,21 +1,23 @@
-import {
-    Controller,
-    Get,
-    Post,
-    Patch,
-    Delete,
-    SerializeOptions,
-    Body,
-    Param,
-    ParseUUIDPipe,
-    Query,
-} from '@nestjs/common';
+import { Controller, Get, SerializeOptions } from '@nestjs/common';
 import { CategoryService } from '../services';
 import { QueryCategoryDto, CreateCategoryDto, UpdateCategoryDto } from '../dtos';
+import { BaseController } from '@/modules/core/crud/controller';
+import { Crud } from '@/modules/core/decorators';
 
 @Controller('categories')
-export class CategoryController {
-    constructor(private categoryService: CategoryService) {}
+@Crud({
+    id: 'category',
+    enabled: ['create', 'delete', 'update', 'list', 'detail'],
+    dtos: {
+        create: CreateCategoryDto,
+        update: UpdateCategoryDto,
+        query: QueryCategoryDto,
+    },
+})
+export class CategoryController extends BaseController<CategoryService> {
+    constructor(protected categoryService: CategoryService) {
+        super(categoryService);
+    }
 
     /**
      * 获取某篇文章的评论树
@@ -25,44 +27,5 @@ export class CategoryController {
     @Get('tree')
     async tree() {
         return this.categoryService.findTrees();
-    }
-
-    @SerializeOptions({ groups: ['category-list'] })
-    @Get()
-    async list(
-        @Query()
-        options: QueryCategoryDto,
-    ) {
-        return this.categoryService.paginate(options);
-    }
-
-    @SerializeOptions({ groups: ['category-detail'] })
-    @Get(':id')
-    async detail(@Param('id', new ParseUUIDPipe()) id: string) {
-        return this.categoryService.detail(id);
-    }
-
-    @SerializeOptions({ groups: ['category-detail'] })
-    @Post()
-    async create(
-        @Body()
-        data: CreateCategoryDto,
-    ) {
-        return this.categoryService.create(data);
-    }
-
-    @SerializeOptions({ groups: ['category-detail'] })
-    @Patch()
-    async update(
-        @Body()
-        data: UpdateCategoryDto,
-    ) {
-        return this.categoryService.update(data);
-    }
-
-    @SerializeOptions({ groups: ['category-detail'] })
-    @Delete(':id')
-    async delete(@Param('id', new ParseUUIDPipe()) id: string) {
-        return this.categoryService.delete(id);
     }
 }

@@ -19,6 +19,7 @@ import { PartialType } from '@nestjs/swagger';
 import { CustomDtoValidation } from '@/modules/core/decorators';
 import { IsExist } from '@/modules/database/constraints';
 import { CategoryEntity } from '../entities';
+import { QueryTrashMode } from '@/modules/core/types';
 
 @CustomDtoValidation({ type: 'query' })
 /**
@@ -58,6 +59,10 @@ export class QueryPostDto implements PaginateOptions {
     })
     @IsOptional()
     category?: string;
+
+    @IsEnum(QueryTrashMode)
+    @IsOptional()
+    trashed?: QueryTrashMode;
 }
 
 @CustomDtoValidation({ groups: ['create'] })

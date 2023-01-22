@@ -6,13 +6,10 @@ import { treePaginate } from '@/modules/database/paginate';
 import { CommentEntity } from '../entities';
 import { isNil } from 'lodash';
 import { SelectQueryBuilder } from 'typeorm';
-import { BaseService } from '@/modules/core/crud/service';
 
 @Injectable()
-export class CommentService extends BaseService<CommentEntity, CommentRepository> {
-    constructor(protected repo: CommentRepository, private postRepo: PostRepository) {
-        super(repo);
-    }
+export class CommentService {
+    constructor(private repo: CommentRepository, private postRepo: PostRepository) {}
 
     /**
      * 返回评论树，支持查看某篇文章的评论树
@@ -74,15 +71,15 @@ export class CommentService extends BaseService<CommentEntity, CommentRepository
         return item;
     }
 
-    // /**
-    //  * 删除评论
-    //  * @param id
-    //  * @returns
-    //  */
-    // async delete(id: string) {
-    //     const comment = await this.repo.findOneOrFail({ where: { id: id } });
-    //     return this.repo.remove(comment);
-    // }
+    /**
+     * 删除评论
+     * @param id
+     * @returns
+     */
+    async delete(id: string) {
+        const comment = await this.repo.findOneOrFail({ where: { id: id } });
+        return this.repo.remove(comment);
+    }
 
     async getPost(id: string) {
         const post = await this.postRepo.findOneOrFail({

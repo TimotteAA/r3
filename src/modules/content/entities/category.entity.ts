@@ -43,7 +43,7 @@ export class CategoryEntity extends BaseEntity {
     depth = 0;
 
     // 多对多中，另一方删除了，这一方将自己所属的字段设为null
-    @ManyToMany(() => PostEntity, (post) => post.comments)
+    @ManyToMany(() => PostEntity, (post) => post.categories)
     posts!: PostEntity[];
 
     @DeleteDateColumn()
