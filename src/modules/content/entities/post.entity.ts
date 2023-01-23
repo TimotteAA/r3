@@ -8,11 +8,13 @@ import {
     ManyToMany,
     JoinTable,
     OneToMany,
+    ManyToOne,
 } from 'typeorm';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { PostBodyType } from '@/modules/content/constants';
 import { CategoryEntity } from './category.entity';
 import { CommentEntity } from './comment.entity';
+import { UserEntity } from '@/modules/user/entities/user.entity';
 
 @Exclude()
 @Entity('content_posts')
@@ -80,4 +82,12 @@ export class PostEntity extends BaseEntity {
 
     @Expose()
     commentCount!: number;
+
+    @ManyToOne(() => UserEntity, (user: UserEntity) => user.posts, {
+        nullable: false,
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+    })
+    @Expose()
+    author!: UserEntity;
 }

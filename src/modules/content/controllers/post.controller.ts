@@ -7,7 +7,19 @@ import { Crud } from '@/modules/core/decorators';
 @Controller('posts')
 @Crud({
     id: 'post',
-    enabled: ['list', 'update', 'create', 'delete', 'detail'],
+    enabled: [
+        {
+            name: 'list',
+            options: { allowGuest: true },
+        },
+        {
+            name: 'detail',
+            options: { allowGuest: true },
+        },
+        'update',
+        'create',
+        'delete',
+    ],
     dtos: {
         query: QueryPostDto,
         create: CreatePostDto,

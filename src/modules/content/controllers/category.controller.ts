@@ -7,7 +7,19 @@ import { Crud } from '@/modules/core/decorators';
 @Controller('categories')
 @Crud({
     id: 'category',
-    enabled: ['create', 'delete', 'update', 'list', 'detail'],
+    enabled: [
+        'create',
+        'delete',
+        'update',
+        {
+            name: 'list',
+            options: { allowGuest: true },
+        },
+        {
+            name: 'detail',
+            options: { allowGuest: true },
+        },
+    ],
     dtos: {
         create: CreateCategoryDto,
         update: UpdateCategoryDto,

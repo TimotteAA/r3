@@ -7,7 +7,18 @@ import { Crud } from '@/modules/core/decorators';
 @Controller('comments')
 @Crud({
     id: 'comment',
-    enabled: ['list', 'create', 'detail', 'delete'],
+    enabled: [
+        {
+            name: 'list',
+            options: { allowGuest: true },
+        },
+        {
+            name: 'detail',
+            options: { allowGuest: true },
+        },
+        'create',
+        'delete',
+    ],
     dtos: {
         query: QueryCommentDto,
         create: CreateCommentDto,
