@@ -12,7 +12,6 @@ export abstract class BaseController<S, P extends QueryListParams<any> = QueryLi
 
     @Get()
     async list(@Query() params: PaginateOptions & P & TrashedDto) {
-        console.log('controller', params);
         return (this.service as any).paginate(params);
     }
 

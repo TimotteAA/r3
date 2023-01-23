@@ -1,62 +1,21 @@
-import {
-    Controller,
-    Get,
-    Param,
-    Patch,
-    Post,
-    Delete,
-    Body,
-    Query,
-    ParseUUIDPipe,
-    SerializeOptions,
-} from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { PostService } from '../services/post.service';
 import { CreatePostDto, UpdatePostDto, QueryPostDto } from '../dtos';
+import { BaseController } from '@/modules/core/crud';
+import { Crud } from '@/modules/core/decorators';
 
 @Controller('posts')
-export class PostController {
-    public constructor(private postService: PostService) {}
-
-    @SerializeOptions({ groups: ['post-list'] })
-    @Get()
-    async index(
-        @Query()
-        options: QueryPostDto,
-    ) {
-        const res = await this.postService.paginate(options);
-        return res;
-    }
-
-    @SerializeOptions({ groups: ['post-detail'] })
-    @Get(':id')
-    async show(@Param('id', new ParseUUIDPipe()) id: string) {
-        const res = await this.postService.detail(id);
-        return res;
-    }
-
-    @SerializeOptions({ groups: ['post-detail'] })
-    @Post()
-    async store(
-        @Body()
-        data: CreatePostDto,
-    ) {
-        const res = await this.postService.create(data);
-        return res;
-    }
-
-    @SerializeOptions({ groups: ['post-detail'] })
-    @Patch()
-    async update(
-        @Body()
-        data: UpdatePostDto,
-    ) {
-        const res = await this.postService.update(data);
-        return res;
-    }
-
-    @SerializeOptions({ groups: ['post-detail'] })
-    @Delete(':id')
-    async delete(@Param('id', new ParseUUIDPipe()) id: string) {
-        return this.postService.delete(id);
+@Crud({
+    id: 'post',
+    enabled: ['list', 'update', 'create', 'delete', 'detail'],
+    dtos: {
+        query: QueryPostDto,
+        create: CreatePostDto,
+        update: UpdatePostDto,
+    },
+})
+export class PostController extends BaseController<PostService> {
+    public constructor(protected service: PostService) {
+        super(service);
     }
 }

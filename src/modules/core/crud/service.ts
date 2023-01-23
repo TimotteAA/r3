@@ -59,7 +59,6 @@ export abstract class BaseService<
      * @returns
      */
     async paginate(options: PaginateOptions & P, callback?: QueryHook<E>) {
-        console.log('service', options);
         const queryOptions = options ?? ({} as P);
         if (this.repo instanceof BaseTreeRepository) {
             // 树形的repository，得先拿到树

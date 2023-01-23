@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Not, SelectQueryBuilder, IsNull, In } from 'typeorm';
+import { Not, SelectQueryBuilder, IsNull, In, Like } from 'typeorm';
 import { PostRepository, CategoryRepository } from '@/modules/content/repositorys';
 import { CategoryService } from './';
 import { OrderField } from '../constants';
@@ -8,7 +8,7 @@ import { QueryHook } from '@/modules/database/types';
 import { PostEntity } from '../entities';
 // import { paginate } from '@/modules/database/paginate';
 import { CreatePostDto, QueryPostDto, UpdatePostDto } from '../dtos';
-import { BaseService } from '@/modules/core/crud/service';
+import { BaseService } from '@/modules/core/crud';
 
 // 文章查询接口
 type FindParams = {
@@ -24,13 +24,6 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
     ) {
         super(repo);
     }
-
-    // async paginate(options: QueryPostDto, callback?: QueryHook<PostEntity>) {
-    //     let qb = this.repo.buildBaseQuery();
-    //     qb = await this.buildListQuery(qb, options, callback);
-
-    //     return paginate(qb, options);
-    // }
 
     async create(data: CreatePostDto) {
         const post = await this.repo.save({
@@ -66,18 +59,6 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
         return this.detail(data.id);
     }
 
-    // async delete(id: string) {
-    //     const toDelete = await this.repo.findOneOrFail({
-    //         where: {
-    //             id,
-    //         },
-    //     });
-    //     if (isNil(toDelete))
-    //         throw new EntityNotFoundError(PostEntity, `the post with id ${id} not exits!`);
-    //     await this.repo.delete(toDelete.id);
-    //     return toDelete;
-    // }
-
     /**
      * 构建列表查询的sql语句，并得到结果
      * @param qb 查询语句
@@ -90,7 +71,8 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
         options: FindParams,
         callback?: QueryHook<PostEntity>,
     ) {
-        const { customOrder, isPublished, category } = options;
+        const { customOrder, isPublished, category, title } = options;
+
         if (typeof isPublished === 'boolean') {
             qb = isPublished
                 ? qb.where({
@@ -99,6 +81,11 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
                 : qb.where({
                       publishedAt: IsNull(),
                   });
+        }
+        if (!isNil(title)) {
+            qb = qb.where({
+                title: Like(`%${title}%`),
+            });
         }
         // 处理排序
         qb = this.orderPost(qb, customOrder);

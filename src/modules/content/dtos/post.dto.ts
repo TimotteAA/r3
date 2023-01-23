@@ -60,6 +60,13 @@ export class QueryPostDto implements PaginateOptions {
     @IsOptional()
     category?: string;
 
+    @MaxLength(50, {
+        message: '文章标题最长为$constraint1',
+        always: true,
+    })
+    @IsOptional()
+    title?: string;
+
     @IsEnum(QueryTrashMode)
     @IsOptional()
     trashed?: QueryTrashMode;

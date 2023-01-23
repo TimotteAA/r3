@@ -1,7 +1,7 @@
 import { Controller, Get, SerializeOptions } from '@nestjs/common';
 import { CategoryService } from '../services';
 import { QueryCategoryDto, CreateCategoryDto, UpdateCategoryDto } from '../dtos';
-import { BaseController } from '@/modules/core/crud/controller';
+import { BaseController } from '@/modules/core/crud';
 import { Crud } from '@/modules/core/decorators';
 
 @Controller('categories')

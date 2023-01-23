@@ -5,7 +5,7 @@ import { CategoryRepository } from '../repositorys';
 // import { treePaginate } from '@/modules/database/paginate';
 import { CategoryEntity } from '../entities';
 import { isNil, omit } from 'lodash';
-import { BaseService } from '@/modules/core/crud/service';
+import { BaseService } from '@/modules/core/crud';
 
 @Injectable()
 export class CategoryService extends BaseService<CategoryEntity, CategoryRepository> {
@@ -19,32 +19,8 @@ export class CategoryService extends BaseService<CategoryEntity, CategoryReposit
      */
     async findTrees() {
         const res = await this.repo.findTrees();
-        // console.log('data', res);
         return res;
     }
-
-    // /**
-    //  * 对分页列表分页
-    //  * @param options：页数与每页数量
-    //  * @returns
-    //  */
-    // async paginate(options: QueryCategoryDto) {
-    //     // 评论树
-    //     const tree = await this.findTrees();
-    //     // 展平评论树
-    //     const data = await this.repo.toFlatTrees(tree, 0);
-    //     // 分页函数分页
-    //     return treePaginate(options, data);
-    // }
-
-    // /**
-    //  * 获取数据详情
-    //  * @param id
-    //  * @returns
-    //  */
-    // async detail(id: string) {
-    //     return this.repo.findOneOrFail({ where: { id } });
-    // }
 
     async create(data: CreateCategoryDto) {
         const item = await this.repo.save({

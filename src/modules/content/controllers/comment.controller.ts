@@ -1,20 +1,23 @@
-import {
-    Controller,
-    Get,
-    Post,
-    Delete,
-    SerializeOptions,
-    Body,
-    Param,
-    ParseUUIDPipe,
-    Query,
-} from '@nestjs/common';
+import { Controller, Get, SerializeOptions, Query } from '@nestjs/common';
 import { CommentService } from '../services';
 import { QueryCommentDto, QueryCommentTreeDto, CreateCommentDto } from '../dtos';
+import { BaseController } from '@/modules/core/crud';
+import { Crud } from '@/modules/core/decorators';
 
 @Controller('comments')
-export class CommentController {
-    constructor(private commentService: CommentService) {}
+@Crud({
+    id: 'comment',
+    enabled: ['list', 'create', 'detail', 'delete'],
+    dtos: {
+        query: QueryCommentDto,
+        create: CreateCommentDto,
+        update: null,
+    },
+})
+export class CommentController extends BaseController<CommentService> {
+    constructor(protected commentService: CommentService) {
+        super(commentService);
+    }
 
     /**
      * 获取某篇文章的评论树
@@ -27,40 +30,5 @@ export class CommentController {
         options: QueryCommentTreeDto,
     ) {
         return this.commentService.findTrees(options);
-    }
-
-    @SerializeOptions({ groups: ['comment-list'] })
-    @Get()
-    async list(
-        @Query()
-        options: QueryCommentDto,
-    ) {
-        return this.commentService.paginate(options);
-    }
-
-    @SerializeOptions({ groups: ['comment-detail'] })
-    @Post()
-    async create(
-        @Body()
-        data: CreateCommentDto,
-    ) {
-        return this.commentService.create(data);
-    }
-
-    // @SerializeOptions({groups: ['comment-detail']})
-    // @Patch()
-    // async update(@Body(
-    //   new ValidationPipe({
-    //     transform: true,
-    //     forbidUnknownValues: true,
-    //     validationError: { target: false },
-    // }) )data: UpdateCategoryDto) {
-    //   return this.commentService.update(data);
-    // }
-
-    @SerializeOptions({ groups: ['comment-detail'] })
-    @Delete(':id')
-    async delete(@Param('id', new ParseUUIDPipe()) id: string) {
-        return this.commentService.delete(id);
     }
 }
