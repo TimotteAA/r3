@@ -42,6 +42,7 @@ export class IsUniqueUpdateConstraint implements ValidatorConstraintInterface {
         const ignoreValue = (args.object as any)[condition.ignore];
         // 忽略的字段值不存在
         if (ignoreValue === undefined) return false;
+        // 没传entity
         if (!condition.entity) return false;
         try {
             const repo = this.dataSource.getRepository(condition.entity);

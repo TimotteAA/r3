@@ -29,3 +29,9 @@ export interface JwtConfig {
     refresh_secret: string;
     refresh_token_expired: number;
 }
+
+/**
+ * 构造器类型
+ */
+export type ClassType<T> = { new (...args: any[]): T };
+export type ClassToPlain<T> = { [key in keyof T]: T[key] };

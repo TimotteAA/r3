@@ -24,7 +24,7 @@ export class UserEntity extends BaseEntity {
     nickname?: string;
 
     @Expose()
-    @Column({ comment: '用户邮箱' })
+    @Column({ comment: '用户邮箱', default: null })
     email?: string;
 
     @Expose()
@@ -45,10 +45,12 @@ export class UserEntity extends BaseEntity {
     accessTokens!: AccessTokenEntity[];
 
     @Expose()
+    @Type(() => Date)
     @CreateDateColumn()
     createtAt!: Date;
 
     @Expose()
+    @Type(() => Date)
     @UpdateDateColumn()
     updatedtAt!: Date;
 

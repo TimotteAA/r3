@@ -1,10 +1,12 @@
-import { EventSubscriber, EntitySubscriberInterface, InsertEvent } from 'typeorm';
+import { EventSubscriber, EntitySubscriberInterface, InsertEvent, DataSource } from 'typeorm';
 import { PostEntity } from '../entities/post.entity';
 import { SanitizeService } from '../services/sanitize.service';
 
 @EventSubscriber()
 export class PostSubscriber implements EntitySubscriberInterface<PostEntity> {
-    constructor(private sanitizeService: SanitizeService) {}
+    constructor(private sanitizeService: SanitizeService, private dataSource: DataSource) {
+        this.dataSource.subscribers.push(this);
+    }
 
     /**
      * Indicates that this subscriber only listen to Post events.

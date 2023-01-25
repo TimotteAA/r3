@@ -1,10 +1,21 @@
-import { EventSubscriber, EntitySubscriberInterface, InsertEvent, UpdateEvent } from 'typeorm';
+import {
+    EventSubscriber,
+    EntitySubscriberInterface,
+    InsertEvent,
+    UpdateEvent,
+    DataSource,
+} from 'typeorm';
 import { UserEntity } from '../entities';
-import { encrypt } from '../helpers';
+import { encrypt, generateRandonString } from '../helpers';
+
 import crypto from 'crypto';
 
 @EventSubscriber()
 export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
+    constructor(private dataSource: DataSource) {
+        this.dataSource.subscribers.push(this);
+    }
+
     /**
      * Indicates that this subscriber only listen to Post events.
      */
@@ -48,7 +59,7 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
      * @memberof UserSubscriber
      */
     protected async generateUserName(event: InsertEvent<UserEntity>): Promise<string> {
-        const username = `user_${crypto.randomBytes(4).toString('hex').slice(0, 8)}`;
+        const username = `user_${generateRandonString()}`;
         // 用户名查询
         const user = await event.manager.findOne(UserEntity, {
             where: { username },

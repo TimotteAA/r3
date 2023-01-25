@@ -3,8 +3,9 @@ import { UserRepository } from '../repositorys';
 import { BaseService } from '@/modules/core/crud';
 import { Injectable } from '@nestjs/common';
 import { QueryHook } from '@/modules/database/types';
-import { isNil } from 'lodash';
+import { isNil, omit } from 'lodash';
 import { EntityNotFoundError } from 'typeorm';
+import { CreateUserDto, UpdateUserDto } from '../dto';
 
 @Injectable()
 export class UserService extends BaseService<UserEntity, UserRepository> {
@@ -12,13 +13,17 @@ export class UserService extends BaseService<UserEntity, UserRepository> {
         super(repo);
     }
 
-    // async update() {
+    async create(data: CreateUserDto): Promise<UserEntity> {
+        const res = await this.repo.save(data);
+        return omit(res, 'password') as UserEntity;
+    }
 
-    // }
-
-    // async create() {
-
-    // }
+    async update(data: UpdateUserDto) {
+        // id字段不更新
+        const rest = omit(data, 'id');
+        await this.repo.update(data.id, rest);
+        return this.detail(data.id);
+    }
 
     /**
      * 根据邮箱或用户名查询用户

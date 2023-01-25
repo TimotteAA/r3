@@ -23,11 +23,13 @@ specifiers:
   '@types/passport-local': ^1.0.35
   '@types/sanitize-html': ^2.8.0
   '@types/supertest': ^2.0.11
+  '@types/uuid': ^9.0.0
   '@typescript-eslint/eslint-plugin': ^5.48.0
   '@typescript-eslint/parser': ^5.48.0
   bcrypt: ^5.1.0
   class-transformer: ^0.5.1
   class-validator: ^0.14.0
+  dayjs: ^1.11.7
   deepmerge: ^4.2.2
   eslint: ^8.31.0
   eslint-config-airbnb-base: ^15.0.0
@@ -37,6 +39,7 @@ specifiers:
   eslint-plugin-jest: ^27.2.1
   eslint-plugin-prettier: ^4.2.1
   eslint-plugin-unused-imports: ^2.0.0
+  fastify: ^4.12.0
   jest: 28.1.3
   jsonwebtoken: ^9.0.0
   lodash: ^4.17.21
@@ -57,6 +60,7 @@ specifiers:
   tsconfig-paths: 4.1.0
   typeorm: ^0.3.11
   typescript: ^4.9.4
+  uuid: ^9.0.0
   validator: ^13.7.0
 
 dependencies:
@@ -68,10 +72,13 @@ dependencies:
   '@nestjs/platform-express': registry.npmmirror.com/@nestjs/platform-express/9.2.1_hjcqpoaebdr7gdo5hgc22hthbe
   '@nestjs/platform-fastify': registry.npmmirror.com/@nestjs/platform-fastify/9.2.1_hjcqpoaebdr7gdo5hgc22hthbe
   '@nestjs/swagger': registry.npmmirror.com/@nestjs/swagger/6.1.4_4fhhxyztwhblafku3krlstrun4
+  '@types/uuid': registry.npmmirror.com/@types/uuid/9.0.0
   bcrypt: registry.npmmirror.com/bcrypt/5.1.0
   class-transformer: registry.npmmirror.com/class-transformer/0.5.1
   class-validator: registry.npmmirror.com/class-validator/0.14.0
+  dayjs: registry.npmmirror.com/dayjs/1.11.7
   deepmerge: registry.npmmirror.com/deepmerge/4.2.2
+  fastify: registry.npmmirror.com/fastify/4.12.0
   jsonwebtoken: registry.npmmirror.com/jsonwebtoken/9.0.0
   mysql2: registry.npmmirror.com/mysql2/3.0.1
   passport: registry.npmmirror.com/passport/0.6.0
@@ -82,6 +89,7 @@ dependencies:
   rxjs: registry.npmmirror.com/rxjs/7.8.0
   sanitize-html: registry.npmmirror.com/sanitize-html/2.8.1
   typeorm: registry.npmmirror.com/typeorm/0.3.11_vi676j5qc66lrw5lu3uf7yadem
+  uuid: registry.npmmirror.com/uuid/9.0.0
   validator: registry.npmmirror.com/validator/13.7.0
 
 devDependencies:
@@ -1810,6 +1818,12 @@ packages:
       '@types/superagent': registry.npmmirror.com/@types/superagent/4.1.16
     dev: true
 
+  registry.npmmirror.com/@types/uuid/9.0.0:
+    resolution: {integrity: sha512-kr90f+ERiQtKWMz5rP32ltJ/BtULDI5RVO0uavn1HQUOwjx0R1h0rnDYNL0CepF1zL5bSY6FISAfd9tOdDhU5Q==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@types/uuid/-/uuid-9.0.0.tgz}
+    name: '@types/uuid'
+    version: 9.0.0
+    dev: false
+
   registry.npmmirror.com/@types/validator/13.7.10:
     resolution: {integrity: sha512-t1yxFAR2n0+VO6hd/FJ9F2uezAZVWHLmpmlJzm1eX03+H7+HsuTAp7L8QJs+2pQCfWkP1+EXsGK9Z9v7o/qPVQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@types/validator/-/validator-13.7.10.tgz}
     name: '@types/validator'
@@ -3072,6 +3086,12 @@ packages:
     version: 2.29.3
     engines: {node: '>=0.11'}
 
+  registry.npmmirror.com/dayjs/1.11.7:
+    resolution: {integrity: sha512-+Yw9U6YO5TQohxLcIkrXBeY73WP3ejHWVvx8XCk3gxvQDCTEmS48ZrSZCKciI7Bhl/uCMyxYtE9UqRILmFphkQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/dayjs/-/dayjs-1.11.7.tgz}
+    name: dayjs
+    version: 1.11.7
+    dev: false
+
   registry.npmmirror.com/debug/2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/debug/-/debug-2.6.9.tgz}
     name: debug
@@ -3941,6 +3961,12 @@ packages:
       tmp: registry.npmmirror.com/tmp/0.0.33
     dev: true
 
+  registry.npmmirror.com/fast-content-type-parse/1.0.0:
+    resolution: {integrity: sha512-Xbc4XcysUXcsP5aHUU7Nq3OwvHq97C+WnbkeIefpeYLX+ryzFJlU6OStFJhs6Ol0LkUGpcK+wL0JwfM+FCU5IA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/fast-content-type-parse/-/fast-content-type-parse-1.0.0.tgz}
+    name: fast-content-type-parse
+    version: 1.0.0
+    dev: false
+
   registry.npmmirror.com/fast-decode-uri-component/1.0.1:
     resolution: {integrity: sha512-WKgKWg5eUxvRZGwW8FvfbaH7AXSh2cL+3j5fMGzUMCxWBJ3dV3a7Wz8y2f/uQ0e3B6WmodD3oS54jTQ9HVTIIg==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/fast-decode-uri-component/-/fast-decode-uri-component-1.0.1.tgz}
     name: fast-decode-uri-component
@@ -4045,6 +4071,30 @@ packages:
       abstract-logging: registry.npmmirror.com/abstract-logging/2.0.1
       avvio: registry.npmmirror.com/avvio/8.2.0
       content-type: registry.npmmirror.com/content-type/1.0.4
+      find-my-way: registry.npmmirror.com/find-my-way/7.4.0
+      light-my-request: registry.npmmirror.com/light-my-request/5.6.1
+      pino: registry.npmmirror.com/pino/8.8.0
+      process-warning: registry.npmmirror.com/process-warning/2.1.0
+      proxy-addr: registry.npmmirror.com/proxy-addr/2.0.7
+      rfdc: registry.npmmirror.com/rfdc/1.3.0
+      secure-json-parse: registry.npmmirror.com/secure-json-parse/2.6.0
+      semver: registry.npmmirror.com/semver/7.3.8
+      tiny-lru: registry.npmmirror.com/tiny-lru/10.0.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  registry.npmmirror.com/fastify/4.12.0:
+    resolution: {integrity: sha512-Hh2GCsOCqnOuewWSvqXlpq5V/9VA+/JkVoooQWUhrU6gryO9+/UGOoF/dprGcKSDxkM/9TkMXSffYp8eA/YhYQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/fastify/-/fastify-4.12.0.tgz}
+    name: fastify
+    version: 4.12.0
+    dependencies:
+      '@fastify/ajv-compiler': registry.npmmirror.com/@fastify/ajv-compiler/3.5.0
+      '@fastify/error': registry.npmmirror.com/@fastify/error/3.2.0
+      '@fastify/fast-json-stringify-compiler': registry.npmmirror.com/@fastify/fast-json-stringify-compiler/4.2.0
+      abstract-logging: registry.npmmirror.com/abstract-logging/2.0.1
+      avvio: registry.npmmirror.com/avvio/8.2.0
+      fast-content-type-parse: registry.npmmirror.com/fast-content-type-parse/1.0.0
       find-my-way: registry.npmmirror.com/find-my-way/7.4.0
       light-my-request: registry.npmmirror.com/light-my-request/5.6.1
       pino: registry.npmmirror.com/pino/8.8.0
