@@ -2,7 +2,7 @@ import { UserEntity } from '../entities';
 import { UserRepository } from '../repositorys';
 import { BaseService } from '@/modules/core/crud';
 import { Injectable } from '@nestjs/common';
-import { QueryHook } from '@/modules/database/types';
+import { QueryHook } from '@/modules/utils';
 import { isNil, omit } from 'lodash';
 import { EntityNotFoundError } from 'typeorm';
 import { CreateUserDto, UpdateUserDto } from '../dto';

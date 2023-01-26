@@ -2,8 +2,8 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ObjectLiteral, SelectQueryBuilder, Not, IsNull } from 'typeorm';
 import { BaseRepository } from './repository';
 import { BaseTreeRepository } from './tree.repository';
-import { QueryListParams, QueryParams, QueryTrashMode } from '../types';
-import { PaginateMeta, PaginateOptions, QueryHook } from '@/modules/database/types';
+import { QueryListParams, QueryParams, QueryTrashMode } from '@/modules/utils';
+import { PaginateMeta, PaginateOptions, QueryHook } from '@/modules/utils';
 import { isNil } from 'lodash';
 import { paginate, treePaginate } from '@/modules/database/paginate';
 

@@ -1,4 +1,4 @@
-import { PaginateOptions } from '@/modules/database/types';
+import { PaginateOptions } from '@/modules/utils';
 import {
     IsNumber,
     Min,

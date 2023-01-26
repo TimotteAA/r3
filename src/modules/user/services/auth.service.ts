@@ -2,13 +2,14 @@ import { Injectable, Inject, forwardRef, ForbiddenException } from '@nestjs/comm
 import { FastifyRequest as Request } from 'fastify';
 import { ExtractJwt } from 'passport-jwt';
 import { omit } from 'lodash';
-import { userConfigFn } from '@/modules/configs/user.config';
+import { userConfigFn } from '@/modules/configs';
 import { JwtModule } from '@nestjs/jwt';
 import { UserService, TokenService } from '../services';
 
 import { decrypt } from '../helpers';
 import dayjs from 'dayjs';
 import { UserEntity } from '../entities';
+import { SelectQueryBuilder } from 'typeorm';
 
 @Injectable()
 export class AuthService {
@@ -25,7 +26,7 @@ export class AuthService {
      * @returns
      */
     async validateUser(username: string, pass: string): Promise<any> {
-        const user = await this.userService.findOneByCredential(username, async (qb) => {
+        const user = await this.userService.findOneByCredential(username, async (qb: SelectQueryBuilder<UserEntity>) => {
             return qb.addSelect('user.password');
         });
         if (decrypt(pass, user.password)) {

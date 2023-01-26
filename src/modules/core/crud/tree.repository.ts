@@ -9,8 +9,7 @@ import {
     TreeRepositoryUtils,
     SelectQueryBuilder,
 } from 'typeorm';
-import { QueryTreeOptions } from '../types';
-import { getQrderByQuery } from '@/modules/content/helpers';
+import { QueryTreeOptions, getQrderByQuery } from '@/modules/utils';
 
 /**
  * buildBasicQuery -> findRoots，其中支持额外查询与排序 -> findTress

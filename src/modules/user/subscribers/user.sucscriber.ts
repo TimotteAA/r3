@@ -9,6 +9,7 @@ import { UserEntity } from '../entities';
 import { encrypt, generateRandonString } from '../helpers';
 
 import crypto from 'crypto';
+import { isNil } from 'lodash';
 
 @EventSubscriber()
 export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
@@ -45,8 +46,13 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
      * @memberof UserSubscriber
      */
     async beforeUpdate(event: UpdateEvent<UserEntity>) {
-        if (this.isUpdated('password', event)) {
-            event.entity.password = encrypt(event.entity.password);
+        // console.log(event.entity.password)
+        // console.log(event.updatedColumns);
+        // if (this.isUpdated('password', event)) {
+        //     event.entity.password = encrypt(event.entity.password);
+        // }
+        if (!isNil(event.entity.password)) {
+            event.entity.password = encrypt(event.entity.password)
         }
     }
 

@@ -11,7 +11,7 @@ import {
     ValidateIf,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { PaginateOptions } from '@/modules/database/types';
+import { PaginateOptions } from '@/modules/utils';
 import { isNil, toNumber } from 'lodash';
 import { toBoolean } from '@/modules/core/helpers';
 import { OrderField, PostBodyType } from '@/modules/content/constants';
@@ -19,7 +19,7 @@ import { PartialType } from '@nestjs/swagger';
 import { CustomDtoValidation } from '@/modules/core/decorators';
 import { IsExist } from '@/modules/database/constraints';
 import { CategoryEntity } from '../entities';
-import { QueryTrashMode } from '@/modules/core/types';
+import { QueryTrashMode } from '@/modules/utils';
 
 @CustomDtoValidation({ type: 'query' })
 /**

@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 import { Injectable } from '@nestjs/common';
 import { JwtConfig, JwtPayload } from '../types';
 import { JwtService } from '@nestjs/jwt';
-import { userConfigFn } from '@/modules/configs/user.config';
+import { userConfigFn } from '@/modules/configs';
 import { AccessTokenEntity, RefreshTokenEntity, UserEntity } from '../entities';
 import dayjs from 'dayjs';
 import { FastifyReply as Response } from 'fastify';

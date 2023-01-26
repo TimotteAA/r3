@@ -4,7 +4,7 @@ import { PostRepository, CategoryRepository } from '@/modules/content/repository
 import { CategoryService } from './';
 import { OrderField } from '../constants';
 import { isFunction, omit, isNil } from 'lodash';
-import { QueryHook } from '@/modules/database/types';
+import { QueryHook } from '@/modules/utils';
 import { PostEntity } from '../entities';
 // import { paginate } from '@/modules/database/paginate';
 import { CreatePostDto, QueryPostDto, UpdatePostDto } from '../dtos';

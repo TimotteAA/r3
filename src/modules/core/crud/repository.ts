@@ -6,8 +6,7 @@ import {
     QueryRunner,
     SelectQueryBuilder,
 } from 'typeorm';
-import { getQrderByQuery } from '@/modules/content/helpers';
-import { OrderQueryType } from '../types';
+import { OrderQueryType, getQrderByQuery } from '@/modules/utils';
 import { isNil } from 'lodash';
 
 /**

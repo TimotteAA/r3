@@ -1,6 +1,6 @@
-import { PaginateOptions } from '@/modules/database/types';
+import { PaginateOptions } from '@/modules/utils';
 import { Body, Get, Post, Delete, Patch, Param, ParseUUIDPipe, Query } from '@nestjs/common';
-import { QueryListParams, TrashedDto } from '../types';
+import { QueryListParams, TrashedDto } from '@/modules/utils';
 import { DeleteDto, DeleteMultiDto, QueryDetailDto, RestoreMultiDto } from './dtos';
 
 export abstract class BaseController<S, P extends QueryListParams<any> = QueryListParams<any>> {

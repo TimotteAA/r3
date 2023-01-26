@@ -1,6 +1,6 @@
 import { BaseTreeRepository } from '@/modules/core/crud/tree.repository';
 import { CategoryEntity } from '../entities';
-import { OrderType } from '@/modules/core/types';
+import { OrderType } from '@/modules/utils';
 import { CustomRepository } from '@/modules/database/decorators';
 import { SelectQueryBuilder } from 'typeorm';
 

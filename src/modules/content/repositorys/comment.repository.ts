@@ -1,10 +1,9 @@
 import { BaseTreeRepository } from '@/modules/core/crud/tree.repository';
 import { CommentEntity } from '../entities';
 import { CustomRepository } from '@/modules/database/decorators';
-import { QueryTreeOptions } from '@/modules/core/types';
+import { QueryTreeOptions } from '@/modules/utils';
 import { isNil } from 'lodash';
 import { SelectQueryBuilder } from 'typeorm';
-// import { QueryCommentTreeDto } from '../dtos';
 
 @CustomRepository(CommentEntity)
 export class CommentRepository extends BaseTreeRepository<CommentEntity> {
@@ -27,7 +26,7 @@ export class CommentRepository extends BaseTreeRepository<CommentEntity> {
     ): Promise<CommentEntity[]> {
         return super.findTrees({
             ...options,
-            addQuery: (qb) =>
+            addQuery: (qb: SelectQueryBuilder<CommentEntity>) =>
                 isNil(options.post) ? qb : qb.where('post.id = :id', { id: options.post }),
         });
     }

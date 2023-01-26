@@ -3,7 +3,7 @@ import { APP_INTERCEPTOR, APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { ContentModule } from './modules/content/content.module';
 import { CoreModule } from '@/modules/core/core.module';
 import { DatabaseModule } from '@/modules/database/database.module';
-import { configFn } from '@/modules/configs/database.config';
+import { configFn } from '@/modules/configs';
 import { AppInterceptor, AppFilter, AppPipe } from '@/modules/core/providers';
 import { UserModule } from './modules/user/user.module';
 import { ConfigModule } from '@nestjs/config';

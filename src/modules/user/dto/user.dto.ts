@@ -5,7 +5,7 @@ import { IsPassword } from '@/modules/core/constraints';
 import { IsUnique, IsUniqueUpdate } from '@/modules/database/constraints';
 import { UserEntity } from '../entities';
 import { PartialType } from '@nestjs/swagger';
-import { PaginateOptions } from '@/modules/database/types';
+import { PaginateOptions } from '@/modules/utils';
 import { toNumber } from 'lodash';
 import { generateRandonString } from '../helpers';
 

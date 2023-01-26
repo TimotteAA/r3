@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import dayjs from 'dayjs';
-import { userConfigFn } from '../configs/user.config';
+import { userConfigFn } from '../configs';
 import crypto from 'crypto';
 
 // dayjs插件

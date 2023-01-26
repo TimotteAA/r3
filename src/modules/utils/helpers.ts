@@ -1,6 +1,14 @@
+
 import { isNil } from 'lodash';
 import { ObjectLiteral, SelectQueryBuilder } from 'typeorm';
-import { OrderQueryType } from '../core/types';
+import { OrderQueryType } from '@/modules/utils';
+
+
+
+/**
+ * content模块
+ */
+
 
 export function getQrderByQuery<E extends ObjectLiteral>(
     qb: SelectQueryBuilder<E>,
