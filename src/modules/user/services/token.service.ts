@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { v4 as uuid } from 'uuid';
 import { Injectable } from '@nestjs/common';
-import { JwtConfig, JwtPayload } from '../types';
+import { JwtConfig, JwtPayload } from '@/modules/utils';
 import { JwtService } from '@nestjs/jwt';
 import { userConfigFn } from '@/modules/configs';
 import { AccessTokenEntity, RefreshTokenEntity, UserEntity } from '../entities';

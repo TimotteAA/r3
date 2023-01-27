@@ -20,19 +20,28 @@ export class UserEntity extends BaseEntity {
     id!: string;
 
     @Expose()
-    @Column({ comment: '用户昵称' })
+    @Column({ comment: '用户昵称', nullable: true, default: null })
     nickname?: string;
-
-    @Expose()
-    @Column({ comment: '用户邮箱', default: null })
-    email?: string;
 
     @Expose()
     @Column({ comment: '用户名' })
     username!: string;
 
-    @Column({ comment: '用户密码' })
+    @Column({ comment: '用户密码', length: 500 })
     password!: string;
+
+    @Expose({groups: ['user-detail', "user-list"]})
+    @Column({comment: "用户手机", nullable: true, unique: true})
+    phone?: string;
+
+    @Expose({groups: ['user-detail', "user-list"]})
+    @Column({ comment: '用户邮箱', default: null, unique: true })
+    email?: string;
+
+
+    // 下面是管理、软删除等字段
+    @Column({comment: "用户是否激活", default: true})
+    actived?: boolean;
 
     @OneToMany(() => PostEntity, (post: PostEntity) => post.author, {
         cascade: true,
@@ -44,23 +53,23 @@ export class UserEntity extends BaseEntity {
     })
     accessTokens!: AccessTokenEntity[];
 
-    @Expose()
+    @Expose({ groups: ['user-detail', 'user-list'] })
     @Type(() => Date)
     @CreateDateColumn()
-    createtAt!: Date;
+    createdAt!: Date;
 
-    @Expose()
+    @Expose({ groups: ['user-detail', 'user-list'] })
     @Type(() => Date)
     @UpdateDateColumn()
-    updatedtAt!: Date;
+    updatedAt!: Date;
 
-    @Expose()
+    @Expose({ groups: ['user-detail', 'user-list'] })
     @Type(() => Date)
     @DeleteDateColumn({
         comment: '删除时间',
     })
     deletedAt!: Date;
 
-    @Expose()
+    @Expose({ groups: ['user-detail', 'user-list'] })
     trashed!: boolean;
 }

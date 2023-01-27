@@ -1,5 +1,5 @@
 import { toNumber } from 'lodash';
-import { UserConfig } from '@/modules/user/types';
+import { UserConfig } from '@/modules/utils';
 import { env } from '../utils';
 
 export const userConfigFn: () => UserConfig = () => ({

@@ -1,4 +1,4 @@
-import { UpdateUserDto } from './user.dto';
+import { UpdateUserDto } from './user-crud.dto';
 import { OmitType } from '@nestjs/swagger';
 import { CustomDtoValidation } from '@/modules/core/decorators';
 import { Injectable } from '@nestjs/common';

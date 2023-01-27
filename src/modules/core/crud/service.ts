@@ -230,7 +230,7 @@ export abstract class BaseService<
      * @param callback 额外的查询
      * @returns
      */
-    protected async buildListQuery(qb: SelectQueryBuilder<E>, options: P, callback?: QueryHook<E>) {
+    async buildListQuery(qb: SelectQueryBuilder<E>, options: P, callback?: QueryHook<E>) {
         const alias = this.repo.getAlias();
         // 是否查询回收站
         const { trashed } = options;

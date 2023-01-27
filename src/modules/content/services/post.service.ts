@@ -66,7 +66,7 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
      * @param callback
      * @returns
      */
-    protected async buildListQuery(
+    async buildListQuery(
         qb: SelectQueryBuilder<PostEntity>,
         options: FindParams,
         callback?: QueryHook<PostEntity>,

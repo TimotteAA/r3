@@ -7,6 +7,6 @@ export class UserRepository extends BaseRepository<UserEntity> {
     protected alias = 'user';
 
     buildBaseQuery() {
-        return this.createQueryBuilder(this.alias).orderBy(`${this.alias}.createtAt`, 'ASC');
+        return this.createQueryBuilder(this.alias).orderBy(`${this.alias}.createdAt`, 'ASC');
     }
 }

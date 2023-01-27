@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import * as controllerMaps from './controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AccessTokenEntity, RefreshTokenEntity, UserEntity } from './entities';
+import { AccessTokenEntity, RefreshTokenEntity, UserEntity, CodeEntity } from './entities';
 import { UserSubscriber } from './subscribers';
 import { DatabaseModule } from '../database/database.module';
 import { UserRepository } from './repositorys';
@@ -19,7 +19,7 @@ const controllers = Object.values(controllerMaps);
 @Module({
     controllers: [...controllers],
     imports: [
-        TypeOrmModule.forFeature([AccessTokenEntity, RefreshTokenEntity, UserEntity]),
+        TypeOrmModule.forFeature([AccessTokenEntity, RefreshTokenEntity, UserEntity, CodeEntity]),
         DatabaseModule.forRepository([UserRepository]),
         PassportModule,
         AuthService.registerJwtModule(),

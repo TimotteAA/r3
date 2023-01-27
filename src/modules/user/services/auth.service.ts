@@ -29,6 +29,7 @@ export class AuthService {
         const user = await this.userService.findOneByCredential(username, async (qb: SelectQueryBuilder<UserEntity>) => {
             return qb.addSelect('user.password');
         });
+        console.log(user)
         if (decrypt(pass, user.password)) {
             return omit(user, 'password');
         }

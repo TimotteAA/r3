@@ -1,9 +1,9 @@
 import { SelectQueryBuilder, FindTreeOptions , ObjectLiteral} from 'typeorm';
 import { ClassTransformOptions } from '@nestjs/common/interfaces/external/class-transform-options.interface';
 import { CommentEntity } from '@/modules/content/entities';
+import { OrderType, QueryTrashMode } from './constants';
 import { RedisOptions as IoRedisOptions} from "ioredis";
 import { QueueOptions as BullMQOptions } from 'bullmq';
-
 import Email from 'email-templates';
 import { Attachment } from 'nodemailer/lib/mailer';
 
@@ -15,14 +15,7 @@ export type FindCommentTreeOptions = FindTreeOptions & {
     addQuery?: (query: SelectQueryBuilder<CommentEntity>) => SelectQueryBuilder<CommentEntity>;
 };
 
-/**
- * crud相关的类型
- */
 
-export enum OrderType {
-    ASC = 'ASC',
-    DESC = 'DESC',
-}
 /**
  * 排序类型,{字段名称: 排序升序或降序}
  * 如果多个值则传入数组即可
@@ -51,14 +44,6 @@ export interface QueryParams<E extends ObjectLiteral> {
     withTrashed?: boolean;
 }
 
-/**
- * 软删除数据查询类型
- */
-export enum QueryTrashMode {
-    ALL = 'all', // 包含已软删除和未软删除的数据
-    ONLY = 'only', // 只包含软删除的数据
-    NONE = 'none', // 只包含未软删除的数据
-}
 
 /**
  * 列表查询
@@ -180,27 +165,39 @@ export interface PaginateReturn<E extends ObjectLiteral> {
     items: E[];
 }
 
-// redis配置
-export type RedisConfig = IoRedisOptions | IoRedisOptions[]
+/**
+ * 配置单个redis，可以用集群
+ * 直接多个redis实例
+ */
+export type RedisOptions = IoRedisOptions | RedisOption[]
 
 /**
- * Redis连接配置
+ * ioredis链接配置
+ * name不是哨兵节点
+ * 此处用于表示某个redis实例
  */
 export type RedisOption = Omit<IoRedisOptions, 'name'> & { name: string };
 
+
+
 /**
  * BullMQ模块注册配置
+ * name标识bull名称
+ * 单个为default
  */
 export type BullOptions = BullMQOptions | Array<{ name: string } & BullMQOptions>;
 
 /**
  * 队列配置
+ * name表示不同的队列
+ * 单个为default
  */
 export type QueueOptions = QueueOption | Array<{ name: string } & QueueOption>;
 
 /**
  * 单个队列配置
- * 队列建立在哪个redis实力上
+ * 队列建立在哪个redis实例上
+ * connection基于redis配置
  */
 export type QueueOption = Omit<BullMQOptions, 'connection'> & { redis?: string };
 
@@ -230,20 +227,20 @@ export type SmsSdkOptions<T extends NestedRecord = RecordNever> = {
     appid: string;
 } & T
 
-/**
- * 腾讯云sms发生配置
- */
-export interface SmsSendParams {
-    appid?: string;
-    numbers: string[];
-    template: string;
-    sign?: string;
-    endpoint?: string;
-    vars?: Record<string, any>;
-    ExtendCode?: string;
-    SessionContext?: string;
-    SenderId?: string;
-}
+// /**
+//  * 腾讯云sms发生配置
+//  */
+// export interface SmsSendParams {
+//     appid?: string;
+//     numbers: string[];
+//     template: string;
+//     sign?: string;
+//     endpoint?: string;
+//     vars?: Record<string, any>;
+//     ExtendCode?: string;
+//     SessionContext?: string;
+//     SenderId?: string;
+// }
 
 /**
  * SMTP邮件发送配置
@@ -285,4 +282,52 @@ export interface SmtpSendParams {
     subjectPrefix?: string;
     // 附件
     attachments?: Attachment[];
+}
+
+/**
+ * JWT的payload
+ */
+export interface JwtPayload {
+    /**
+     * 用户id
+     */
+    sub: string;
+    /**
+     * 过期时间
+     */
+    iat: number;
+}
+
+/**
+ * 用户模块配置
+ */
+export interface UserConfig {
+    // 加密算法位数，取10就好
+    hash?: number;
+    jwt: JwtConfig;
+}
+
+export interface JwtConfig {
+    // accessToken加密密钥
+    secret: string;
+    token_expired: number;
+    // refreshToken加密密钥
+    refresh_secret: string;
+    refresh_token_expired: number;
+}
+
+/**
+ * 构造器类型
+ */
+export type ClassType<T> = { new (...args: any[]): T };
+export type ClassToPlain<T> = { [key in keyof T]: T[key] };
+
+/**
+ * 核心模块配置
+ */
+export interface CoreModuleOptions {
+    sms?: SmsSdkOptions;
+    redis?: RedisOptions;
+    smtp?: SmtpOptions;
+    queue?: QueueOptions;
 }

@@ -3,9 +3,11 @@ import { UserRepository } from '../repositorys';
 import { BaseService } from '@/modules/core/crud';
 import { Injectable } from '@nestjs/common';
 import { QueryHook } from '@/modules/utils';
-import { isNil, omit } from 'lodash';
-import { EntityNotFoundError } from 'typeorm';
-import { CreateUserDto, UpdateUserDto } from '../dto';
+import { isBoolean, isNil, omit } from 'lodash';
+import { EntityNotFoundError, SelectQueryBuilder } from 'typeorm';
+import { QueryUserDto, CreateUserDto, UpdateUserDto } from '../dto';
+
+type FindParams = Omit<QueryUserDto, "limit" | 'page'>
 
 @Injectable()
 export class UserService extends BaseService<UserEntity, UserRepository> {
@@ -57,5 +59,24 @@ export class UserService extends BaseService<UserEntity, UserRepository> {
         const user = await qb.where(wheres).getOne();
         if (isNil(user)) throw new EntityNotFoundError(UserEntity, 'user not found');
         return user;
+    }
+
+    // 重写buildListQuery
+    async buildListQuery(qb: SelectQueryBuilder<UserEntity>, options: FindParams, callback?: QueryHook<UserEntity>) {
+        const alias = this.repo.getAlias();
+        // 是否查询回收站
+        // const { trashed } = options;
+        const { orderBy, isActive } = options;
+        if (!isNil(orderBy)) {
+            qb = qb.orderBy(`${alias}.${orderBy}`, "ASC")
+        }
+
+        if (!isNil(isActive) && isBoolean(isActive)) {
+            qb = qb.where(`${alias}.actived = :isActive`, { isActive })
+        }
+
+        // 额外查询，比如关联关系？
+        qb = !isNil(callback) ? await callback(qb) : qb;
+        return qb;
     }
 }

@@ -12,7 +12,7 @@ import { GUEST } from '../decorators';
 import { LocalAuthGuard } from '../guards';
 import { AuthService, UserService } from '../services';
 import { User } from '../decorators';
-import { ClassToPlain } from '../types';
+import { ClassToPlain } from '@/modules/utils';
 import { UserEntity } from '../entities';
 import { CredentialDto, UpdateAccountDto } from '../dto';
 
