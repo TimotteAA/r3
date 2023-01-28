@@ -7,6 +7,7 @@ import { userConfigFn } from '@/modules/configs';
 import { AccessTokenEntity, RefreshTokenEntity, UserEntity } from '../entities';
 import dayjs from 'dayjs';
 import { FastifyReply as Response } from 'fastify';
+import { getTime } from '@/modules/utils';
 
 @Injectable()
 export class TokenService {
@@ -27,7 +28,7 @@ export class TokenService {
         const { user, refreshToken } = token;
         if (refreshToken) {
             // 判断refreshToken是否过期
-            const now = dayjs();
+            const now = getTime()
             // 过期了
             if (now.isAfter(refreshToken.expired_at)) return null;
             const token = await this.generateAccessToken(user, now);
@@ -58,7 +59,7 @@ export class TokenService {
         accessToken.expired_at = now.add(this.config.token_expired, 'second').toDate();
         // 保存accessToken
         await accessToken.save();
-        const refreshToken = await this.generateRefreshToken(accessToken, dayjs());
+        const refreshToken = await this.generateRefreshToken(accessToken, getTime());
         return { accessToken, refreshToken };
     }
 

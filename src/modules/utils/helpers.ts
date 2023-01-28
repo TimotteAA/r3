@@ -4,6 +4,7 @@ import { ObjectLiteral, SelectQueryBuilder } from 'typeorm';
 import { OrderQueryType } from '@/modules/utils';
 import deepmerge from 'deepmerge';
 
+
 /**
  * content模块
  */
@@ -60,3 +61,12 @@ export const deepMerge = <T1, T2>(
     }
     return deepmerge(x, y, options) as T2 extends T1 ? T1 : T1 & T2;
 };
+
+
+/**
+ * 生成随机验证码
+ */
+export function generateCatpchaCode() {
+    return Math.random().toFixed(6).slice(-6);
+}
+

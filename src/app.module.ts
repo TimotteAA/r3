@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ContentModule } from './modules/content/content.module';
 import { CoreModule } from '@/modules/core/core.module';
 import { DatabaseModule } from '@/modules/database/database.module';
-import { configFn } from '@/modules/configs';
+import { configFn, smsConfigFn, smtpConfigFn, redisConfigFn, queueConfigFn } from '@/modules/configs';
 import { UserModule } from './modules/user/user.module';
 import { ConfigModule } from '@nestjs/config';
 
@@ -10,7 +10,12 @@ import { ConfigModule } from '@nestjs/config';
     imports: [
         ContentModule,
         UserModule,
-        CoreModule.forRoot({}),
+        CoreModule.forRoot({
+            sms: smsConfigFn(),
+            smtp: smtpConfigFn(),
+            redis: redisConfigFn(),
+            queue: queueConfigFn()
+        }),
         DatabaseModule.forRoot(configFn),
         ConfigModule.forRoot({
             envFilePath: '.env',

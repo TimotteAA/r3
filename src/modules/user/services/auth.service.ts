@@ -5,11 +5,10 @@ import { omit } from 'lodash';
 import { userConfigFn } from '@/modules/configs';
 import { JwtModule } from '@nestjs/jwt';
 import { UserService, TokenService } from '../services';
-
 import { decrypt } from '../helpers';
-import dayjs from 'dayjs';
 import { UserEntity } from '../entities';
 import { SelectQueryBuilder } from 'typeorm';
+import { getTime } from '@/modules/utils';
 
 @Injectable()
 export class AuthService {
@@ -42,7 +41,7 @@ export class AuthService {
      * @returns
      */
     async login(user: UserEntity) {
-        const { accessToken } = await this.tokenService.generateAccessToken(user, dayjs());
+        const { accessToken } = await this.tokenService.generateAccessToken(user, getTime());
         // 返回给前端
         return accessToken.value;
     }
@@ -63,7 +62,7 @@ export class AuthService {
      * @returns
      */
     async createToken(id: string) {
-        const now = dayjs();
+        const now = getTime()
         let user: UserEntity;
         try {
             user = await this.userService.detail(id);

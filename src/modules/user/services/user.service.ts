@@ -52,11 +52,31 @@ export class UserService extends BaseService<UserEntity, UserRepository> {
     async findOneByCondition(condition: Record<string, any>, callback?: QueryHook<UserEntity>) {
         let qb = this.repo.buildBaseQuery();
         qb = callback ? await callback(qb) : qb;
+        console.log(condition);
         // 遍历key与value，拼接where的查询条件
-        const wheres = Object.fromEntries(
-            Object.entries(condition).map(([key, value]) => [`user.${key}`, value]),
-        );
-        const user = await qb.where(wheres).getOne();
+        // const wheres = Object.fromEntries(
+        //     Object.entries(condition).map(([key, value]) => [`user.${key}`, value]),
+        // );
+
+        const keys = Object.keys(condition);
+        if (!isNil(keys) && keys.length) {
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+                if (i === 0) {
+                    qb = qb.where(`${this.repo.getAlias()}.${key} = :key`, {
+                        key: condition[key]
+                    })
+                } else {
+                    qb = qb.andWhere(`${this.repo.getAlias()}.${key} = :key`, {
+                        key: condition[key]
+                    })
+                }
+            }
+        }
+
+        // console.log("wheres", wheres);
+        // const user = await qb.where(wheres).getOne();
+        const user = await qb.getOne();
         if (isNil(user)) throw new EntityNotFoundError(UserEntity, 'user not found');
         return user;
     }

@@ -1,20 +1,26 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import * as controllerMaps from './controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccessTokenEntity, RefreshTokenEntity, UserEntity, CodeEntity } from './entities';
 import { UserSubscriber } from './subscribers';
 import { DatabaseModule } from '../database/database.module';
 import { UserRepository } from './repositorys';
 import { AuthService } from './services';
-import * as strategiesMap from './strategies';
 import { PassportModule } from '@nestjs/passport';
-import * as serviceMaps from './services';
 import { LocalAuthGuard, JwtAuthGuard } from './guards';
+import { SEND_CAPTCHA_QUEUE } from '@/modules/utils';
+
+
+import * as controllerMaps from './controller';
+import * as strategiesMap from './strategies';
+import * as serviceMaps from './services';
+import * as queueMaps from "./queues";
+import { BullModule } from '@nestjs/bullmq';
 
 const services = Object.values(serviceMaps);
 const strategies = Object.values(strategiesMap);
 const controllers = Object.values(controllerMaps);
+const queues = Object.values(queueMaps);
 
 @Module({
     controllers: [...controllers],
@@ -23,6 +29,7 @@ const controllers = Object.values(controllerMaps);
         DatabaseModule.forRepository([UserRepository]),
         PassportModule,
         AuthService.registerJwtModule(),
+        BullModule.registerQueue({name: SEND_CAPTCHA_QUEUE})
     ],
     providers: [
         UserSubscriber,
@@ -34,7 +41,8 @@ const controllers = Object.values(controllerMaps);
             provide: APP_GUARD,
             useClass: JwtAuthGuard,
         },
+        ...queues
     ],
-    exports: [...services],
+    exports: [...services, ...queues],
 })
 export class UserModule {}

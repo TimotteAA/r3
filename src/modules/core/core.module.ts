@@ -43,7 +43,9 @@ export class CoreModule {
                     provide: RedisService,
                     useFactory() {
                         const service = new RedisService(optionsArray);
+                        // 创建redis客户端
                         service.createClients();
+                        // 注入service
                         return service;
                     }
                 });
@@ -51,6 +53,7 @@ export class CoreModule {
 
                 // 在有redis配置的情况下，创建mq
                 if (options.queue) {
+                    // 根据redis属性，放入对应的redis配置项
                     const queue = createQueueOptions(options.queue, optionsArray);
                     if (!isNil(queue)) {
                         if (Array.isArray(queue)) {

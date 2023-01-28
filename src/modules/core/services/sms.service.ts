@@ -6,6 +6,8 @@ import { SendSmsRequest } from 'tencentcloud-sdk-nodejs/tencentcloud/services/sm
 
 const smsClient = tencentcloud.sms.v20210111.Client
 
+// type SendParams = Omit<Partial<SendSmsRequest>, "SmsSdkAppId" | "SignName">
+
 @Injectable()
 export class SmsService {
   constructor(protected options: SmsSdkOptions) {}
@@ -37,6 +39,6 @@ export class SmsService {
   async send(params: SendSmsRequest, options?: SmsSdkOptions) {
     const settings = deepMerge(this.options, options ?? {}) as SmsSdkOptions;
     const client = this.makeClient(settings);
-    return client.SendSms(params)
+    return client.SendSms({...params, SmsSdkAppId: settings.appid, SignName: settings.sign})
   }
 }

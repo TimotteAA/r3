@@ -91,3 +91,18 @@ export enum UserQueryOrder {
   CREAT = 'createdAt',
   UPDATE = "updatedAt"
 }
+
+/**
+ * 发送验证码异步列队名称
+ */
+export const SEND_CAPTCHA_QUEUE = 'send-captcha-queue';
+
+/**
+ * 发送短信验证码任务处理名称
+ */
+export const SMS_CAPTCHA_JOB = 'sms-captcha-job';
+
+/**
+ * 发送邮件验证码任务处理名称
+ */
+export const EMAIL_CAPTCHA_JOB = 'mail-captcha-job';

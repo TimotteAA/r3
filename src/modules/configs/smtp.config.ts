@@ -1,7 +1,7 @@
 import { SmtpOptions, env } from "@/modules/utils"
 import path from 'path';
 
-export const smtp: () => SmtpOptions = () => ({
+export const smtpConfigFn: () => SmtpOptions = () => ({
     host: env('SMTP_HOST', 'localhost'),
     user: env('SMTP_USER', 'test'),
     password: env('SMTP_PASSWORD', ''),

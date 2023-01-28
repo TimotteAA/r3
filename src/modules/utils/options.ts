@@ -28,6 +28,7 @@ export const createQueueOptions = (options: QueueOptions, redis: RedisOption[]):
   if (!Array.isArray(options)) {
     return {
       ...omit(options, "redis"),
+      // 找到指定name的redis配置项
       connection: redis.find(({name}) => name === options.redis ?? "default")
     }
   }

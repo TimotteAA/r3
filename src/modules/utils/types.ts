@@ -1,11 +1,24 @@
 import { SelectQueryBuilder, FindTreeOptions , ObjectLiteral} from 'typeorm';
 import { ClassTransformOptions } from '@nestjs/common/interfaces/external/class-transform-options.interface';
 import { CommentEntity } from '@/modules/content/entities';
-import { OrderType, QueryTrashMode } from './constants';
+import { OrderType, QueryTrashMode, CaptchaType, CaptchaActionType } from './constants';
 import { RedisOptions as IoRedisOptions} from "ioredis";
 import { QueueOptions as BullMQOptions } from 'bullmq';
 import Email from 'email-templates';
 import { Attachment } from 'nodemailer/lib/mailer';
+import dayjs from "dayjs"
+import { CodeEntity } from '../user/entities';
+
+/**
+ * 时间配置
+ */
+export interface TimeOptions {
+    date?: dayjs.ConfigType;
+    format?: dayjs.OptionType;
+    locale?: string;
+    strict?: boolean;
+    zonetime?: string;
+}
 
 /**
  * content module的type
@@ -198,6 +211,7 @@ export type QueueOptions = QueueOption | Array<{ name: string } & QueueOption>;
  * 单个队列配置
  * 队列建立在哪个redis实例上
  * connection基于redis配置
+ * redis属性为redis实例名称
  */
 export type QueueOption = Omit<BullMQOptions, 'connection'> & { redis?: string };
 
@@ -285,6 +299,38 @@ export interface SmtpSendParams {
 }
 
 /**
+ * 邮件、手机验证码通用配置
+ */
+export interface CaptchaOption {
+    limit: number; // 验证码发送间隔
+    age: number; // 验证码有效时间
+}
+  
+/**
+ * 手机验证码选项
+ */
+export interface SmsCaptchaOption extends CaptchaOption {
+    templateId: string; // 云厂商短信推送模板id
+}
+
+/**
+ * 邮箱验证码选项
+ */
+export interface EmailCaptchaOption extends CaptchaOption {
+    subject: string; // 邮件主题
+    template?: string; // 邮件模板路径
+}
+
+/**
+ * queue的worker的job类型
+ */
+export interface SendCaptchaQueueJob {
+    captcha: { [key in keyof CodeEntity]: CodeEntity[key] };
+    option: SmsCaptchaOption | EmailCaptchaOption;
+    otherVars?: Record<string, any>
+}
+
+/**
  * JWT的payload
  */
 export interface JwtPayload {
@@ -298,15 +344,6 @@ export interface JwtPayload {
     iat: number;
 }
 
-/**
- * 用户模块配置
- */
-export interface UserConfig {
-    // 加密算法位数，取10就好
-    hash?: number;
-    jwt: JwtConfig;
-}
-
 export interface JwtConfig {
     // accessToken加密密钥
     secret: string;
@@ -314,6 +351,28 @@ export interface JwtConfig {
     // refreshToken加密密钥
     refresh_secret: string;
     refresh_token_expired: number;
+}
+
+/**
+ * 用户模块配置
+ */
+export interface UserConfig {
+    // 加密算法位数，取10就好
+    hash?: number;
+    jwt: JwtConfig;
+    captcha: CaptchaConfig
+}
+
+/**
+ * 自定义验证码配置
+ */
+export interface CaptchaConfig {
+    [CaptchaType.SMS]?: {
+        [key in CaptchaActionType]?: Partial<SmsCaptchaOption>;
+    };
+    [CaptchaType.EMAIL]?: {
+        [key in CaptchaActionType]?: Partial<EmailCaptchaOption>;
+    };
 }
 
 /**
