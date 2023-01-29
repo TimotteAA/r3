@@ -327,7 +327,7 @@ export interface EmailCaptchaOption extends CaptchaOption {
 export interface SendCaptchaQueueJob {
     captcha: { [key in keyof CodeEntity]: CodeEntity[key] };
     option: SmsCaptchaOption | EmailCaptchaOption;
-    otherVars?: Record<string, any>
+    otherVars?: Record<string, any> & { age: number }
 }
 
 /**

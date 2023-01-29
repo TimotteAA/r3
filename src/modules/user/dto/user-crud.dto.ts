@@ -8,7 +8,7 @@ import { toNumber } from 'lodash';
 import { UserQueryOrder } from '@/modules/utils';
 import { toBoolean } from '@/modules/core/helpers';
 
-@CustomDtoValidation({ type: 'query' })
+@CustomDtoValidation({ type: 'query',forbidUnknownValues: true })
 export class QueryUserDto implements PaginateOptions {
     // 给了默认值可以不传
     @Transform(({ value }) => toNumber(value))

@@ -64,11 +64,13 @@ export class SmtpService {
       const email = new Email(configd);
       const message = {
           ...pick(params, ['from', 'to', 'reply', 'attachments', 'subject']),
-          locals: params.vars,
       };
-      return email.send({
+      const res = await email.send({
           template: tplPath,
           message,
+          locals: params.vars
       });
+      // console.log("res", res)
+      return res;
     }
 }

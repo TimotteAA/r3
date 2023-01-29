@@ -39,6 +39,7 @@ export class SmsService {
   async send(params: SendSmsRequest, options?: SmsSdkOptions) {
     const settings = deepMerge(this.options, options ?? {}) as SmsSdkOptions;
     const client = this.makeClient(settings);
-    return client.SendSms({...params, SmsSdkAppId: settings.appid, SignName: settings.sign})
+    const res = await client.SendSms({...params, SmsSdkAppId: settings.appid, SignName: settings.sign})
+    return res;
   }
 }

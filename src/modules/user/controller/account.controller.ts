@@ -12,9 +12,9 @@ import { GUEST } from '../decorators';
 import { LocalAuthGuard } from '../guards';
 import { AuthService, UserService } from '../services';
 import { User } from '../decorators';
-import { ClassToPlain } from '@/modules/utils';
+import { CaptchaType, ClassToPlain } from '@/modules/utils';
 import { UserEntity } from '../entities';
-import { CredentialDto, UpdateAccountDto } from '../dto';
+import { CredentialDto, PhoneRegisterDto, RegisterDto, EmailRegisterDto, UpdateAccountDto, PhoneLoginDto, EmailLoginDto, PhoneRetrievePasswordDto, EmailRetrievePasswordDto } from '../dto';
 
 /**
  * 账户中心控制器
@@ -46,5 +46,74 @@ export class AccountController {
     @SerializeOptions({ groups: ['user-detail'] })
     async update(@User() user: ClassToPlain<UserEntity>, @Body() data: UpdateAccountDto) {
         return this.userService.update({ id: user.id, ...data });
+    }
+
+    /**
+     * 普通的注册方式
+     * @param data 
+     */
+    @Post("register")
+    @GUEST()
+    async register(@Body() data: RegisterDto) {
+        return this.authService.register(data);
+    }
+
+    @Post("register-sms")
+    @GUEST()
+    async registerSms(@Body() data: PhoneRegisterDto) {
+        return this.authService.registerSms(data);
+    }
+
+    /**
+     * 邮箱注册
+     * @param data 
+     */
+    @Post("register-email")
+    @GUEST()
+    async registerEmail(@Body() data: EmailRegisterDto) {
+        return this.authService.registerEmail(data);
+    }
+
+    /**
+     * 手机验证码登录
+     * @param data 
+     */
+    @Post("login-sms")
+    @GUEST()
+    async loginSms(@Body() data: PhoneLoginDto) {
+        return this.authService.loginSms(data)
+    }
+
+    /**
+     * 邮箱验证码登录
+     */
+    @Post("login-email")
+    @GUEST()
+    async loginEmail(@Body() data: EmailLoginDto) {
+        return this.authService.loginEmail(data);
+    }
+
+
+    /**
+     * 手机验证码重设密码
+     * 其实就是更新密码...
+     * @param */ 
+    @Patch("retrieve-password-sms")
+    @GUEST()
+    async retrievePasswordSms(@Body() data: PhoneRetrievePasswordDto) {
+        const { password, code, phone } = data;
+        return this.authService.retrievePassword(password, code, phone, CaptchaType.SMS)
+    }
+
+    
+    /**
+     * 邮箱验证码重设密码
+     * 其实就是更新密码...
+     * @param */ 
+    @Patch("retrieve-password-email")
+    @GUEST()
+    async retrievePasswordEmail(@Body() data: EmailRetrievePasswordDto) {
+        const { password, code, email } = data;
+        return this.authService.retrievePassword(password, code, email, CaptchaType.EMAIL)
     }
 }

@@ -61,7 +61,7 @@ export class CaptchaWorker {
     } = data;
     const { code, media } = captcha;
     const { templateId } = option as SmsCaptchaOption;
-
+    console.log(data);
     const result = await this.sms.send({
       PhoneNumberSet: [media],
       TemplateId: templateId,
@@ -82,6 +82,10 @@ export class CaptchaWorker {
         option,
     } = data;
     const { template, subject } = option as EmailCaptchaOption;
+    // name是模板名
+    // subject是邮件名
+    // to是发送到的对象
+    // vars是验证码
     return this.smtp.send<SmtpSendParams & { template?: string }>({
         name: action,
         subject,
@@ -92,7 +96,7 @@ export class CaptchaWorker {
     });
   }
 
-  protected generateParamSet(code: string, otherVars: Record<string, any>): string[] {
+  protected generateParamSet(code: string, otherVars: Record<string, any> & { age: number }): string[] {
     const age = otherVars.age;
     return [code, "" + age];
   }

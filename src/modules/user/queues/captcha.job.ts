@@ -11,25 +11,34 @@ import { EmailCaptchaDto, PhoneCaptchaDto, CredentialCaptchaMessageDto } from ".
 import { isNil, toNumber } from "lodash";
 import { userConfigFn } from "@/modules/configs"
 import { instanceToPlain } from "class-transformer";
-import chalk from "chalk";
+// import chalk from "chalk";
 
 /**
  * 公共的发送验证码所需参数
  */
 interface BaseSendParams {
+  // 验证码行为：注册、登录、找回密码..
   action: CaptchaActionType;
+  // 手机验证码或邮箱验证码
   type: CaptchaType;
   // 异常消息
   message?: string;
 }
 
+/**
+ * 发送所需的全部参数
+ * code验证码
+ * message异常消息
+ * type表示手机还是邮箱
+ * action表示验证码目的
+ */
 interface SendParams extends BaseSendParams {
   media: PhoneCaptchaDto | EmailCaptchaDto;
   code?: string;
 }
 
 /**
- * 登陆状态发
+ * 根据用户信息发
  */
 interface UserSendParams extends Omit<BaseSendParams, 'type'> {
   user: UserEntity;
@@ -70,11 +79,12 @@ export class CaptchaJob {
    */
   async sendByMedia(params: TypeSendParams) {
     const { media, message, type, action } = params;
-    console.log(params);
     const key = type === CaptchaType.SMS ? "phone" : "email";
     const condition ={ [key]: (media as any)[key] };
+    console.log("condition", condition);
     // 根据phone: xxx或者email: xxx查询用户是否存在
     const user = await this.userService.findOneByCondition(condition);
+    // console.log("user", user);
     if (isNil(user)) throw new BadRequestException(`user of ${key} with ${condition[key]} does not exist`)
 
     return this.sendByUser({user, action, type, message});
@@ -114,7 +124,7 @@ export class CaptchaJob {
     // 遍历发生列表
     for (const type of types) {
       const key = type === CaptchaType.SMS ? "phone" : "email";
-      // 发送验证码
+      // 存在手机号或邮箱
       if (user[key]) {
         try {
           // email: xxx or phone: xxx
@@ -128,6 +138,7 @@ export class CaptchaJob {
             type,
             code,
           })
+          console.log(12345);
           results[key] = result;
           logs[key] = log;
         } catch (err) {
@@ -144,33 +155,33 @@ export class CaptchaJob {
    */
   async send(params: SendParams) {
     const { action, code, media, message, type } = params;
-    console.log(params);
     let log: any;
     const result = true;
     const captchaCode = code ?? generateCatpchaCode();
     const error = message ?? `send ${type === CaptchaType.SMS ? 'sms' : 'email'} captcha failed`;
-    console.log(chalk.red(1234));
     try {
       // 验证码发送配置
       const config = (this.config.captcha as any)[type][action];
-
+      console.log(this.config.captcha[type]);
+      // console.log(type, action);
+      console.log(config);
       if (isNil(config)) throw new BadRequestException(error);
       // 创建验证码
       // console.log(this.config.captcha);
       const captcha = await this.createCaptcha(media, action, type, config, captchaCode);
-      const expired: number = toNumber((this.config.captcha as any)[type][action]['limit']);
+      const expired: number = toNumber((this.config.captcha as any)[type][action]['age']);
       // console.log(chalk.red(expired));
       // 有效期设定
       // const otherVars = action === CaptchaActionType.LOGIN ? { age: Math.floor(expired / 60) } : {}
       const otherVars = { age: Math.floor(expired / 60) }
       // console.log("otherVars", otherVars);
       const jobName = type === CaptchaType.EMAIL ? EMAIL_CAPTCHA_JOB : SMS_CAPTCHA_JOB;
-      const res = await this.queue.add(jobName, {
+      await this.queue.add(jobName, {
         captcha: instanceToPlain(captcha),
         option: config,
         otherVars,
       })
-      console.log("res", res);
+      // console.log("res", res);
     } catch (err) {
       throw new BadRequestException(err);
     }
