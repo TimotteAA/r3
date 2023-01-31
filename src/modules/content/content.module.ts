@@ -7,11 +7,13 @@ import { PostRepository, CategoryRepository, CommentRepository } from './reposit
 import { PostSubscriber } from './subscribers';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostEntity, CategoryEntity, CommentEntity } from './entities';
+import { UserModule } from '../user/user.module';
 
 @Module({
     imports: [
         DatabaseModule.forRepository([PostRepository, CategoryRepository, CommentRepository]),
         TypeOrmModule.forFeature([PostEntity, CategoryEntity, CommentEntity]),
+        UserModule
     ],
     providers: [PostService, SanitizeService, PostSubscriber, CommentService, CategoryService],
     controllers: [PostController, CommentController, CategoryController],

@@ -1,8 +1,11 @@
-import { Controller, Get, SerializeOptions, Query } from '@nestjs/common';
+import { Controller, Get, SerializeOptions, Query, Post, Body } from '@nestjs/common';
 import { CommentService } from '../services';
 import { QueryCommentDto, QueryCommentTreeDto, CreateCommentDto } from '../dtos';
 import { BaseController } from '@/modules/core/crud';
 import { Crud } from '@/modules/core/decorators';
+import { User } from '@/modules/user/decorators';
+import { ClassToPlain } from '@/modules/utils';
+import { UserEntity } from '@/modules/user/entities';
 
 @Controller('comments')
 @Crud({
@@ -41,5 +44,10 @@ export class CommentController extends BaseController<CommentService> {
         options: QueryCommentTreeDto,
     ) {
         return this.commentService.findTrees(options);
+    }
+
+    @Post()
+    async create(@Body() data: CreateCommentDto, @User() user: ClassToPlain<UserEntity>) {
+        return this.commentService.create(data, user.id)
     }
 }

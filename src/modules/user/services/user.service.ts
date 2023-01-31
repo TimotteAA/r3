@@ -1,12 +1,13 @@
 import { UserEntity } from '../entities';
 import { UserRepository } from '../repositorys';
 import { BaseService } from '@/modules/core/crud';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { QueryHook } from '@/modules/utils';
 import { isBoolean, isNil, omit } from 'lodash';
 import { EntityNotFoundError, SelectQueryBuilder } from 'typeorm';
 import { QueryUserDto, CreateUserDto, UpdateUserDto } from '../dto';
-
+import { decrypt } from "../helpers";
+ 
 type FindParams = Omit<QueryUserDto, "limit" | 'page'>
 
 @Injectable()
@@ -46,13 +47,16 @@ export class UserService extends BaseService<UserEntity, UserRepository> {
             .orWhere(`${this.repo.getAlias()}.email = :credential`, {
                 credential,
             })
+            .orWhere(`${this.repo.getAlias()}.phone = :credential`, {
+                credential,
+            })
             .getOne();
     }
 
     async findOneByCondition(condition: Record<string, any>, callback?: QueryHook<UserEntity>) {
         let qb = this.repo.buildBaseQuery();
         qb = callback ? await callback(qb) : qb;
-        console.log(condition);
+        // console.log(condition);
         // 遍历key与value，拼接where的查询条件
         // const wheres = Object.fromEntries(
         //     Object.entries(condition).map(([key, value]) => [`user.${key}`, value]),
@@ -81,8 +85,31 @@ export class UserService extends BaseService<UserEntity, UserRepository> {
         return user;
     }
 
-    // 重写buildListQuery
-    async buildListQuery(qb: SelectQueryBuilder<UserEntity>, options: FindParams, callback?: QueryHook<UserEntity>) {
+    /**
+     * 更新用户密码
+     * @param id 
+     * @param oldPassword 
+     * @param newPassword 
+     */
+    async updatePassword(id: string, oldPassword: string, newPassword: string) {
+        const user = await this.findOneByCondition({id})
+        if (!decrypt(oldPassword, user.password)) {
+            throw new BadRequestException(UserEntity, "旧密码输入错误");
+        }
+        // 更新密码
+        user.password = newPassword;
+        await user.save();
+        return this.detail(user.id);
+    }
+
+
+    /**
+     * 用于分页查询
+     * @param qb 
+     * @param options 
+     * @param callback 
+     */
+    protected async buildListQuery(qb: SelectQueryBuilder<UserEntity>, options: FindParams, callback?: QueryHook<UserEntity>) {
         const alias = this.repo.getAlias();
         // 是否查询回收站
         // const { trashed } = options;

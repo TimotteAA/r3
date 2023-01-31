@@ -7,10 +7,11 @@ import { CommentEntity } from '../entities';
 import { isNil } from 'lodash';
 import { SelectQueryBuilder } from 'typeorm';
 import { BaseService } from '@/modules/core/crud';
+import { UserService } from '@/modules/user/services';
 
 @Injectable()
 export class CommentService extends BaseService<CommentEntity, CommentRepository> {
-    constructor(protected repo: CommentRepository, private postRepo: PostRepository) {
+    constructor(protected repo: CommentRepository, private postRepo: PostRepository, private userService: UserService) {
         super(repo);
     }
 
@@ -60,7 +61,7 @@ export class CommentService extends BaseService<CommentEntity, CommentRepository
         return this.repo.findOneOrFail({ where: { id } });
     }
 
-    async create(data: CreateCommentDto) {
+    async create(data: CreateCommentDto, author: string) {
         const parent = await this.getParent(undefined, data.parent);
         // 父评论存在的情况下，文章id是否一致
         if (!isNil(parent) && parent.post.id !== data.post) {
@@ -70,6 +71,7 @@ export class CommentService extends BaseService<CommentEntity, CommentRepository
             ...data,
             parent: await this.getParent(undefined, data.parent),
             post: await this.getPost(data.post),
+            author: await this.userService.findOneByCondition({id: author})
         });
         return item;
     }

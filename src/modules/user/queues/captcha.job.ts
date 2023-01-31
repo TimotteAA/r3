@@ -81,7 +81,7 @@ export class CaptchaJob {
     const { media, message, type, action } = params;
     const key = type === CaptchaType.SMS ? "phone" : "email";
     const condition ={ [key]: (media as any)[key] };
-    console.log("condition", condition);
+    // console.log("condition", condition);
     // 根据phone: xxx或者email: xxx查询用户是否存在
     const user = await this.userService.findOneByCondition(condition);
     // console.log("user", user);
@@ -150,7 +150,7 @@ export class CaptchaJob {
   }
   
   /**
-   * 直接发送短信
+   * 直接发送短信，比如注册、直接登陆
    * @param params 
    */
   async send(params: SendParams) {

@@ -14,7 +14,7 @@ import { AuthService, UserService } from '../services';
 import { User } from '../decorators';
 import { CaptchaType, ClassToPlain } from '@/modules/utils';
 import { UserEntity } from '../entities';
-import { CredentialDto, PhoneRegisterDto, RegisterDto, EmailRegisterDto, UpdateAccountDto, PhoneLoginDto, EmailLoginDto, PhoneRetrievePasswordDto, EmailRetrievePasswordDto } from '../dto';
+import { CredentialDto, PhoneRegisterDto, RegisterDto, EmailRegisterDto, UpdateAccountDto, PhoneLoginDto, EmailLoginDto, PhoneRetrievePasswordDto, EmailRetrievePasswordDto, UpdatePasswordDto, BoundPhoneDto, BoundEmailDto } from '../dto';
 
 /**
  * 账户中心控制器
@@ -31,21 +31,46 @@ export class AccountController {
         return { token: await this.authService.createToken(user.id) };
     }
 
+    /**
+     * 推出登录
+     * @param req 
+     */
     @Post('logout')
     async logout(@Request() req: any) {
         return this.authService.logout(req);
     }
 
+    /**
+     * 查看详情
+     * @param user 
+     */
     @Get('profile')
     @SerializeOptions({ groups: ['user-detail'] })
     async profile(@User() user: ClassToPlain<UserEntity>) {
+        console.log(user);
         return this.userService.detail(user.id);
     }
 
+    /**
+     * 更新用户
+     * @param user 
+     * @param data 
+     */
     @Patch()
     @SerializeOptions({ groups: ['user-detail'] })
     async update(@User() user: ClassToPlain<UserEntity>, @Body() data: UpdateAccountDto) {
         return this.userService.update({ id: user.id, ...data });
+    }
+
+    /**
+     * 更新账户密码
+     * @param user 
+     * @param data 
+     */
+    @Patch("reset-password")
+    @SerializeOptions({groups: ['user-detail']})
+    async updatePassword(@User() user: ClassToPlain<UserEntity>, @Body() data: UpdatePasswordDto) {
+        return this.userService.updatePassword(user.id, data.oldPassword, data.password)
     }
 
     /**
@@ -115,5 +140,25 @@ export class AccountController {
     async retrievePasswordEmail(@Body() data: EmailRetrievePasswordDto) {
         const { password, code, email } = data;
         return this.authService.retrievePassword(password, code, email, CaptchaType.EMAIL)
+    }
+
+    /**
+     * 登录状态下绑定手机
+     * @param user 
+     * @param data 
+     */
+    @Patch("bound-phone")
+    async boundPhone(@User() user: ClassToPlain<UserEntity>, @Body() data: BoundPhoneDto) {
+        return this.authService.bound(user, data, CaptchaType.SMS);
+    }
+
+    /**
+     * 登录状态下绑定邮箱
+     * @param user 
+     * @param data 
+     */
+    @Patch("bound-email")
+    async boundEmail(@User() user: ClassToPlain<UserEntity>, @Body() data: BoundEmailDto) {
+        return this.authService.bound(user, data, CaptchaType.EMAIL);
     }
 }

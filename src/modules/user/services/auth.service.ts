@@ -9,9 +9,9 @@ import { decrypt, encrypt } from '../helpers';
 import { CodeEntity, UserEntity } from '../entities';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { getTime } from '@/modules/utils';
-import { PhoneRegisterDto, RegisterDto, EmailRegisterDto, PhoneLoginDto, EmailLoginDto } from "../dto";
+import { PhoneRegisterDto, RegisterDto, EmailRegisterDto, PhoneLoginDto, EmailLoginDto, BoundPhoneDto , BoundEmailDto } from "../dto";
 import { InjectRepository } from '@nestjs/typeorm';
-import { CaptchaType } from "@/modules/utils"
+import { CaptchaType, ClassToPlain } from "@/modules/utils"
 
 @Injectable()
 export class AuthService {
@@ -27,10 +27,12 @@ export class AuthService {
      * @param pass
      * @returns
      */
-    async validateUser(username: string, pass: string): Promise<any> {
-        const user = await this.userService.findOneByCredential(username, async (qb: SelectQueryBuilder<UserEntity>) => {
+    async validateUser(credential: string, pass: string): Promise<any> {
+        // console.log(credential)
+        const user = await this.userService.findOneByCredential(credential, async (qb: SelectQueryBuilder<UserEntity>) => {
             return qb.addSelect('user.password');
         });
+        // console.log(user);
         if (decrypt(pass, user.password)) {
             return omit(user, 'password');
         }
@@ -57,6 +59,32 @@ export class AuthService {
             msg: '退出成功',
         };
     }
+
+    /**
+     * 登录状态下绑定用户手机、密码
+     */
+    async bound(user: ClassToPlain<UserEntity>, data: BoundPhoneDto | BoundEmailDto, type: CaptchaType) {
+        if (type === CaptchaType.EMAIL) {
+            // 绑定邮箱
+            const requestData = data as BoundEmailDto;
+            const isValid = this.checkIsCaptchaValid(data.code, CaptchaType.EMAIL, requestData.email);
+            if (!isValid) throw new BadRequestException("验证码已过期");
+            const userDb = await this.userService.findOneByCondition({id: user.id});
+            userDb.email = requestData.email;
+            await userDb.save();
+            return this.userService.detail(userDb.id);
+        } else {
+            // 绑定手机
+            const requestData = data as BoundPhoneDto;
+            const isValid = this.checkIsCaptchaValid(data.code, CaptchaType.SMS, requestData.phone);
+            if (!isValid) throw new BadRequestException("验证码已过期");
+            const userDb = await this.userService.findOneByCondition({id: user.id});
+            userDb.phone = requestData.phone;
+            await userDb.save();
+            return this.userService.detail(userDb.id);
+        }
+    }
+    
 
     /**
      * 普通的注册

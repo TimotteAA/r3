@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { PostEntity } from './post.entity';
+import { UserEntity } from '@/modules/user/entities';
 
 /**
  * 评论不用展平
@@ -58,4 +59,12 @@ export class CommentEntity extends BaseEntity {
     })
     // post
     post!: PostEntity;
+
+    // 评论作者
+    @Expose()
+    @ManyToOne(() => UserEntity, (author) => author.comments, {
+        onDelete: "CASCADE",
+        nullable: false
+    })
+    author!: UserEntity;
 }

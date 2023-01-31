@@ -9,6 +9,7 @@ import { PostEntity } from '../entities';
 // import { paginate } from '@/modules/database/paginate';
 import { CreatePostDto, QueryPostDto, UpdatePostDto } from '../dtos';
 import { BaseService } from '@/modules/core/crud';
+import { UserService } from '@/modules/user/services';
 
 // 文章查询接口
 type FindParams = {
@@ -21,11 +22,12 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
         protected repo: PostRepository,
         private categoryRepository: CategoryRepository,
         private categoryService: CategoryService,
+        private userService: UserService
     ) {
         super(repo);
     }
 
-    async create(data: CreatePostDto) {
+    async create(data: CreatePostDto, author: string) {
         const post = await this.repo.save({
             ...data,
             categories:
@@ -34,6 +36,7 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
                 data.categories.length > 0
                     ? await this.categoryRepository.findBy({ id: In(data.categories) })
                     : [],
+            author: await this.userService.findOneByCondition({id: author})
         });
         return post;
     }
@@ -66,7 +69,7 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
      * @param callback
      * @returns
      */
-    async buildListQuery(
+    protected async buildListQuery(
         qb: SelectQueryBuilder<PostEntity>,
         options: FindParams,
         callback?: QueryHook<PostEntity>,

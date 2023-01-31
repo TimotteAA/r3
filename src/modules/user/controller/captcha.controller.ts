@@ -113,15 +113,23 @@ export class CaptchaController {
       return result;
     }
 
+    /**
+     * 用户登录状态下，绑定邮箱
+     * @param data 
+     */
     @Post("bound-email")
     async boundEmail(@Body() data: BoundEmailCaptchaDto) {
-      const { result } = await this.captchaJob.sendByMedia({media: data, action: CaptchaActionType.BOUND, message: "绑定邮箱失败", type: CaptchaType.EMAIL});
+      const { result } = await this.captchaJob.send({media: data, action: CaptchaActionType.BOUND, message: "绑定邮箱失败", type: CaptchaType.EMAIL});
       return result;
     }
 
+    /**
+     * 用户登录状态下，绑定手机
+     * @param data 
+     */
     @Post("bound-sms")
     async boundSms(@Body() data: BoundPhoneCaptchaDto) {
-      const { result } = await this.captchaJob.sendByMedia({media: data, action: CaptchaActionType.BOUND, message: "绑定手机失败", type: CaptchaType.SMS});
+      const { result } = await this.captchaJob.send({media: data, action: CaptchaActionType.BOUND, message: "绑定手机失败", type: CaptchaType.SMS});
       return result;
     }
 }

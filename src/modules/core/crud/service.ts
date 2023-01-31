@@ -41,14 +41,14 @@ export abstract class BaseService<
     /**
      * update方法服务类自己实现
      */
-    create(data: any): Promise<E> {
+    create(...data: any[]): Promise<E> {
         throw new ForbiddenException(`Can not to update ${this.repo.getAlias()}!`);
     }
 
     /**
      * update方法服务类自己实现
      */
-    update(data: any): Promise<E> {
+    update(...data: any[]): Promise<E> {
         throw new ForbiddenException(`Can not to update ${this.repo.getAlias()}!`);
     }
 
@@ -230,7 +230,7 @@ export abstract class BaseService<
      * @param callback 额外的查询
      * @returns
      */
-    async buildListQuery(qb: SelectQueryBuilder<E>, options: P, callback?: QueryHook<E>) {
+    protected async buildListQuery(qb: SelectQueryBuilder<E>, options: P, callback?: QueryHook<E>) {
         const alias = this.repo.getAlias();
         // 是否查询回收站
         const { trashed } = options;
