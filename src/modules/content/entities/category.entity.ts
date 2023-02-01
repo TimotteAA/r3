@@ -46,6 +46,13 @@ export class CategoryEntity extends BaseEntity {
     @ManyToMany(() => PostEntity, (post) => post.categories)
     posts!: PostEntity[];
 
+    // typeorm软删除字段
+    @Expose()   
+    @Type(() => Date)
     @DeleteDateColumn()
-    deletetAt!: Date;
+    deletedAt!: Date;
+
+    // // 虚拟字段，有几篇文章用了这个标签
+    // @Expose()
+    // postsCount: number;
 }

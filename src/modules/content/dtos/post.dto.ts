@@ -11,7 +11,7 @@ import {
     ValidateIf,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { PaginateOptions } from '@/modules/utils';
+import { PaginateOptions, QueryTrashMode } from '@/modules/utils';
 import { isNil, toNumber } from 'lodash';
 import { toBoolean } from '@/modules/core/helpers';
 import { OrderField, PostBodyType } from '@/modules/content/constants';
@@ -19,13 +19,13 @@ import { PartialType } from '@nestjs/swagger';
 import { CustomDtoValidation } from '@/modules/core/decorators';
 import { IsExist } from '@/modules/database/constraints';
 import { CategoryEntity } from '../entities';
-import { QueryTrashMode } from '@/modules/utils';
+import { TrashedDto } from '@/modules/utils';
 
 @CustomDtoValidation({ type: 'query' })
 /**
  * 分页查询dto
  */
-export class QueryPostDto implements PaginateOptions {
+export class QueryPostDto implements PaginateOptions, TrashedDto {
     @Transform(({ value }) => toBoolean(value))
     @IsBoolean()
     @IsOptional()
@@ -69,7 +69,7 @@ export class QueryPostDto implements PaginateOptions {
 
     @IsEnum(QueryTrashMode)
     @IsOptional()
-    trashed?: QueryTrashMode;
+    trashed?: QueryTrashMode
 }
 
 @CustomDtoValidation({ groups: ['create'] })

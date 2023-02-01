@@ -15,6 +15,14 @@ export class CategoryRepository extends BaseTreeRepository<CategoryEntity> {
     };
 
     buildBaseQuery(qb: SelectQueryBuilder<CategoryEntity>): SelectQueryBuilder<CategoryEntity> {
-        return qb.leftJoinAndSelect(`${this.alias}.parent`, 'parent');
+        return qb.leftJoinAndSelect(`${this.alias}.parent`, 'parent')
+        // .addSelect((subQuery) => {
+        //     return subQuery
+        //         .select('COUNT(c.id)', 'count')
+        //         .from(CategoryEntity, 'c')
+        //         .leftJoinAndSelect("category.posts", "posts")
+        //         .where('c.post.id = post.id');
+        // }, 'commentCount')
+        // .loadRelationCountAndMap('post.commentCount', 'post.comments');
     }
 }

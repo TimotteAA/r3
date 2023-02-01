@@ -9,6 +9,7 @@ import {
     JoinTable,
     OneToMany,
     ManyToOne,
+    DeleteDateColumn
 } from 'typeorm';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { PostBodyType } from '@/modules/content/constants';
@@ -80,6 +81,7 @@ export class PostEntity extends BaseEntity {
     })
     comments!: CommentEntity[];
 
+    // 多对多关系的虚拟字段
     @Expose()
     commentCount!: number;
 
@@ -90,4 +92,10 @@ export class PostEntity extends BaseEntity {
     })
     @Expose()
     author!: UserEntity;
+
+    // typeorm软删除字段
+    @Expose()   
+    @Type(() => Date)
+    @DeleteDateColumn()
+    deletedAt!: Date;
 }

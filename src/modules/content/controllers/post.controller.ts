@@ -21,6 +21,9 @@ import { UserEntity } from '@/modules/user/entities';
         'update',
         'create',
         'delete',
+        "deleteMulti",
+        "restore",
+        "restoreMulti"
     ],
     dtos: {
         query: QueryPostDto,
@@ -34,7 +37,7 @@ export class PostController extends BaseController<PostService> {
         super(service);
     }
 
-    // 重写create方法
+    // 重写create方法，传入用户id
     @Post()
     async create(@Body() data: CreatePostDto, @User() user: ClassToPlain<UserEntity>) {
         return this.service.create(data, user.id)

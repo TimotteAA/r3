@@ -4,7 +4,7 @@ import { PostRepository, CategoryRepository } from '@/modules/content/repository
 import { CategoryService } from './';
 import { OrderField } from '../constants';
 import { isFunction, omit, isNil } from 'lodash';
-import { QueryHook } from '@/modules/utils';
+import { QueryHook, QueryTrashMode } from '@/modules/utils';
 import { PostEntity } from '../entities';
 // import { paginate } from '@/modules/database/paginate';
 import { CreatePostDto, QueryPostDto, UpdatePostDto } from '../dtos';
@@ -74,7 +74,7 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
         options: FindParams,
         callback?: QueryHook<PostEntity>,
     ) {
-        const { customOrder, isPublished, category, title } = options;
+        const { customOrder, isPublished, category, title, trashed } = options;
 
         if (typeof isPublished === 'boolean') {
             qb = isPublished
@@ -90,6 +90,18 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
                 title: Like(`%${title}%`),
             });
         }
+
+        if (trashed === QueryTrashMode.ALL || trashed === QueryTrashMode.ONLY) {
+            // 查询软删除数据
+            qb = qb.withDeleted();
+            if (trashed === QueryTrashMode.ONLY) {
+                // 仅查询deletedAt不为null的
+                qb = qb.where({
+                    deletedAt: Not(IsNull())
+                })
+            }
+        }
+
         // 处理排序
         qb = this.orderPost(qb, customOrder);
         // 列表额外的查询

@@ -68,6 +68,11 @@ export class BaseTreeRepository<E extends ObjectLiteral> extends TreeRepository<
         // 是否有额外查询
         qb = !isNil(addQuery) ? addQuery(qb) : qb;
 
+        // 软查询？
+        if (withTrashed) {
+            qb = qb.withDeleted();
+        }
+
         // 是否排序
         qb = !isNil(orderBy) ? getQrderByQuery(qb, this.alias, orderBy || this.orderBy) : qb;
 
@@ -90,12 +95,13 @@ export class BaseTreeRepository<E extends ObjectLiteral> extends TreeRepository<
      * @returns
      */
     createDtsQueryBuilder(closureTableAlias: string, entity: E, options: QueryTreeOptions<E> = {}) {
-        const { addQuery, orderBy } = options;
+        const { addQuery, orderBy, withTrashed } = options;
         let qb = this.buildBaseQuery(
             super.createDescendantsQueryBuilder(this.alias, closureTableAlias, entity),
         );
         qb = !isNil(addQuery) ? addQuery(qb) : qb;
         qb = !isNil(orderBy) ? getQrderByQuery(qb, this.alias, orderBy) : qb;
+        qb = withTrashed ? qb.withDeleted() : qb;
         return qb;
     }
 
@@ -108,12 +114,13 @@ export class BaseTreeRepository<E extends ObjectLiteral> extends TreeRepository<
      * @returns
      */
     createAtsQueryBuilder(closureTableAlias: string, entity: E, options: QueryTreeOptions<E> = {}) {
-        const { addQuery, orderBy } = options;
+        const { addQuery, orderBy, withTrashed } = options;
         let qb = this.buildBaseQuery(
             super.createAncestorsQueryBuilder(this.alias, closureTableAlias, entity),
         );
         qb = !isNil(addQuery) ? addQuery(qb) : qb;
         qb = !isNil(orderBy) ? getQrderByQuery(qb, this.alias, orderBy) : qb;
+        qb = withTrashed ? qb.withDeleted() : qb;
         return qb;
     }
 

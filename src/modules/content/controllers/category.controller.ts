@@ -1,6 +1,6 @@
-import { Controller, Get, SerializeOptions } from '@nestjs/common';
+import { Controller, Get, Query, SerializeOptions } from '@nestjs/common';
 import { CategoryService } from '../services';
-import { QueryCategoryDto, CreateCategoryDto, UpdateCategoryDto } from '../dtos';
+import { QueryCategoryDto, CreateCategoryDto, UpdateCategoryDto, QueryCategoryTreeDto } from '../dtos';
 import { BaseController } from '@/modules/core/crud';
 import { Crud } from '@/modules/core/decorators';
 
@@ -19,6 +19,9 @@ import { Crud } from '@/modules/core/decorators';
             name: 'detail',
             options: { allowGuest: true },
         },
+        "deleteMulti",
+        "restore",
+        "restoreMulti"
     ],
     dtos: {
         create: CreateCategoryDto,
@@ -37,7 +40,7 @@ export class CategoryController extends BaseController<CategoryService> {
      */
     @SerializeOptions({ groups: ['category-tree'] })
     @Get('tree')
-    async tree() {
-        return this.categoryService.findTrees();
+    async tree(@Query() options: QueryCategoryTreeDto) {
+        return this.categoryService.findTrees(options);
     }
 }

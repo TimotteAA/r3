@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { EntityNotFoundError } from 'typeorm';
-import { CreateCategoryDto, UpdateCategoryDto } from '../dtos';
+import { CreateCategoryDto, QueryCategoryTreeDto, UpdateCategoryDto } from '../dtos';
 import { CategoryRepository } from '../repositorys';
 // import { treePaginate } from '@/modules/database/paginate';
 import { CategoryEntity } from '../entities';
 import { isNil, omit } from 'lodash';
 import { BaseService } from '@/modules/core/crud';
+import { QueryTrashMode } from '@/modules/utils';
 
 @Injectable()
 export class CategoryService extends BaseService<CategoryEntity, CategoryRepository> {
@@ -17,8 +18,11 @@ export class CategoryService extends BaseService<CategoryEntity, CategoryReposit
      * 返回分类树
      * @returns 分类树
      */
-    async findTrees() {
-        const res = await this.repo.findTrees();
+    async findTrees(options: QueryCategoryTreeDto) {
+        console.log(options);
+        const res = await this.repo.findTrees({
+            withTrashed: options.trashed === QueryTrashMode.ALL || options.trashed === QueryTrashMode.ONLY,
+        });
         return res;
     }
 

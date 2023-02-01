@@ -26,7 +26,7 @@ export abstract class BaseService<
     /**
      * 是否开启软删除功能
      */
-    protected enable_trash = false;
+    protected enable_trash = true;
 
     constructor(repo: R) {
         this.repo = repo;
@@ -88,6 +88,7 @@ export abstract class BaseService<
         const trashed = params.trashed ?? QueryTrashMode.NONE;
         if (this.repo instanceof BaseTreeRepository) {
             // 树形数据
+            // 下面是仅针对树形数据的软删除
             let addQuery: QueryParams<E>['addQuery'];
             if (trashed === QueryTrashMode.ONLY) {
                 // 仅查询回收站数据
@@ -134,13 +135,14 @@ export abstract class BaseService<
      * @returns
      */
     async delete(id: string, trashed?: boolean) {
+        // 删除前进行查找
         const item = await this.repo.findOneOrFail({
             where: { id } as any,
             withDeleted: this.enable_trash ? true : false,
         });
         // 软删除
         if (this.enable_trash && trashed && isNil((item as any).deletetAt)) {
-            await this.repo.softRemove(item);
+            return this.repo.softRemove(item);
         }
         return this.repo.remove(item);
     }
@@ -187,13 +189,14 @@ export abstract class BaseService<
                 `Can not to restore ${this.repo.getAlias()}, because trash not enabled!`,
             );
         }
+        // 恢复前查找
         const item = await this.repo.findOneOrFail({
             where: {
                 id,
             } as any,
             withDeleted: true,
         });
-        // deletedAt有值表示确实是软删除
+        // deletedAt有值表示确实是软删除，防止误传
         if ((item as any).deletedAt) {
             await this.repo.restore(item.id);
         }
@@ -235,9 +238,10 @@ export abstract class BaseService<
         // 是否查询回收站
         const { trashed } = options;
         if (trashed === QueryTrashMode.ALL || trashed === QueryTrashMode.ONLY) {
-            // 查询回收站数据
+            // 查询软删除数据
             qb.withDeleted();
             if (trashed === QueryTrashMode.ONLY) {
+                // 仅查询软删除数据
                 qb.where(`${alias}.deletedAt = :deleted`, { deleted: Not(IsNull()) });
             }
         }

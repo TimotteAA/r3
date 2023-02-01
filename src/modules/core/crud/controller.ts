@@ -35,6 +35,12 @@ export abstract class BaseController<S, P extends QueryListParams<any> = QueryLi
         return (this.service as any).delete(id, options.trashed);
     }
 
+    /**
+     * 批量删除
+     * @param options 
+     * @param param1 
+     * @param args 
+     */
     @Delete()
     async deleteMulti(
         @Query()
