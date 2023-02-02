@@ -1,15 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Not, SelectQueryBuilder, IsNull, In, Like } from 'typeorm';
 import { PostRepository, CategoryRepository } from '@/modules/content/repositorys';
-import { CategoryService } from './';
+import { CategoryService, ElasticSearchService } from './';
 import { OrderField } from '../constants';
 import { isFunction, omit, isNil } from 'lodash';
-import { QueryHook, QueryTrashMode } from '@/modules/utils';
+import { PaginateOptions, PaginateReturn, QueryHook, QueryTrashMode } from '@/modules/utils';
 import { PostEntity } from '../entities';
 // import { paginate } from '@/modules/database/paginate';
 import { CreatePostDto, QueryPostDto, UpdatePostDto } from '../dtos';
 import { BaseService } from '@/modules/core/crud';
 import { UserService } from '@/modules/user/services';
+import { SearchType } from '../types';
+import { paginate, treePaginate } from '@/modules/database/paginate'; 
 
 // 文章查询接口
 type FindParams = {
@@ -22,9 +24,31 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
         protected repo: PostRepository,
         private categoryRepository: CategoryRepository,
         private categoryService: CategoryService,
-        private userService: UserService
+        private userService: UserService,
+        private searchService?: ElasticSearchService,
+        protected searchType: SearchType = "like"
     ) {
         super(repo);
+    }
+
+    async paginate(options: PaginateOptions & FindParams, callback?: QueryHook<PostEntity>): Promise<PaginateReturn<PostEntity>> {
+        // 是否用elastic进行搜素
+        if (!isNil(this.searchService) && !isNil(options.search) && this.searchType === "elastic") {
+            const res = await this.searchService.search(options.search);
+            const ids = res.map(item => item.id);
+            // 查找所有的id
+            const posts = ids.length > 0 ? await this.repo.find({ where: {id: In(ids)} }) : [];
+            // 手动分页
+            return treePaginate({
+                page: options.page,
+                limit: options.limit,
+            }, posts)
+        }
+
+        // 普通的分页搜索
+        const queryOptions = options ?? {};
+        const qb = (await this.list(queryOptions, callback)) as SelectQueryBuilder<PostEntity>;
+        return paginate(qb, options);
     }
 
     async create(data: CreatePostDto, author: string) {
@@ -38,6 +62,16 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
                     : [],
             author: await this.userService.findOneByCondition({id: author})
         });
+
+        // 放到es中
+        if (!isNil(this.searchService)) {
+            try {
+                await this.searchService.create(post);
+            } catch (err) {
+                throw new InternalServerErrorException()
+            }
+        }
+
         return post;
     }
 
@@ -50,7 +84,6 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
         // post
         await this.repo.update(data.id, omit(data, ['id', 'categories']));
         const post = await this.detail(data.id);
-
         if (Array.isArray(data.categories)) {
             // 更新文章所属分类
             await this.repo
@@ -59,7 +92,43 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
                 .of(post)
                 .addAndRemove(data.categories, post.categories ?? []);
         }
+
+        // 更新es中的结果
+        if (!isNil(this.searchService)) {
+            try {
+                await this.searchService.update(post);
+            } catch (err) {
+                throw new InternalServerErrorException(err)
+            }
+        }
+
         return this.detail(data.id);
+    }
+
+    async delete(id: string, trashed?: boolean): Promise<PostEntity> {
+        // 删除es中的结果
+        if (!isNil(this.searchService)) {
+            try {
+                await this.searchService.delete(id);
+            } catch (err) {
+                throw new InternalServerErrorException(err)
+            }
+        }
+        const post = await super.delete(id, trashed);
+
+        return post;
+    }
+
+    async restore(id: string, callback?: QueryHook<PostEntity>): Promise<PostEntity> {
+        const post = await super.restore(id, callback);
+        if (!isNil(this.searchService)) {
+            try {
+                await this.searchService.create(post);
+            } catch (err) {
+                throw new InternalServerErrorException(err)
+            }
+        }
+        return post;
     }
 
     /**
@@ -74,21 +143,39 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
         options: FindParams,
         callback?: QueryHook<PostEntity>,
     ) {
-        const { customOrder, isPublished, category, title, trashed } = options;
+        const { customOrder, isPublished, category, search, trashed } = options;
 
         if (typeof isPublished === 'boolean') {
             qb = isPublished
-                ? qb.where({
+                ? qb.andWhere({
                       publishedAt: Not(IsNull()),
                   })
-                : qb.where({
+                : qb.andWhere({
                       publishedAt: IsNull(),
                   });
         }
-        if (!isNil(title)) {
-            qb = qb.where({
-                title: Like(`%${title}%`),
-            });
+        if (!isNil(search)) {
+            if (this.searchType === "like") {
+                qb = qb.andWhere({
+                    title: Like(`%${search}%`),
+                }).orWhere({
+                    body: Like(`%${search}%`)
+                }).orWhere({
+                    summary: Like(`%${search}%`)
+                }).orWhere('categories.content LIKE :search', {
+                    search: `%${search}%`
+                })
+            } else if (this.searchType === "against") {
+                qb = qb.andWhere(`MATCH(title) AGAINST (:search IN BOOLEAN MODE)`, {
+                    search: `${search}*`,
+                }).orWhere(`MATCH(body) AGAINST (:search IN BOOLEAN MODE)`, {
+                    search: `${search}*`,
+                }).orWhere(`MATCH(summary) AGAINST (:search IN BOOLEAN MODE)`, {
+                    search: `${search}*`,
+                }).orWhere(`MATCH(categories.content) AGAINST (:search IN BOOLEAN MODE)`, {
+                    search: `${search}*`,
+                })
+            }
         }
 
         if (trashed === QueryTrashMode.ALL || trashed === QueryTrashMode.ONLY) {
@@ -96,7 +183,7 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
             qb = qb.withDeleted();
             if (trashed === QueryTrashMode.ONLY) {
                 // 仅查询deletedAt不为null的
-                qb = qb.where({
+                qb = qb.andWhere({
                     deletedAt: Not(IsNull())
                 })
             }

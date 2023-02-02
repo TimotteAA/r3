@@ -241,20 +241,6 @@ export type SmsSdkOptions<T extends NestedRecord = RecordNever> = {
     appid: string;
 } & T
 
-// /**
-//  * 腾讯云sms发生配置
-//  */
-// export interface SmsSendParams {
-//     appid?: string;
-//     numbers: string[];
-//     template: string;
-//     sign?: string;
-//     endpoint?: string;
-//     vars?: Record<string, any>;
-//     ExtendCode?: string;
-//     SessionContext?: string;
-//     SenderId?: string;
-// }
 
 /**
  * SMTP邮件发送配置
@@ -379,6 +365,7 @@ export interface CaptchaConfig {
  * 构造器类型
  */
 export type ClassType<T> = { new (...args: any[]): T };
+// 类转普通对象类型，但是key和value保留
 export type ClassToPlain<T> = { [key in keyof T]: T[key] };
 
 /**

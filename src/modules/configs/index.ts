@@ -9,3 +9,5 @@ export * from "./redis.config"
 export * from "./queue.config"
 export * from "./sms.config"
 export * from "./smtp.config";
+export * from "./content.config"
+export * from "./elastic-search.config";

@@ -60,12 +60,12 @@ export class QueryPostDto implements PaginateOptions, TrashedDto {
     @IsOptional()
     category?: string;
 
-    @MaxLength(50, {
-        message: '文章标题最长为$constraint1',
+    @MaxLength(100, {
+        message: '搜索内容的最大长度为$constraint1',
         always: true,
     })
     @IsOptional()
-    title?: string;
+    search?: string;
 
     @IsEnum(QueryTrashMode)
     @IsOptional()

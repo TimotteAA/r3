@@ -8,6 +8,7 @@ import {
     TreeChildren,
     TreeParent,
     DeleteDateColumn,
+    Index
 } from 'typeorm';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { PostEntity } from './post.entity';
@@ -22,6 +23,7 @@ export class CategoryEntity extends BaseEntity {
 
     @Expose()
     @Column({ comment: '分类内容' })
+    @Index({ fulltext: true })
     content!: string;
 
     @Expose({ groups: ['category-tree', 'category-detail', 'category-detail'] })

@@ -9,7 +9,8 @@ import {
     JoinTable,
     OneToMany,
     ManyToOne,
-    DeleteDateColumn
+    DeleteDateColumn,
+    Index
 } from 'typeorm';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { PostBodyType } from '@/modules/content/constants';
@@ -26,14 +27,17 @@ export class PostEntity extends BaseEntity {
 
     @Expose()
     @Column({ comment: '文字标题' })
+    @Index({ fulltext: true })
     title!: string;
 
     @Expose({ groups: ['post-detail'] })
     @Column({ type: 'longtext', comment: '文章内容' })
+    @Index({ fulltext: true })
     body!: string;
 
     @Expose()
     @Column({ comment: '文章总结', nullable: true })
+    @Index({ fulltext: true })
     summary?: string;
 
     @Expose()

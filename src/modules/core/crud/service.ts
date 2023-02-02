@@ -1,5 +1,5 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { ObjectLiteral, SelectQueryBuilder, Not, IsNull } from 'typeorm';
+import { ObjectLiteral, SelectQueryBuilder } from 'typeorm';
 import { BaseRepository } from './repository';
 import { BaseTreeRepository } from './tree.repository';
 import { QueryListParams, QueryParams, QueryTrashMode } from '@/modules/utils';
@@ -179,6 +179,46 @@ export abstract class BaseService<
         return this.paginate(params, callback);
     }
 
+    //    /**
+    //  * 批量删除数据
+    //  * @param data 需要删除的id列表
+    //  * @param trash 是否只扔到回收站,如果为true则软删除
+    //  */
+    //    async delete(ids: string[], trash?: boolean) {
+    //     let items: E[] = [];
+    //     if (this.repository instanceof BaseTreeRepository<E>) {
+    //         items = await this.repository.find({
+    //             where: { id: In(ids) as any },
+    //             withDeleted: this.enableTrash ? true : undefined,
+    //             relations: ['parent', 'children'],
+    //         });
+    //         if (this.repository.childrenResolve !== TreeChildrenResolve.DELETE) {
+    //             for (const item of items) {
+    //                 if (isNil(item.children) || item.children.length <= 0) continue;
+    //                 const nchildren = [...item.children].map((c) => {
+    //                     c.parent = item.parent;
+    //                     return item;
+    //                 });
+    //                 await this.repository.save(nchildren);
+    //             }
+    //         }
+    //     } else {
+    //         items = await this.repository.find({
+    //             where: { id: In(ids) as any },
+    //             withDeleted: this.enableTrash ? true : undefined,
+    //         });
+    //     }
+    //     if (this.enableTrash && trash) {
+    //         const directs = items.filter((item) => !isNil(item.deletedAt));
+    //         const softs = items.filter((item) => isNil(item.deletedAt));
+    //         return [
+    //             ...(await this.repository.remove(directs)),
+    //             ...(await this.repository.softRemove(softs)),
+    //         ];
+    //     }
+    //     return this.repository.remove(items);
+    // }
+
     /**
      *
      */
@@ -242,7 +282,7 @@ export abstract class BaseService<
             qb.withDeleted();
             if (trashed === QueryTrashMode.ONLY) {
                 // 仅查询软删除数据
-                qb.where(`${alias}.deletedAt = :deleted`, { deleted: Not(IsNull()) });
+                qb.where(`${alias}.deletedAt is not null`);
             }
         }
 

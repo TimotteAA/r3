@@ -2,13 +2,14 @@ import { Module } from '@nestjs/common';
 import { ContentModule } from './modules/content/content.module';
 import { CoreModule } from '@/modules/core/core.module';
 import { DatabaseModule } from '@/modules/database/database.module';
-import { configFn, smsConfigFn, smtpConfigFn, redisConfigFn, queueConfigFn } from '@/modules/configs';
+import { ElasticSearchModule } from './modules/elastic/elastic-search.module';
+import { configFn, smsConfigFn, smtpConfigFn, redisConfigFn, queueConfigFn, elasticConfigFn } from '@/modules/configs';
 import { UserModule } from './modules/user/user.module';
-import { ConfigModule } from '@nestjs/config';
+// import { ConfigModule } from '@nestjs/config';
 
 @Module({
     imports: [
-        ContentModule,
+        ContentModule.forRoot(() => ({searchType: "elastic"})),
         UserModule,
         CoreModule.forRoot({
             sms: smsConfigFn(),
@@ -17,10 +18,11 @@ import { ConfigModule } from '@nestjs/config';
             queue: queueConfigFn()
         }),
         DatabaseModule.forRoot(configFn),
-        ConfigModule.forRoot({
-            envFilePath: '.env',
-            isGlobal: true,
-        }),
+        // ConfigModule.forRoot({
+        //     envFilePath: '.env',
+        //     isGlobal: true,
+        // }),
+        ElasticSearchModule.forRoot(elasticConfigFn())
     ],
     providers: [
        
