@@ -67,7 +67,7 @@ export class CaptchaJob {
     @InjectRepository(CodeEntity) private codeRepo: Repository<CodeEntity>,
     @InjectQueue(SEND_CAPTCHA_QUEUE) private queue: Queue,
     private userService: UserService,
-    private  worker: CaptchaWorker
+    private worker: CaptchaWorker
   ) {
     this.config = userConfigFn();
     this.worker.addWorker();

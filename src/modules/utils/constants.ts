@@ -106,3 +106,16 @@ export const SMS_CAPTCHA_JOB = 'sms-captcha-job';
  * 发送邮件验证码任务处理名称
  */
 export const EMAIL_CAPTCHA_JOB = 'mail-captcha-job';
+
+/**
+ * websocket相关内容
+ */
+export const SAVE_MESSAGE_QUEUE = "save-message-queue";
+
+/**
+ * 消息接收者行为：删除或已读
+ */
+export enum RecevierActionType {
+  READED = "readed",
+  DELETE = "delete"
+}

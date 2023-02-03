@@ -26,7 +26,7 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
         private categoryService: CategoryService,
         private userService: UserService,
         private searchService?: ElasticSearchService,
-        protected searchType: SearchType = "like"
+        protected searchType: SearchType = "elastic"
     ) {
         super(repo);
     }
@@ -37,7 +37,11 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
             const res = await this.searchService.search(options.search);
             const ids = res.map(item => item.id);
             // 查找所有的id
-            const posts = ids.length > 0 ? await this.repo.find({ where: {id: In(ids)} }) : [];
+            let qb = this.repo.buildBaseQuery().where({id: In(ids)});
+            // const posts = ids.length > 0 ? await this.repo.find({ where: {id: In(ids)} }) : [];
+            if (callback) qb = await callback(qb);
+
+            const posts = await qb.getMany();
             // 手动分页
             return treePaginate({
                 page: options.page,

@@ -7,7 +7,7 @@ import { QueueOptions as BullMQOptions } from 'bullmq';
 import Email from 'email-templates';
 import { Attachment } from 'nodemailer/lib/mailer';
 import dayjs from "dayjs"
-import { CodeEntity } from '../user/entities';
+import { CodeEntity, MessageEntity } from '../user/entities';
 
 /**
  * 时间配置
@@ -359,6 +359,15 @@ export interface CaptchaConfig {
     [CaptchaType.EMAIL]?: {
         [key in CaptchaActionType]?: Partial<EmailCaptchaOption>;
     };
+}
+
+/**
+ * 保存message的data类型
+ */
+export type SaveMessageQueueJob = Pick<ClassToPlain<MessageEntity>, "title" | "body" | "type"> & {
+    // 都是uuid?
+    sender: string;
+    receivers: string[]
 }
 
 /**

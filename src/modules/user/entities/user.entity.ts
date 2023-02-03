@@ -9,7 +9,7 @@ import {
     DeleteDateColumn,
     UpdateDateColumn,
 } from 'typeorm';
-import { AccessTokenEntity } from './access-token.entity';
+import { AccessTokenEntity, MessageEntity, MessageReceiveEntity } from './';
 import { Exclude, Expose, Type } from 'class-transformer';
 
 @Exclude()
@@ -55,6 +55,16 @@ export class UserEntity extends BaseEntity {
         cascade: true
     })
     comments!: CommentEntity[];
+
+    // 发送的消息
+    @OneToMany(() => MessageEntity, (message) => message.sender, {
+        cascade: true
+    })
+    sends: MessageEntity[]
+
+    // 收到的消息
+    @OneToMany(() => MessageReceiveEntity, (item) => item.receiver)
+    messages: MessageReceiveEntity[]
 
     @OneToMany(() => AccessTokenEntity, (token: AccessTokenEntity) => token.user, {
         cascade: true,

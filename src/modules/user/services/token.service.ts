@@ -85,6 +85,16 @@ export class TokenService {
     }
 
     /**
+     * 解析token，得到payload
+     * @param token 
+     */
+    async verifyAccessToken(token: string) {
+        const config = userConfigFn();
+        return jwt.verify(token, config.jwt.secret);
+    }
+
+
+    /**
      * 根据token值查找accessToken
      */
     async findAccessToken(value: string) {
