@@ -32,6 +32,7 @@ export class MessageEntity extends BaseEntity {
   /**
    * 消息发送者
    */
+  @Expose()
   @ManyToOne(() => UserEntity, (user) => user.sends, {
     onDelete: "CASCADE",
     nullable: false
@@ -41,6 +42,7 @@ export class MessageEntity extends BaseEntity {
   /**
    * 消息接收者
    */
+  @Expose()
   @OneToMany(() => MessageReceiveEntity, (item) => item.message)
   receives!: MessageReceiveEntity[];
 

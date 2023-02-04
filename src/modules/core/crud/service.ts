@@ -118,6 +118,7 @@ export abstract class BaseService<
             this.repo.buildBaseQuery(this.repo.createQueryBuilder(this.repo.getAlias())),
             callback,
         );
+        // console.log("qb")
         qb = qb.where(`${this.repo.getAlias()}.id = :id`, { id });
         if (trashed) {
             qb.withDeleted();

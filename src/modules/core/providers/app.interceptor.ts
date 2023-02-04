@@ -34,11 +34,9 @@ export class AppInterceptor extends ClassSerializerInterceptor {
         if ('meta' in response && 'items' in response) {
             let items =
                 !isNil(response.items) && Array.isArray(response.items) ? response.items : [];
-            // console.log('items', items);
             items = items.map((item) => {
                 return isObject(item) ? this.transformToPlain(item, options) : item;
             });
-            // console.log(items);
             return {
                 ...response,
                 items,

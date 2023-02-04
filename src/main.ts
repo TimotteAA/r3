@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { AppModule } from './app.module';
 import { useContainer } from 'class-validator';
+import { WsAdapter } from '@nestjs/platform-ws';
 
 async function bootstrap() {
     const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
@@ -10,6 +11,7 @@ async function bootstrap() {
         fallbackOnErrors: true,
     });
     app.enableCors();
-    await app.listen(3000);
+    app.useWebSocketAdapter(new WsAdapter(app))
+    await app.listen(3000, '0.0.0.0');
 }
 bootstrap();

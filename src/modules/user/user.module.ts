@@ -6,7 +6,9 @@ import { UserSubscriber } from './subscribers';
 import { DatabaseModule } from '../database/database.module';
 import { AuthService } from './services';
 import { PassportModule } from '@nestjs/passport';
-import { LocalAuthGuard, JwtAuthGuard } from './guards';
+import { BullModule } from '@nestjs/bullmq';
+
+import { LocalAuthGuard, JwtAuthGuard, JwtWsGuard } from './guards';
 import { SEND_CAPTCHA_QUEUE, SAVE_MESSAGE_QUEUE } from '@/modules/utils';
 
 import * as repoMaps from "./repositorys";
@@ -14,13 +16,14 @@ import * as controllerMaps from './controller';
 import * as strategiesMap from './strategies';
 import * as serviceMaps from './services';
 import * as queueMaps from "./queues";
-import { BullModule } from '@nestjs/bullmq';
+import * as gatewayMaps from "./gateways";
 
 const services = Object.values(serviceMaps);
 const strategies = Object.values(strategiesMap);
 const controllers = Object.values(controllerMaps);
 const queues = Object.values(queueMaps);
 const repos = Object.values(repoMaps)
+const gateways = Object.values(gatewayMaps)
 
 @Module({
     controllers: [...controllers],
@@ -38,11 +41,13 @@ const repos = Object.values(repoMaps)
         ...services,
         LocalAuthGuard,
         JwtAuthGuard,
+        JwtWsGuard,
         {
             provide: APP_GUARD,
             useClass: JwtAuthGuard,
         },
-        ...queues
+        ...queues,
+        ...gateways
     ],
     exports: [...services, ...queues],
 })

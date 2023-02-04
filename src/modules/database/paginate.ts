@@ -17,7 +17,6 @@ export const paginate = async <E extends ObjectLiteral>(
     // 分页查询
     qb = qb.take(options.limit).skip(options.limit * start);
     const items = await qb.getMany();
-
     // 计算总页数
     const totalPages =
         totalItems % options.limit === 0

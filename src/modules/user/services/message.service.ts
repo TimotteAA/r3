@@ -4,8 +4,8 @@ import { MessageEntity } from "../entities";
 import { MessageRepository, MessageReceiveRepository } from "../repositorys";
 import { isNil, omit } from "lodash";
 import { UpdateReceviesDto, QueryOwnerMessageDto, QueryMessageDto } from "../dto";
-import { In } from "typeorm";
-import { RecevierActionType } from "@/modules/utils";
+import { In, SelectQueryBuilder } from "typeorm";
+import { QueryHook, RecevierActionType, QueryListParams } from "@/modules/utils";
 
 @Injectable()
 export class MessageService extends BaseService<MessageEntity, MessageRepository> {
@@ -16,7 +16,7 @@ export class MessageService extends BaseService<MessageEntity, MessageRepository
   }
 
   /**
-   * 删除已发送的消息
+   * 发送者删除已发送的消息
    * @param id 消息id
    * @param userId 当前用户id 
    */
@@ -54,12 +54,12 @@ export class MessageService extends BaseService<MessageEntity, MessageRepository
 
     // 删除
     await this.repo.remove(messages);
-    return this.paginate({ ...options, addQuery: (qb) => qb.andWhere('sender.id = :id', {id: userId}) });
+    return this.paginate({ ...options, sender: userId } as any);
   }
 
   
   /**
-   * 更改接收数据
+   * 接收者更改接收数据
    * 删除消息接收者与消息的关联(即接收者删除该消息)/更改已读状态
    * @param id 消息ID
    * @param type 操作类型
@@ -85,7 +85,7 @@ export class MessageService extends BaseService<MessageEntity, MessageRepository
               receiver: userId
             }
             ).leftJoin(`${this.repo.getAlias()}.recevies`, 'recevies')
-            .andWhere('receives.receiver', {
+            .andWhere('receives.receiver = :receiver', {
               receiver: userId
             }).getOne()
   }
@@ -144,7 +144,8 @@ export class MessageService extends BaseService<MessageEntity, MessageRepository
         receiver: {
           id: userId
         }
-      }
+      },
+      relations: ['receiver', 'message']
     });
     for (const receive of receives) {
       if (type === RecevierActionType.READED && !receive.readed) {
@@ -158,5 +159,55 @@ export class MessageService extends BaseService<MessageEntity, MessageRepository
       }
     }
     return receives;
+  }
+
+  protected buildItemQuery(qb: SelectQueryBuilder<MessageEntity>, callback?: QueryHook<MessageEntity>): Promise<SelectQueryBuilder<MessageEntity>> {
+    qb = qb.leftJoinAndSelect(`${this.repo.getAlias()}.sender`, 'sender')
+    .leftJoinAndSelect(`${this.repo.getAlias()}.receives`, 'receives')
+    .leftJoinAndSelect('receives.receiver', "receiver")
+    return super.buildItemQuery(qb, callback);
+  }
+
+  protected buildListQuery(qb: SelectQueryBuilder<MessageEntity>, 
+    options?: QueryListParams<MessageEntity> & {
+      readed?: boolean,
+      receiver?: string;
+      sender?: string;
+    }, 
+    callback?: QueryHook<MessageEntity>): Promise<SelectQueryBuilder<MessageEntity>> {
+    return super.buildListQuery(qb, options, async (q) => {
+      console.log("options", options);
+      q.leftJoinAndSelect(`${this.repo.getAlias()}.sender`, 'sender');
+      if (!isNil(options.receiver)) {
+        // 查询接收者消息
+        q.leftJoinAndMapOne(`${this.repo.getAlias()}.receiver`, 
+        `${this.repo.getAlias()}.receives`,
+        'receives',
+        'receives.receiver = :receiver',
+        {
+          receiver: options.receiver
+        }
+        )
+        // .leftJoin(`${this.repo.getAlias()}.receives`, "receives2").andWhere("receives2.receiver = :receiver", { receiver: options.receiver })
+
+
+        if (typeof options.readed === "boolean") {
+          q.andWhere(`receives.readed = :readed`, {
+            reader: options.readed
+          })
+        }
+      } else {
+        q.leftJoinAndSelect(
+          `${this.repo.getAlias()}.receives`,
+          "receives"
+        ).leftJoinAndSelect('receives.receiver', "receiver");
+        if (options.sender) {
+          q.andWhere(`${this.repo.getAlias()}.sender = :sender`, {
+            sender: options.sender
+          })
+        }
+      }
+      return q;
+    })
   }
 }
