@@ -71,23 +71,15 @@ export class MessageService extends BaseService<MessageEntity, MessageRepository
       throw new NotFoundException(MessageEntity, "消息不存在")
     }
 
-    // 最后返回的是关联上sender属性
-    // 然后关联receives，alias为receive，参数
-    // 映射到receiver属性上
-    // 先关联中间表，再关联
     return this.repo.buildBaseQuery()
-            .leftJoinAndSelect(`${this.repo.getAlias()}.sender`, 'sender')
-            .leftJoinAndMapOne(`${this.repo.getAlias()}.receiver`, 
-            `${this.repo.getAlias()}.receives`,
-            'receive',
-            'receive.receiver = :receiver',
-            {
-              receiver: userId
-            }
-            ).leftJoin(`${this.repo.getAlias()}.recevies`, 'recevies')
-            .andWhere('receives.receiver = :receiver', {
-              receiver: userId
-            }).getOne()
+    .leftJoinAndSelect(
+      `${this.repo.getAlias()}.receives`,
+      "receives"
+    ).leftJoinAndSelect('receives.receiver', "receiver")
+      .leftJoinAndSelect(`${this.repo.getAlias()}.sender`, "sender")
+      .andWhere(`message.id = :id`, {
+        id: id
+      }).getOne()
   }
 
   /**
@@ -121,9 +113,10 @@ export class MessageService extends BaseService<MessageEntity, MessageRepository
         type: RecevierActionType,
         userId: string,
         options: QueryMessageDto,
-    ) {
+    ) { 
+      console.log(options);
         await this.updateRecevies(data.receives, type, userId);
-        return this.paginate({ ...options, recevier: userId } as any);
+        return this.paginate({ ...options, receiver: userId } as any);
     }
 
 
@@ -176,36 +169,33 @@ export class MessageService extends BaseService<MessageEntity, MessageRepository
     }, 
     callback?: QueryHook<MessageEntity>): Promise<SelectQueryBuilder<MessageEntity>> {
     return super.buildListQuery(qb, options, async (q) => {
-      console.log("options", options);
-      q.leftJoinAndSelect(`${this.repo.getAlias()}.sender`, 'sender');
+      // console.log("options", options);
+      // q.leftJoinAndSelect(`${this.repo.getAlias()}.sender`, 'sender');
       if (!isNil(options.receiver)) {
-        // 查询接收者消息
-        q.leftJoinAndMapOne(`${this.repo.getAlias()}.receiver`, 
-        `${this.repo.getAlias()}.receives`,
-        'receives',
-        'receives.receiver = :receiver',
-        {
-          receiver: options.receiver
-        }
-        )
-        // .leftJoin(`${this.repo.getAlias()}.receives`, "receives2").andWhere("receives2.receiver = :receiver", { receiver: options.receiver })
-
-
-        if (typeof options.readed === "boolean") {
-          q.andWhere(`receives.readed = :readed`, {
-            reader: options.readed
-          })
-        }
-      } else {
+        q.leftJoinAndSelect(`${this.repo.getAlias()}.sender`, 'sender')
+          .leftJoinAndSelect(`${this.repo.getAlias()}.receives`, 'receives')
+          .leftJoinAndSelect('receives.receiver', "receiver")
+          .andWhere("receiver.id = :id", { id: options.receiver })
+      } else if (!isNil(options.sender))  {
+        // 作为发送者
         q.leftJoinAndSelect(
           `${this.repo.getAlias()}.receives`,
           "receives"
-        ).leftJoinAndSelect('receives.receiver', "receiver");
-        if (options.sender) {
-          q.andWhere(`${this.repo.getAlias()}.sender = :sender`, {
+        ).leftJoinAndSelect('receives.receiver', "receiver")
+          .leftJoinAndSelect(`${this.repo.getAlias()}.sender`, "sender")
+          q.andWhere(`sender.id = :sender`, {
             sender: options.sender
           })
-        }
+      } else {
+        q.leftJoinAndSelect(`${this.repo.getAlias()}.sender`, 'sender')
+        .leftJoinAndSelect(`${this.repo.getAlias()}.receives`, 'receives')
+        .leftJoinAndSelect('receives.receiver', "receiver")
+      }
+      // console.log(q.getQuery());
+      if (typeof options.readed === "boolean") {
+        q.andWhere(`receives.readed = :readed`, {
+          readed: options.readed
+        })
       }
       return q;
     })

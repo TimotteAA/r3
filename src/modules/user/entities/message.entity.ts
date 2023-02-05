@@ -43,7 +43,9 @@ export class MessageEntity extends BaseEntity {
    * 消息接收者
    */
   @Expose()
-  @OneToMany(() => MessageReceiveEntity, (item) => item.message)
+  @OneToMany(() => MessageReceiveEntity, (item) => item.message, {
+    cascade: true
+  })
   receives!: MessageReceiveEntity[];
 
   receiver: MessageReceiveEntity;
