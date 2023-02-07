@@ -1,7 +1,7 @@
 import { PaginateOptions } from '@/modules/utils';
 import { Body, Get, Post, Delete, Patch, Param, ParseUUIDPipe, Query } from '@nestjs/common';
-import { QueryListParams, TrashedDto } from '@/modules/utils';
-import { DeleteDto, DeleteMultiDto, QueryDetailDto, RestoreMultiDto } from './dtos';
+import { QueryListParams, TrashedDto } from '../types';
+import { DeleteDto,  QueryDetailDto, RestoreMultiDto } from './dtos';
 
 export abstract class BaseController<S, P extends QueryListParams<any> = QueryListParams<any>> {
     protected service: S;
@@ -31,8 +31,8 @@ export abstract class BaseController<S, P extends QueryListParams<any> = QueryLi
     }
 
     @Delete(':id')
-    async delete(@Param('id', new ParseUUIDPipe()) id: string, @Query() options: DeleteDto) {
-        return (this.service as any).delete(id, options.trashed);
+    async delete(@Body() options: DeleteDto) {
+        return (this.service as any).delete(options.ids, options.trashed);
     }
 
     /**
@@ -46,7 +46,7 @@ export abstract class BaseController<S, P extends QueryListParams<any> = QueryLi
         @Query()
         options: PaginateOptions & TrashedDto & P,
         @Body()
-        { trashed, ids }: DeleteMultiDto,
+        { trashed, ids }: DeleteDto,
         ...args: any[]
     ) {
         return (this.service as any).deletePaginate(ids, options, trashed);

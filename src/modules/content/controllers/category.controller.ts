@@ -1,4 +1,4 @@
-import { Controller, Get, Query, SerializeOptions } from '@nestjs/common';
+import { Controller, Get, Query, SerializeOptions} from '@nestjs/common';
 import { CategoryService } from '../services';
 import { QueryCategoryDto, CreateCategoryDto, UpdateCategoryDto, QueryCategoryTreeDto } from '../dtos';
 import { BaseController } from '@/modules/core/crud';

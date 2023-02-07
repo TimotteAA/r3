@@ -1,0 +1,85 @@
+import { Injectable } from "@nestjs/common";
+import { RoleEntity } from "../entities";
+import { RoleRepository, PermissionRepository } from "../repository";
+import { BaseService } from "@/modules/core/crud";
+import { QueryRoleDto, CreateRoleDto, UpdateRoleDto } from "../dtos/role.dto";
+import { In, SelectQueryBuilder } from "typeorm";
+import { omit, isNil } from "lodash";
+import { QueryHook } from "@/modules/utils";
+import { UserService } from "@/modules/user/services";
+
+/**
+ * 列表查询参数，提出分页，软删除
+ */
+type FindParams =  {
+  [key in keyof Omit<QueryRoleDto, 'limit' | 'page'>]: QueryRoleDto[key];
+};
+
+@Injectable()
+export class RoleService extends BaseService<RoleEntity, RoleRepository>{
+  constructor(protected repo: RoleRepository,
+    protected permissionRepo:  PermissionRepository,
+    protected userService: UserService
+  ) {
+    super(repo);
+  }
+
+  /**
+   * 创建新的角色
+   * @param data 
+   */
+  async create(data: CreateRoleDto): Promise<RoleEntity> {
+    const { permissions } = data;
+    const item = await this.repo.save({
+      ...data,
+      permissions: permissions ? await this.permissionRepo.find({
+        where: {
+          id: In(permissions)
+        }
+      }) : []
+    })
+    return this.detail(item.id)
+  }
+
+  async update(data: UpdateRoleDto) {
+    await this.repo.save(omit(data, ['id', 'permissions']))
+    // 老的role
+    // 删除新的permissions，加入新的
+    const role = await this.detail(data.id);
+    const { permissions } = data;
+    if (!isNil(permissions) && Array.isArray(permissions) && permissions.length > 0) {
+      await this.repo
+        .createQueryBuilder('role')
+        .relation(RoleEntity, 'permissions')
+        .of(role)
+        .addAndRemove(permissions, role.permissions ?? []);
+    }
+    await this.repo.save(role);
+    return this.detail(role.id);
+  }
+
+  // async delete(ids: string[], trash?: boolean): Promise<RoleEntity[]> {
+    
+  // }
+
+  /**
+   * 查询指定用户的角色
+   * @param qb 
+   * @param options 
+   * @param callback 
+   */
+  protected buildListQuery(
+    qb: SelectQueryBuilder<RoleEntity>, 
+    options: FindParams,
+    callback?: QueryHook<RoleEntity>) {
+    const { user } = options;
+    qb = qb.leftJoinAndSelect(`${this.repo.getAlias()}.users`, "users")
+    if (!isNil(user)) {
+      qb = qb.andWhere("users.id In (:...ids)", {
+        ids: [user]
+      })
+    };
+
+    return super.buildListQuery(qb, options, callback);
+  }
+}

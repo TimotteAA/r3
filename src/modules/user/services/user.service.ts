@@ -24,7 +24,7 @@ export class UserService extends BaseService<UserEntity, UserRepository> {
     async update(data: UpdateUserDto) {
         // id字段不更新
         const rest = omit(data, 'id');
-        await this.repo.update(data.id, rest);
+        await this.repo.update(data.id, rest as any);
         return this.detail(data.id);
     }
 

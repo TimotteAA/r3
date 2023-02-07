@@ -1,4 +1,3 @@
-import { PostEntity, CommentEntity } from '@/modules/content/entities';
 import {
     PrimaryGeneratedColumn,
     Column,
@@ -8,13 +7,26 @@ import {
     CreateDateColumn,
     DeleteDateColumn,
     UpdateDateColumn,
+    ManyToMany,
+    JoinTable,
 } from 'typeorm';
 import { AccessTokenEntity, MessageEntity, MessageReceiveEntity } from './';
 import { Exclude, Expose, Type } from 'class-transformer';
+import { AddRelations } from '@/modules/database/decorators';
+import { userConfigFn } from '@/modules/configs';
+import { RoleEntity } from '@/modules/rbac/entities/role.entity';
+import { PermissionEntity } from '@/modules/rbac/entities/permission.entity';
 
+/**
+ * 给user字段加上动态关联
+ */
+@AddRelations(() => userConfigFn().relations)
 @Exclude()
 @Entity('user_users')
 export class UserEntity extends BaseEntity {
+    // 动态关联字段
+    [key: string]: any;
+
     @Expose()
     @PrimaryGeneratedColumn('uuid')
     id!: string;
@@ -42,19 +54,6 @@ export class UserEntity extends BaseEntity {
     // 下面是关联关系、软删除等字段
     @Column({comment: "用户是否激活", default: true})
     actived?: boolean;
-
-    /**
-     * user删除，post也被删除
-     */
-    @OneToMany(() => PostEntity, (post: PostEntity) => post.author, {
-        cascade: true,
-    })
-    posts!: PostEntity[];
-
-    @OneToMany(() => CommentEntity, (comment: CommentEntity) => comment.author, {
-        cascade: true
-    })
-    comments!: CommentEntity[];
 
     // 发送的消息
     @OneToMany(() => MessageEntity, (message) => message.sender, {
@@ -90,4 +89,14 @@ export class UserEntity extends BaseEntity {
 
     @Expose({ groups: ['user-detail', 'user-list'] })
     trashed!: boolean;
+
+    @Expose()
+    @ManyToMany(() => RoleEntity, (role: RoleEntity) => role.users)
+    @JoinTable()
+    roles!: RoleEntity[]
+
+    @Expose()
+    @ManyToMany(() => PermissionEntity, (p: PermissionEntity) => p.users)
+    @JoinTable()
+    permissions!: PermissionEntity[]
 }

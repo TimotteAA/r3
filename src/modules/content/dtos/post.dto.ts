@@ -11,15 +11,16 @@ import {
     ValidateIf,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { PaginateOptions, QueryTrashMode } from '@/modules/utils';
+import { PaginateOptions } from '@/modules/utils';
 import { isNil, toNumber } from 'lodash';
-import { toBoolean } from '@/modules/core/helpers';
+import { toBoolean } from '@/modules/core/helpers/index';
 import { OrderField, PostBodyType } from '@/modules/content/constants';
 import { PartialType } from '@nestjs/swagger';
 import { CustomDtoValidation } from '@/modules/core/decorators';
 import { IsExist } from '@/modules/database/constraints';
 import { CategoryEntity } from '../entities';
-import { TrashedDto } from '@/modules/utils';
+import { TrashedDto } from '@/modules/core/types';
+import { QueryTrashMode } from '@/modules/core/constants';
 
 @CustomDtoValidation({ type: 'query' })
 /**

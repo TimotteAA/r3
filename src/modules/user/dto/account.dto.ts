@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { CustomDtoValidation } from "@/modules/core/decorators";
 import { PickType } from "@nestjs/swagger";
 import { BaseUserDto } from "./base-user.dto";
-import { CaptchaDtoGroups, UserDtoGroups } from "@/modules/utils";
+import { CaptchaDtoGroups, UserDtoGroups } from "../constants";
 import { Length } from "class-validator";
 
 /**

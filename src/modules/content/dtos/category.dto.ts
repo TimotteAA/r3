@@ -1,4 +1,4 @@
-import { PaginateOptions, TrashedDto } from '@/modules/utils';
+import { PaginateOptions  } from '@/modules/utils';
 import { Transform } from 'class-transformer';
 import {
     IsNotEmpty,
@@ -15,7 +15,8 @@ import { PartialType } from '@nestjs/swagger';
 import { CustomDtoValidation } from '@/modules/core/decorators';
 import { IsExist, IsUniqueTree, IsUniqueTreeUpdate } from '@/modules/database/constraints';
 import { CategoryEntity } from '../entities';
-import { QueryTrashMode } from '@/modules/utils';
+import { TrashedDto } from '@/modules/core/types';
+import { QueryTrashMode } from '@/modules/core/constants';
 
 @CustomDtoValidation({ type: 'query' })
 export class QueryCategoryTreeDto {

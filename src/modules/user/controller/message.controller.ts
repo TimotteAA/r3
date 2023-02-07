@@ -1,7 +1,8 @@
 import { Controller, Get, ParseUUIDPipe, Query, Param, Delete, SerializeOptions, Body, Patch } from "@nestjs/common";
 import { MessageService } from "../services";
 import { User } from "../decorators";
-import { ClassToPlain, RecevierActionType } from "@/modules/utils";
+import { ClassToPlain } from "@/modules/utils";
+import { RecevierActionType } from "../constants";
 import { UserEntity } from "../entities";
 import { QueryOwnerMessageDto, QueryReciveMessageDto, UpdateReceviesDto } from "../dto";
 

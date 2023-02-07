@@ -3,7 +3,11 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Repository } from "typeorm";
 import { CodeEntity, UserEntity } from "../entities"
-import { CaptchaActionType, CaptchaType, SEND_CAPTCHA_QUEUE, CaptchaOption, generateCatpchaCode, getTime, UserConfig, EMAIL_CAPTCHA_JOB, SMS_CAPTCHA_JOB } from "@/modules/utils";
+import { getTime, UserConfig } from "@/modules/utils";
+import { CaptchaActionType, CaptchaType } from "../constants";
+import { CaptchaOption } from "../types"
+import { EMAIL_CAPTCHA_JOB, SMS_CAPTCHA_JOB, SEND_CAPTCHA_QUEUE } from "../constants"
+import { generateCatpchaCode } from "../helpers";
 import { Queue } from "bullmq";
 import { UserService } from "../services";
 import { CaptchaWorker } from "./captcha.worker";
@@ -162,7 +166,7 @@ export class CaptchaJob {
     try {
       // 验证码发送配置
       const config = (this.config.captcha as any)[type][action];
-      console.log(this.config.captcha[type]);
+      // console.log(this.config.captcha[type]);
       // console.log(type, action);
       console.log(config);
       if (isNil(config)) throw new BadRequestException(error);

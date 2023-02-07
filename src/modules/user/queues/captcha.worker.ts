@@ -6,7 +6,9 @@ import { Repository } from "typeorm";
 import chalk from "chalk";
 import { omit } from "lodash";
 import { CodeEntity } from "../entities";
-import { EMAIL_CAPTCHA_JOB, SendCaptchaQueueJob, SEND_CAPTCHA_QUEUE, SmsCaptchaOption, EmailCaptchaOption, SMS_CAPTCHA_JOB, SmtpSendParams } from "@/modules/utils";
+import { SmtpSendParams } from "@/modules/utils";
+import { EMAIL_CAPTCHA_JOB, SEND_CAPTCHA_QUEUE, SMS_CAPTCHA_JOB, } from "../constants";
+import { SendCaptchaQueueJob, SmsCaptchaOption, EmailCaptchaOption } from "../types";
 
 @Injectable()
 export class CaptchaWorker {

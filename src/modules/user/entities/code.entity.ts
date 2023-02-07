@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
-import { CaptchaActionType, CaptchaType  } from "@/modules/utils";
+import { CaptchaActionType, CaptchaType  } from "../constants";
 
 @Entity("user_code")
 export class CodeEntity {

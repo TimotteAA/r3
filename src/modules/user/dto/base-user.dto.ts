@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { IsNotEmpty, Length, IsOptional, IsEmail, IsEnum, IsNumberString } from "class-validator";
-import { CaptchaType, QueryTrashMode, UserDtoGroups, CaptchaDtoGroups } from "@/modules/utils"
+import { CaptchaType,  UserDtoGroups, CaptchaDtoGroups } from "../constants"
+import { QueryTrashMode } from "@/modules/core/constants";
 import { IsUnique, IsUniqueUpdate } from "@/modules/database/constraints";
 import { IsMatch, IsPassword, IsPhone } from "@/modules/core/constraints";
 import { UserEntity } from "../entities";

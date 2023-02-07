@@ -4,8 +4,9 @@ import { PostRepository, CategoryRepository } from '@/modules/content/repository
 import { CategoryService, ElasticSearchService } from './';
 import { OrderField } from '../constants';
 import { isFunction, omit, isNil } from 'lodash';
-import { PaginateOptions, PaginateReturn, QueryHook, QueryTrashMode } from '@/modules/utils';
+import { PaginateOptions, PaginateReturn, QueryHook } from '@/modules/utils';
 import { PostEntity } from '../entities';
+import { QueryTrashMode } from '@/modules/core/constants';
 // import { paginate } from '@/modules/database/paginate';
 import { CreatePostDto, QueryPostDto, UpdatePostDto } from '../dtos';
 import { BaseService } from '@/modules/core/crud';
@@ -109,11 +110,16 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
         return this.detail(data.id);
     }
 
-    async delete(id: string, trashed?: boolean): Promise<PostEntity> {
+    /**
+     * 重写删除，入参id必须是一个长度为1的数组
+     * @param id 
+     * @param trashed 
+     */
+    async delete(id: string[], trashed?: boolean): Promise<PostEntity[]> {
         // 删除es中的结果
         if (!isNil(this.searchService)) {
             try {
-                await this.searchService.delete(id);
+                await this.searchService.delete(id[0]);
             } catch (err) {
                 throw new InternalServerErrorException(err)
             }

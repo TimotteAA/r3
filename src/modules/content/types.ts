@@ -1,5 +1,6 @@
+import { FindTreeOptions, SelectQueryBuilder } from "typeorm";
 import { ClassToPlain } from "../utils";
-import { PostEntity } from "./entities";
+import { PostEntity, CommentEntity } from "./entities";
 
 /**
  * 文章的全文搜索类型
@@ -22,3 +23,11 @@ export type PostSearchBody = Pick<ClassToPlain<PostEntity>, "title" | "body" | "
   // 索引id数组在存储id拼接的数组
   categories: string;
 }
+
+/**
+ * content module的type
+ */
+
+export type FindCommentTreeOptions = FindTreeOptions & {
+  addQuery?: (query: SelectQueryBuilder<CommentEntity>) => SelectQueryBuilder<CommentEntity>;
+};

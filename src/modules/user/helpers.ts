@@ -19,4 +19,14 @@ export const decrypt = (plainPassword: string, password: string) => {
     return bcrypt.compareSync(plainPassword, password);
 };
 
+/**
+ * 生成随机字符串
+ */
 export const generateRandonString = () => crypto.randomBytes(4).toString('hex').slice(0, 8);
+
+/**
+ * 生成随机验证码
+ */
+export function generateCatpchaCode() {
+    return Math.random().toFixed(6).slice(-6);
+}

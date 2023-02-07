@@ -1,7 +1,7 @@
 import { PickType } from "@nestjs/swagger";
 import { BaseUserDto } from "./base-user.dto";
 import { CustomDtoValidation } from "@/modules/core/decorators";
-import { CaptchaDtoGroups } from "@/modules/utils"
+import { CaptchaDtoGroups } from "../constants"
 
 /**
  * 手机或邮箱验证码dto

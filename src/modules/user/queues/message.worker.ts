@@ -2,7 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { Job, Worker } from "bullmq";
 import { isNil } from "lodash";
 import chalk from "chalk";
-import { SAVE_MESSAGE_QUEUE, SaveMessageQueueJob } from "@/modules/utils";
+import { SAVE_MESSAGE_QUEUE } from "../constants";
+import { SaveMessageQueueJob } from "../types"
 import { MessageReceiveRepository, MessageRepository, UserRepository } from "../repositorys";
 import { MessageEntity, MessageReceiveEntity } from "../entities";
 

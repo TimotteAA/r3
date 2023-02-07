@@ -1,13 +1,16 @@
 import { BaseTreeRepository } from '@/modules/core/crud/tree.repository';
 import { CategoryEntity } from '../entities';
-import { OrderType } from '@/modules/utils';
+import { OrderType } from '@/modules/core/constants';
 import { CustomRepository } from '@/modules/database/decorators';
 import { SelectQueryBuilder } from 'typeorm';
+import { TreeChildrenResolve } from "@/modules/core/constants";
 
 @CustomRepository(CategoryEntity)
 export class CategoryRepository extends BaseTreeRepository<CategoryEntity> {
     // 查询名
     protected alias = 'category';
+
+    protected _childrenResolve = TreeChildrenResolve.UP;
 
     protected orderBy = {
         name: 'customOrder',

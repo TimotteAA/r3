@@ -12,7 +12,8 @@ import { GUEST } from '../decorators';
 import { LocalAuthGuard } from '../guards';
 import { AuthService, UserService } from '../services';
 import { User } from '../decorators';
-import { CaptchaType, ClassToPlain } from '@/modules/utils';
+import { ClassToPlain } from '@/modules/utils';
+import { CaptchaType } from '../constants';
 import { UserEntity } from '../entities';
 import { CredentialDto, PhoneRegisterDto, RegisterDto, EmailRegisterDto, UpdateAccountDto, PhoneLoginDto, EmailLoginDto, PhoneRetrievePasswordDto, EmailRetrievePasswordDto, UpdatePasswordDto, BoundPhoneDto, BoundEmailDto } from '../dto';
 

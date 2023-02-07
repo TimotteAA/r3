@@ -1,4 +1,4 @@
-import { CaptchaActionType, CaptchaType } from "@/modules/utils";
+import { CaptchaActionType, CaptchaType } from "../constants";
 import { Body, Controller, Post } from "@nestjs/common";
 import { GUEST } from "../decorators";
 

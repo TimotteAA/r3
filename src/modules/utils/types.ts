@@ -1,13 +1,11 @@
-import { SelectQueryBuilder, FindTreeOptions , ObjectLiteral} from 'typeorm';
-import { ClassTransformOptions } from '@nestjs/common/interfaces/external/class-transform-options.interface';
-import { CommentEntity } from '@/modules/content/entities';
-import { OrderType, QueryTrashMode, CaptchaType, CaptchaActionType } from './constants';
+import { SelectQueryBuilder, ObjectLiteral} from 'typeorm';
 import { RedisOptions as IoRedisOptions} from "ioredis";
 import { QueueOptions as BullMQOptions } from 'bullmq';
 import Email from 'email-templates';
 import { Attachment } from 'nodemailer/lib/mailer';
 import dayjs from "dayjs"
-import { CodeEntity, MessageEntity } from '../user/entities';
+import { JwtConfig, CaptchaConfig } from '../user/types';
+import { DynamicRelation } from '../database/types';
 
 /**
  * 时间配置
@@ -20,103 +18,7 @@ export interface TimeOptions {
     zonetime?: string;
 }
 
-/**
- * content module的type
- */
 
-export type FindCommentTreeOptions = FindTreeOptions & {
-    addQuery?: (query: SelectQueryBuilder<CommentEntity>) => SelectQueryBuilder<CommentEntity>;
-};
-
-
-/**
- * 排序类型,{字段名称: 排序升序或降序}
- * 如果多个值则传入数组即可
- * 排序方法不设置,默认DESC
- */
-export type OrderQueryType =
-    | string
-    | { name: string; order: `${OrderType}` }
-    | Array<{ name: string; order: `${OrderType}` } | string>;
-
-/**
- * 树形数据查询
- */
-export type QueryTreeOptions<E extends ObjectLiteral> = FindTreeOptions & {
-    addQuery?: (qb: SelectQueryBuilder<E>) => SelectQueryBuilder<E>;
-    orderBy?: OrderQueryType;
-    withTrashed?: boolean;
-};
-
-/**
- * 列表数据查询类型
- */
-export interface QueryParams<E extends ObjectLiteral> {
-    addQuery?: (qb: SelectQueryBuilder<E>) => SelectQueryBuilder<E>;
-    orderBy?: OrderQueryType;
-    withTrashed?: boolean;
-}
-
-
-/**
- * 列表查询
- */
-export type QueryListParams<E extends ObjectLiteral> = Omit<QueryTreeOptions<E>, 'withTrashed'> & {
-    trashed?: `${QueryTrashMode}`;
-};
-
-/**
- * 软删除dto
- */
-export interface TrashedDto {
-    trashed?: QueryTrashMode;
-}
-
-/**
- * 所有的controller方法
- */
-export type CurdMethod =
-    | 'list'
-    | 'detail'
-    | 'delete'
-    | 'deleteMulti'
-    | 'restore'
-    | 'restoreMulti'
-    | 'create'
-    | 'update';
-
-/**
- * 路由方法的配置项
- */
-export interface CurdMethodOptions {
-    /**
-     * 路由是否允许匿名访问
-     */
-    allowGuest?: boolean;
-    /**
-     * 路由方法的序列化选项，noGroup不传参，否则根据'id'+方法匹配来传参
-     */
-    serialize?: ClassTransformOptions | 'noGroup';
-}
-
-export interface CurdItem {
-    name: CurdMethod;
-    options?: CurdMethodOptions;
-}
-
-export interface CurdOptions {
-    id: string;
-    /**
-     * 启用的路由方法
-     */
-    enabled: Array<CurdMethod | CurdItem>;
-    /**
-     * 列表查询、创建、更新的Dto
-     */
-    dtos: {
-        [key in 'query' | 'create' | 'update']: any;
-    };
-}
 
 /**
  * database模块
@@ -284,60 +186,6 @@ export interface SmtpSendParams {
     attachments?: Attachment[];
 }
 
-/**
- * 邮件、手机验证码通用配置
- */
-export interface CaptchaOption {
-    limit: number; // 验证码发送间隔
-    age: number; // 验证码有效时间
-}
-  
-/**
- * 手机验证码选项
- */
-export interface SmsCaptchaOption extends CaptchaOption {
-    templateId: string; // 云厂商短信推送模板id
-}
-
-/**
- * 邮箱验证码选项
- */
-export interface EmailCaptchaOption extends CaptchaOption {
-    subject: string; // 邮件主题
-    template?: string; // 邮件模板路径
-}
-
-/**
- * queue的worker的job类型
- */
-export interface SendCaptchaQueueJob {
-    captcha: { [key in keyof CodeEntity]: CodeEntity[key] };
-    option: SmsCaptchaOption | EmailCaptchaOption;
-    otherVars?: Record<string, any> & { age: number }
-}
-
-/**
- * JWT的payload
- */
-export interface JwtPayload {
-    /**
-     * 用户id
-     */
-    sub: string;
-    /**
-     * 过期时间
-     */
-    iat: number;
-}
-
-export interface JwtConfig {
-    // accessToken加密密钥
-    secret: string;
-    token_expired: number;
-    // refreshToken加密密钥
-    refresh_secret: string;
-    refresh_token_expired: number;
-}
 
 /**
  * 用户模块配置
@@ -346,29 +194,11 @@ export interface UserConfig {
     // 加密算法位数，取10就好
     hash?: number;
     jwt: JwtConfig;
-    captcha: CaptchaConfig
+    captcha: CaptchaConfig;
+    relations?: DynamicRelation[]
 }
 
-/**
- * 自定义验证码配置
- */
-export interface CaptchaConfig {
-    [CaptchaType.SMS]?: {
-        [key in CaptchaActionType]?: Partial<SmsCaptchaOption>;
-    };
-    [CaptchaType.EMAIL]?: {
-        [key in CaptchaActionType]?: Partial<EmailCaptchaOption>;
-    };
-}
 
-/**
- * 保存message的data类型
- */
-export type SaveMessageQueueJob = Pick<ClassToPlain<MessageEntity>, "title" | "body" | "type"> & {
-    // 都是uuid?
-    sender: string;
-    receivers: string[]
-}
 
 /**
  * 构造器类型

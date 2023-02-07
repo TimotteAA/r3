@@ -1,7 +1,7 @@
 import { BaseTreeRepository } from '@/modules/core/crud/tree.repository';
 import { CommentEntity } from '../entities';
 import { CustomRepository } from '@/modules/database/decorators';
-import { QueryTreeOptions } from '@/modules/utils';
+import { QueryTreeOptions } from '@/modules/core/types';
 import { isNil } from 'lodash';
 import { SelectQueryBuilder } from 'typeorm';
 

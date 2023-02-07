@@ -5,8 +5,7 @@ import { DatabaseModule } from '@/modules/database/database.module';
 import { ElasticSearchModule } from './modules/elastic/elastic-search.module';
 import { configFn, smsConfigFn, smtpConfigFn, redisConfigFn, queueConfigFn, elasticConfigFn } from '@/modules/configs';
 import { UserModule } from './modules/user/user.module';
-// import { ConfigModule } from '@nestjs/config';
-
+import { RbacModule } from './modules/rbac/rbac.module';
 @Module({
     imports: [
         ContentModule.forRoot(() => ({searchType: "elastic"})),
@@ -22,7 +21,8 @@ import { UserModule } from './modules/user/user.module';
         //     envFilePath: '.env',
         //     isGlobal: true,
         // }),
-        ElasticSearchModule.forRoot(elasticConfigFn())
+        ElasticSearchModule.forRoot(elasticConfigFn()),
+        RbacModule
     ],
     providers: [
        

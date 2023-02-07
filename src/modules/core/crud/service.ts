@@ -1,8 +1,9 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { ObjectLiteral, SelectQueryBuilder } from 'typeorm';
+import { ObjectLiteral, SelectQueryBuilder, In } from 'typeorm';
 import { BaseRepository } from './repository';
 import { BaseTreeRepository } from './tree.repository';
-import { QueryListParams, QueryParams, QueryTrashMode } from '@/modules/utils';
+import { QueryListParams, QueryParams } from '../types';
+import { QueryTrashMode, TreeChildrenResolve } from '../constants';
 import { PaginateMeta, PaginateOptions, QueryHook } from '@/modules/utils';
 import { isNil } from 'lodash';
 import { paginate, treePaginate } from '@/modules/database/paginate';
@@ -129,24 +130,24 @@ export abstract class BaseService<
         return item;
     }
 
-    /**
-     * 删除数据
-     * @param id
-     * @param trashed 是否为软删除
-     * @returns
-     */
-    async delete(id: string, trashed?: boolean) {
-        // 删除前进行查找
-        const item = await this.repo.findOneOrFail({
-            where: { id } as any,
-            withDeleted: this.enable_trash ? true : false,
-        });
-        // 软删除
-        if (this.enable_trash && trashed && isNil((item as any).deletetAt)) {
-            return this.repo.softRemove(item);
-        }
-        return this.repo.remove(item);
-    }
+    // /**
+    //  * 删除数据
+    //  * @param id
+    //  * @param trashed 是否为软删除
+    //  * @returns
+    //  */
+    // async delete(id: string, trashed?: boolean) {
+    //     // 删除前进行查找
+    //     const item = await this.repo.findOneOrFail({
+    //         where: { id } as any,
+    //         withDeleted: this.enable_trash ? true : false,
+    //     });
+    //     // 软删除
+    //     if (this.enable_trash && trashed && isNil((item as any).deletedAt)) {
+    //         return this.repo.softRemove(item);
+    //     }
+    //     return this.repo.remove(item);
+    // }
 
     /**
      * 批量删除
@@ -155,9 +156,7 @@ export abstract class BaseService<
     async deleteList(ids: string[], params?: P, trash?: boolean, callback?: QueryHook<E>) {
         // 默认是软删除
         const isTrash = trash === undefined ? true : trash;
-        for (const id of ids) {
-            await this.delete(id, isTrash);
-        }
+        await this.delete(ids, isTrash);
         // 返回删除后的数据列表
         return this.list(params, callback);
     }
@@ -174,51 +173,56 @@ export abstract class BaseService<
     ) {
         // 默认是软删除
         const isTrash = trash === undefined ? true : trash;
-        for (const id of ids) {
-            await this.delete(id, isTrash);
-        }
+        await this.delete(ids, isTrash);
         return this.paginate(params, callback);
     }
 
-    //    /**
-    //  * 批量删除数据
-    //  * @param data 需要删除的id列表
-    //  * @param trash 是否只扔到回收站,如果为true则软删除
-    //  */
-    //    async delete(ids: string[], trash?: boolean) {
-    //     let items: E[] = [];
-    //     if (this.repository instanceof BaseTreeRepository<E>) {
-    //         items = await this.repository.find({
-    //             where: { id: In(ids) as any },
-    //             withDeleted: this.enableTrash ? true : undefined,
-    //             relations: ['parent', 'children'],
-    //         });
-    //         if (this.repository.childrenResolve !== TreeChildrenResolve.DELETE) {
-    //             for (const item of items) {
-    //                 if (isNil(item.children) || item.children.length <= 0) continue;
-    //                 const nchildren = [...item.children].map((c) => {
-    //                     c.parent = item.parent;
-    //                     return item;
-    //                 });
-    //                 await this.repository.save(nchildren);
-    //             }
-    //         }
-    //     } else {
-    //         items = await this.repository.find({
-    //             where: { id: In(ids) as any },
-    //             withDeleted: this.enableTrash ? true : undefined,
-    //         });
-    //     }
-    //     if (this.enableTrash && trash) {
-    //         const directs = items.filter((item) => !isNil(item.deletedAt));
-    //         const softs = items.filter((item) => isNil(item.deletedAt));
-    //         return [
-    //             ...(await this.repository.remove(directs)),
-    //             ...(await this.repository.softRemove(softs)),
-    //         ];
-    //     }
-    //     return this.repository.remove(items);
-    // }
+    /**
+     * 批量删除数据
+     * @param data 需要删除的id列表
+     * @param trash 是否只扔到回收站,如果为true则软删除
+     */
+    async delete(ids: string[], trash?: boolean) {
+        let items: E[] = [];
+        if (this.repo instanceof BaseTreeRepository<E>) {
+            items = await this.repo.find({
+                where: { id: In(ids) as any },
+                withDeleted: this.enable_trash ? true : undefined,
+                relations: ['parent', 'children'],
+            });
+            // console.log("items", items[0]);
+            if (this.repo.childrenResolve !== TreeChildrenResolve.DELETE) {
+                for (const item of items) {
+                    if (!isNil(item.children) && item.children.length > 0) {
+                        const nchildren = [...item.children].map((c) => {
+                            c.parent = item.parent;
+                            return item;
+                        });
+                        console.log("nchildren", nchildren);
+                        await this.repo.save(nchildren);
+                    }
+                }
+            }
+        } else {
+            items = await this.repo.find({
+                where: { id: In(ids) as any },
+                withDeleted: this.enable_trash ? true : undefined,
+            });
+        }
+        // 软删除
+        if (this.enable_trash && trash) {
+            // 直接删除的
+            const directs = items.filter((item) => !isNil(item.deletedAt));
+            // 软删除的
+            const softs = items.filter((item) => isNil(item.deletedAt));
+            return [
+                ...(await this.repo.remove(directs)),
+                ...(await this.repo.softRemove(softs)),
+            ];
+        }
+        // 直接删除
+        return this.repo.remove(items);
+    }
 
     /**
      *

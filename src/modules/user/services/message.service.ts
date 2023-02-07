@@ -5,7 +5,9 @@ import { MessageRepository, MessageReceiveRepository } from "../repositorys";
 import { isNil, omit } from "lodash";
 import { UpdateReceviesDto, QueryOwnerMessageDto, QueryMessageDto } from "../dto";
 import { In, SelectQueryBuilder } from "typeorm";
-import { QueryHook, RecevierActionType, QueryListParams } from "@/modules/utils";
+import { QueryHook } from "@/modules/utils";
+import { QueryListParams } from "@/modules/core/types";
+import { RecevierActionType } from "../constants";
 
 @Injectable()
 export class MessageService extends BaseService<MessageEntity, MessageRepository> {
@@ -154,6 +156,11 @@ export class MessageService extends BaseService<MessageEntity, MessageRepository
     return receives;
   }
 
+  /**
+   * 
+   * @param qb 
+   * @param callback 
+   */
   protected buildItemQuery(qb: SelectQueryBuilder<MessageEntity>, callback?: QueryHook<MessageEntity>): Promise<SelectQueryBuilder<MessageEntity>> {
     qb = qb.leftJoinAndSelect(`${this.repo.getAlias()}.sender`, 'sender')
     .leftJoinAndSelect(`${this.repo.getAlias()}.receives`, 'receives')

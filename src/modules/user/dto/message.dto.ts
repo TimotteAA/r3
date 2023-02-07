@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { IsDefined, IsNotEmpty, IsOptional, IsUUID, Min, IsNumber, IsBoolean } from "class-validator";
 import { Transform } from "class-transformer";
 import { toNumber } from "lodash";
-import { toBoolean } from "@/modules/core/helpers";
+import { toBoolean } from "@/modules/core/helpers/index";
 import { CustomDtoValidation } from "@/modules/core/decorators";
 import { IsExist } from "@/modules/database/constraints";
 import { MessageEntity, UserEntity } from "../entities";

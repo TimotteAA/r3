@@ -5,7 +5,7 @@ import { isNil } from 'lodash';
 import { ALLOW_GUEST, CRUD_OPTIONS } from '../constants';
 import { BaseController } from '../crud/controller';
 
-import { CurdItem, CurdMethod, CurdOptions } from '@/modules/utils';
+import { CurdItem, CurdMethod, CurdOptions } from '../types';
 
 export const Crud =
     (options: CurdOptions) =>

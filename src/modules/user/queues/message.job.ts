@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectQueue } from "@nestjs/bullmq";
-import { SAVE_MESSAGE_QUEUE, SaveMessageQueueJob } from "@/modules/utils";
+import { SAVE_MESSAGE_QUEUE } from "../constants";
+import { SaveMessageQueueJob } from '../types'
 import { Queue } from "bullmq";
 import { MessageWorker } from "./message.worker";
 import { WsException } from "@nestjs/websockets";

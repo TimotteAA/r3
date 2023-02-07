@@ -3,12 +3,12 @@ import { Transform } from 'class-transformer';
 import { CustomDtoValidation } from '@/modules/core/decorators';
 import { BaseUserDto } from './base-user.dto';
 import { PartialType, PickType } from '@nestjs/swagger';
-import { PaginateOptions, UserDtoGroups } from '@/modules/utils';
+import { PaginateOptions } from '@/modules/utils';
 import { toNumber } from 'lodash';
-import { UserQueryOrder } from '@/modules/utils';
-import { toBoolean } from '@/modules/core/helpers';
+import { UserQueryOrder, UserDtoGroups } from '../constants';
+import { toBoolean } from '@/modules/core/helpers/index';
 
-@CustomDtoValidation({ type: 'query',forbidUnknownValues: true })
+@CustomDtoValidation({ type: 'query' })
 export class QueryUserDto implements PaginateOptions {
     // 给了默认值可以不传
     @Transform(({ value }) => toNumber(value))

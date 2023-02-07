@@ -9,7 +9,9 @@ import {
     TreeRepositoryUtils,
     SelectQueryBuilder,
 } from 'typeorm';
-import { QueryTreeOptions, getQrderByQuery } from '@/modules/utils';
+import { QueryTreeOptions } from '../types'
+import { getQrderByQuery } from "../helpers"
+import { TreeChildrenResolve } from '../constants';
 
 /**
  * buildBasicQuery -> findRoots，其中支持额外查询与排序 -> findTress
@@ -29,6 +31,15 @@ export class BaseTreeRepository<E extends ObjectLiteral> extends TreeRepository<
      * @type {(string | { name: string; order:)}
      */
     protected orderBy?: string | { name: string; order: 'ASC' | 'DESC' };
+
+    /**
+     * 删除父分类后是否提升子分类的等级
+     */
+    protected _childrenResolve?: TreeChildrenResolve;
+
+    get childrenResolve() {
+        return this._childrenResolve;
+    }
 
     getAlias() {
         return this.alias;

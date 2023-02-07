@@ -11,7 +11,8 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 import { getTime } from '@/modules/utils';
 import { PhoneRegisterDto, RegisterDto, EmailRegisterDto, PhoneLoginDto, EmailLoginDto, BoundPhoneDto , BoundEmailDto } from "../dto";
 import { InjectRepository } from '@nestjs/typeorm';
-import { CaptchaType, ClassToPlain } from "@/modules/utils"
+import {ClassToPlain } from "@/modules/utils"
+import { CaptchaType } from '../constants';
 
 @Injectable()
 export class AuthService {
