@@ -1,20 +1,23 @@
+import { SelectQueryBuilder } from "typeorm";
 import { Injectable } from "@nestjs/common";
+import { isNil } from "lodash";
 
 import { PermissionRepository } from "../repository";
 import { PermissionEntity } from "../entities";
 import { BaseService } from "@/modules/core/crud";
-import { QueryListParams } from "@/modules/core/types";
 import { QueryHook } from "@/modules/utils";
-import { AbilityTuple, Subject, MongoQuery } from "@casl/ability";
-import { AnyObject } from "@casl/ability/dist/types/types";
-import { SelectQueryBuilder } from "typeorm";
+import { QueryPermissionDto } from "../dtos";
+
+type FindParams = {
+  [key in keyof Omit<QueryPermissionDto, "page" | "limit">]: QueryPermissionDto[key]
+} 
 
 /**
  * 权限服务类
  * 只支持查询，不支持别的操作
  */
 @Injectable()
-export class PermissionService extends BaseService<PermissionEntity, PermissionRepository> {
+export class PermissionService extends BaseService<PermissionEntity, PermissionRepository, FindParams> {
   constructor(
     protected repo: PermissionRepository
   ) {
@@ -27,11 +30,17 @@ export class PermissionService extends BaseService<PermissionEntity, PermissionR
    * @param options 
    * @param callback 
    */
-  protected buildListQuery(qb: SelectQueryBuilder<PermissionEntity<AbilityTuple<string, Subject>, 
-    MongoQuery<AnyObject>>>, 
-    options: QueryListParams<PermissionEntity<AbilityTuple<string, Subject>, MongoQuery<AnyObject>>>, 
-    callback?: QueryHook<PermissionEntity<AbilityTuple<string, Subject>, MongoQuery<AnyObject>>>)
-  : Promise<SelectQueryBuilder<PermissionEntity<AbilityTuple<string, Subject>, MongoQuery<AnyObject>>>> {
-    return super.buildListQuery(qb, options, callback);
+  protected buildListQuery(
+    qb: SelectQueryBuilder<PermissionEntity>, 
+    options: FindParams, 
+    callback?: QueryHook<PermissionEntity>)
+  : Promise<SelectQueryBuilder<PermissionEntity>> {
+    const { role } = options;
+    if (!isNil(role)) {
+      qb = qb.andWhere("roles.id IN (:...ids)", {
+        ids: [role]
+      })
+    }
+    return super.buildListQuery(qb, options, callback)
   }
 }

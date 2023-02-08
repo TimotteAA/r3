@@ -9,6 +9,7 @@ import { PostEntity, CategoryEntity, CommentEntity } from './entities';
 import { UserModule } from '../user/user.module';
 import { ContentConfig } from './types';
 import { UserService } from '../user/services';
+import { ContentRbac } from './rbac';
 
 @Module({})
 export class ContentModule {
@@ -35,7 +36,7 @@ export class ContentModule {
         const controllers: ModuleMetadata['controllers' ] = [PostController, CommentController, CategoryController]
 
         const providers: ModuleMetadata['providers'] = [
-            SanitizeService, PostSubscriber, CommentService, CategoryService, ElasticSearchService,
+            SanitizeService, PostSubscriber, CommentService, CategoryService, ElasticSearchService, ContentRbac,
             {
                 provide: PostService,
                 inject: [

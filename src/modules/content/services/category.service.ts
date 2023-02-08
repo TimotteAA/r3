@@ -91,6 +91,12 @@ export class CategoryService extends BaseService<CategoryEntity, CategoryReposit
         return updatedCat;
     }
 
+    /**
+     * 区分null与undefined
+     * null表示顶级分类，undefined则是没传？
+     * @param current 
+     * @param parentId 
+     */
     protected async getParent(current?: string, parentId?: string) {
         // 传进来一样的参数
         if (current === parentId) return undefined;

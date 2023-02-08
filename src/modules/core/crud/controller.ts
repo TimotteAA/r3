@@ -1,9 +1,10 @@
 import { PaginateOptions } from '@/modules/utils';
 import { Body, Get, Post, Delete, Patch, Param, ParseUUIDPipe, Query } from '@nestjs/common';
-import { QueryListParams, TrashedDto } from '../types';
+import { TrashedDto } from '../types';
+import { ServiceListQueryParams } from '../types';
 import { DeleteDto,  QueryDetailDto, RestoreMultiDto } from './dtos';
 
-export abstract class BaseController<S, P extends QueryListParams<any> = QueryListParams<any>> {
+export abstract class BaseController<S, P extends ServiceListQueryParams<any> = ServiceListQueryParams<any>> {
     protected service: S;
 
     constructor(service: S) {

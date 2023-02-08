@@ -6,7 +6,7 @@ import { isNil, omit } from "lodash";
 import { UpdateReceviesDto, QueryOwnerMessageDto, QueryMessageDto } from "../dto";
 import { In, SelectQueryBuilder } from "typeorm";
 import { QueryHook } from "@/modules/utils";
-import { QueryListParams } from "@/modules/core/types";
+import { ServiceListQueryParams } from "@/modules/core/types";
 import { RecevierActionType } from "../constants";
 
 @Injectable()
@@ -169,7 +169,7 @@ export class MessageService extends BaseService<MessageEntity, MessageRepository
   }
 
   protected buildListQuery(qb: SelectQueryBuilder<MessageEntity>, 
-    options?: QueryListParams<MessageEntity> & {
+    options?: ServiceListQueryParams<MessageEntity> & {
       readed?: boolean,
       receiver?: string;
       sender?: string;

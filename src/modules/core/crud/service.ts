@@ -2,7 +2,7 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ObjectLiteral, SelectQueryBuilder, In } from 'typeorm';
 import { BaseRepository } from './repository';
 import { BaseTreeRepository } from './tree.repository';
-import { QueryListParams, QueryParams } from '../types';
+import { ServiceListQueryParams, QueryParams } from '../types';
 import { QueryTrashMode, TreeChildrenResolve } from '../constants';
 import { PaginateMeta, PaginateOptions, QueryHook } from '@/modules/utils';
 import { isNil } from 'lodash';
@@ -16,7 +16,7 @@ import { paginate, treePaginate } from '@/modules/database/paginate';
 export abstract class BaseService<
     E extends ObjectLiteral,
     R extends BaseRepository<E> | BaseTreeRepository<E>,
-    P extends QueryListParams<E> = QueryListParams<E>,
+    P extends ServiceListQueryParams<E> = ServiceListQueryParams<E>,
     M extends PaginateMeta = PaginateMeta,
 > {
     /**

@@ -12,6 +12,10 @@ export const timeObj: {age: number, limit: number} = {
 }
 
 export const userConfigFn: () => UserConfig = () => ({
+    super: {
+        username: env("ADMIN", "admin"),
+        password: env("ADMIN_PASSWOR", "123456aA!")
+    },
     hash: 10,
     jwt: {
         secret: env("secret"),

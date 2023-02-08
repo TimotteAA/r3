@@ -195,7 +195,12 @@ export interface UserConfig {
     hash?: number;
     jwt: JwtConfig;
     captcha: CaptchaConfig;
-    relations?: DynamicRelation[]
+    relations?: DynamicRelation[];
+    // 超级管理员账户
+    super: {
+        username: string;
+        password: string;
+    }
 }
 
 

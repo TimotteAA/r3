@@ -1,37 +1,13 @@
-import { PaginateOptions } from "@/modules/utils";
 import { CustomDtoValidation } from "@/modules/core/decorators";
-import { IsNotEmpty, IsOptional, IsUUID, MaxLength, IsNumber, Min, IsEnum } from "class-validator";
-import { Transform } from "class-transformer";
-import { toNumber } from "lodash";
+import { IsNotEmpty, IsOptional, IsUUID, MaxLength } from "class-validator";
 import { PartialType } from "@nestjs/swagger";
 import { IsExist } from "@/modules/database/constraints";
 import { PermissionEntity } from "../entities";
-import { TrashedDto } from "@/modules/core/types";
-import { QueryTrashMode } from "@/modules/core/constants";
+import { ListQueryDto } from "@/modules/restful/dto";
 import { UserEntity } from "@/modules/user/entities";
 
 @CustomDtoValidation({type: "query"})
-export class QueryRoleDto implements PaginateOptions, TrashedDto {
-  // 给了默认值可以不传
-  @Transform(({ value }) => toNumber(value))
-  @Min(1, {
-      message: '最少是第$constraint1页',
-  })
-  @IsNumber()
-  @IsOptional()
-  page: number = 1;
-
-  @Transform(({ value }) => toNumber(value))
-  @Min(5, {
-      message: '每页最少数量是$constraint1个',
-  })
-  @IsNumber()
-  @IsOptional()
-  limit: number = 5;
-
-  @IsEnum(QueryTrashMode)
-  @IsOptional()
-  trashed?: QueryTrashMode
+export class QueryRoleDto extends ListQueryDto {
 
   @IsExist(UserEntity, {
     message: "用户不存在"

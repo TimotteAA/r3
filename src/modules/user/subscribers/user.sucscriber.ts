@@ -3,13 +3,14 @@ import {
     EntitySubscriberInterface,
     InsertEvent,
     UpdateEvent,
-    DataSource,
+    DataSource
 } from 'typeorm';
 import { UserEntity } from '../entities';
 import { encrypt, generateRandonString } from '../helpers';
 
 import crypto from 'crypto';
 import { isNil } from 'lodash';
+import { PermissionEntity, RoleEntity } from '@/modules/rbac/entities';
 
 @EventSubscriber()
 export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
@@ -46,14 +47,36 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
      * @memberof UserSubscriber
      */
     async beforeUpdate(event: UpdateEvent<UserEntity>) {
-        // console.log(event.entity.password)
-        // console.log(event.updatedColumns);
-        // if (this.isUpdated('password', event)) {
-        //     event.entity.password = encrypt(event.entity.password);
-        // }
         if (!isNil(event.entity.password)) {
             event.entity.password = encrypt(event.entity.password)
         }
+    }
+
+    /**
+     * 在rbac.resolver中，并没有直接关联用户和权限
+     * @param entity 
+     */
+    async afterLoad(entity: UserEntity) {
+        // user的权限通过角色查询而出，因此权限可能会有重复
+        let permissions = (entity.permissions ?? []) as PermissionEntity[];
+        // 查询角色所有的权限
+        for (const role of entity.roles) {
+            const roleEntity = await RoleEntity.findOneOrFail({
+                where: {
+                    id: role.id
+                },
+                relations: ['permissions']
+            });
+            permissions = [...permissions, ...(roleEntity.permissions ?? [])]
+        };
+
+        permissions = permissions.reduce<PermissionEntity[]>((o, n) => {
+            if (o.map(item => item.name).includes(n.name)) {
+                return o;
+            }
+            return [...o, n]
+        }, []);
+        entity.permissions = permissions;
     }
 
     /**

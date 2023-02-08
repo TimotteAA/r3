@@ -30,13 +30,35 @@ export interface QueryParams<E extends ObjectLiteral> {
     withTrashed?: boolean;
 }
 
+/**
+ * 树形数据表查询参数
+ */
+export type TreeQueryParams<E extends ObjectLiteral> = FindTreeOptions & QueryParams<E>;
 
 /**
- * 列表查询
+ * 服务类数据列表查询类型
  */
-export type QueryListParams<E extends ObjectLiteral> = Omit<QueryTreeOptions<E>, 'withTrashed'> & {
+export type ServiceListQueryParams<E extends ObjectLiteral> =
+    | ServiceListQueryParamsWithTrashed<E>
+    | ServiceListQueryParamsNotWithTrashed<E>;
+
+/**
+ * 带有软删除的服务类数据列表查询类型
+ */
+type ServiceListQueryParamsWithTrashed<E extends ObjectLiteral> = Omit<
+    TreeQueryParams<E>,
+    'withTrashed'
+> & {
     trashed?: `${QueryTrashMode}`;
-};
+} & Record<string, any>;
+
+/**
+ * 不带软删除的服务类数据列表查询类型
+ */
+type ServiceListQueryParamsNotWithTrashed<E extends ObjectLiteral> = Omit<
+    ServiceListQueryParamsWithTrashed<E>,
+    'trashed'
+>;
 
 /**
  * 软删除dto

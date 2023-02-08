@@ -1,8 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { RoleEntity } from "../entities";
 import { RoleRepository, PermissionRepository } from "../repository";
 import { BaseService } from "@/modules/core/crud";
-import { QueryRoleDto, CreateRoleDto, UpdateRoleDto } from "../dtos/role.dto";
+import { QueryRoleDto, CreateRoleDto, UpdateRoleDto } from "../dtos";
 import { In, SelectQueryBuilder } from "typeorm";
 import { omit, isNil } from "lodash";
 import { QueryHook } from "@/modules/utils";
@@ -58,9 +58,21 @@ export class RoleService extends BaseService<RoleEntity, RoleRepository>{
     return this.detail(role.id);
   }
 
-  // async delete(ids: string[], trash?: boolean): Promise<RoleEntity[]> {
-    
-  // }
+  async delete(ids: string[], trash?: boolean): Promise<RoleEntity[]> {
+    // 查询是否删除了系统角色
+    const items = await this.repo.find({
+      where: {
+        id: In(ids)
+      },
+      withDeleted: true
+    });
+    for (const item of items) {
+      if (item.systemd) {
+        throw new BadRequestException("不能删除系统角色");
+      }
+    }
+    return super.delete(ids, trash);
+  }
 
   /**
    * 查询指定用户的角色
