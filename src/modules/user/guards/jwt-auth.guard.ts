@@ -8,7 +8,7 @@ import { isNil } from 'lodash';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-    constructor(private reflector: Reflector, private tokenService: TokenService) {
+    constructor(protected reflector: Reflector, protected tokenService: TokenService) {
         super();
     }
 
@@ -20,6 +20,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
             context.getClass().prototype,
             context.getHandler().name,
         );
+        // 定义在类上的默认值
         const defaultGuest = this.reflector.getAllAndOverride<boolean>(ALLOW_GUEST, [
             context.getHandler(),
             context.getClass(),

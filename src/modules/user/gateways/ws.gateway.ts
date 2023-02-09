@@ -10,7 +10,8 @@ import { SaveMessageQueueJob } from "../types";
 import { RedisService } from "@/modules/core/services";
 import { TokenService, UserService } from "../services";
 import { MessageJob } from "../queues";
-import { JwtWsGuard } from "../guards/jwt-ws.guart";
+// import { JwtWsGuard } from "../guards/jwt-ws.guart";
+import { RbacWsGuard } from "@/modules/rbac/guards";
 import { WSAuthDto, WsMessageDto } from "../dto";
 import { pick, isNil } from "lodash";
 import { instanceToPlain } from "class-transformer";
@@ -63,7 +64,7 @@ export class WsMessageGateway {
   @WebSocketServer()
   server!: Server;
 
-  @UseGuards(JwtWsGuard)
+  @UseGuards(RbacWsGuard)
   @SubscribeMessage("online")
   async onLine(
     @MessageBody() data: WSAuthDto,
@@ -96,7 +97,7 @@ export class WsMessageGateway {
       JSON.stringify({
         type: "message",
         message: {
-          body: `欢饮${token.user.username}，您已上线`,
+          body: `${token.user.username}，您已上线`,
           sender: this.getUserInfo(token.user),
           timer: getTime().toString
         }
@@ -130,7 +131,7 @@ export class WsMessageGateway {
    * websocket发送消息
    * @param data 
    */
-  @UseGuards(JwtWsGuard)
+  @UseGuards(RbacWsGuard)
   @SubscribeMessage("message")
   async sendMessage(
     @MessageBody() data: WsMessageDto
@@ -171,16 +172,15 @@ export class WsMessageGateway {
    * websocket主动下线
    * @param data 
    */
-  @UseGuards(JwtWsGuard)
+  @UseGuards(RbacWsGuard)
   @SubscribeMessage("offline")
   async offline(
-    @MessageBody() data: WSAuthDto,
-    @ConnectedSocket() client: WebSocket
+    @MessageBody() data: WSAuthDto
   ) {
     const token = await this.tokenService.findAccessToken(data.token);
     // 从redis中删除token
     if (!isNil(token)) {
-      const onliner = this.onliners.find(o => o.user.id !== token.user.id);
+      const onliner = this.onliners.find(o => o.user.id === token.user.id);
       await this.handleOnfline(onliner);
     }
     return {

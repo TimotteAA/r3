@@ -29,6 +29,7 @@ export class RoleService extends BaseService<RoleEntity, RoleRepository>{
    * @param data 
    */
   async create(data: CreateRoleDto): Promise<RoleEntity> {
+    console.log("data", data)
     const { permissions } = data;
     const item = await this.repo.save({
       ...data,

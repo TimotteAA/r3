@@ -17,15 +17,56 @@ export class UserService extends BaseService<UserEntity, UserRepository> {
     }
 
     async create(data: CreateUserDto): Promise<UserEntity> {
-        const res = await this.repo.save(data);
-        return omit(res, 'password') as UserEntity;
+        const { roles, permissions, ...rest } = data;
+        const res = await this.repo.save(rest);
+
+        if (!isNil(roles) && roles.length > 0) {
+            await this.repo.createQueryBuilder("user")
+                    .relation(UserEntity, "roles")
+                    .of(res)
+                    .add(roles)
+        }
+
+        
+        if (!isNil(permissions) && permissions.length > 0) {
+            await this.repo.createQueryBuilder("user")
+                    .relation(UserEntity, "permissions")
+                    .of(res)
+                    .add(permissions)
+        }
+
+        return this.detail(res.id);
     }
 
     async update(data: UpdateUserDto) {
         // id字段不更新
-        const rest = omit(data, 'id');
-        await this.repo.update(data.id, rest as any);
-        return this.detail(data.id);
+        const { roles, permissions, ...rest } = data;;
+        await this.repo.update(data.id, omit(rest, "id") as any);
+
+        const user = await this.detail(data.id);
+        
+        if (!isNil(roles) && roles.length > 0) {
+            await this.repo.createQueryBuilder("user")
+                    .relation(UserEntity, "roles")
+                    .of(user)
+                    .addAndRemove(
+                        roles ?? [],
+                        user.roles ?? []
+                    )
+        }
+
+        
+        if (!isNil(permissions) && permissions.length > 0) {
+            await this.repo.createQueryBuilder("user")
+                    .relation(UserEntity, "permissions")
+                    .of(user)
+                    .addAndRemove(
+                        permissions ?? [],
+                        user.permissions ?? []
+                    )
+        }
+
+        return this.detail(user.id);
     }
 
     /**

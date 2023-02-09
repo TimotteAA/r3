@@ -20,7 +20,6 @@ export class AppInterceptor extends ClassSerializerInterceptor {
         if (!isObject(response) || response instanceof StreamableFile) {
             return response;
         }
-
         // 数组
         if (Array.isArray(response)) {
             response = response.map((item) => {

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { AccessTokenEntity, RefreshTokenEntity, UserEntity, CodeEntity, MessageEntity, MessageReceiveEntity } from './entities';
 import { UserSubscriber } from './subscribers';
@@ -7,6 +7,8 @@ import { AuthService } from './services';
 import { PassportModule } from '@nestjs/passport';
 import { BullModule } from '@nestjs/bullmq';
 
+import { RbacGuard } from '../rbac/guards';
+import { RbacModule } from '../rbac/rbac.module';
 import { LocalAuthGuard, JwtAuthGuard, JwtWsGuard } from './guards';
 import { SEND_CAPTCHA_QUEUE, SAVE_MESSAGE_QUEUE } from './constants';
 
@@ -34,7 +36,8 @@ const entities = [AccessTokenEntity, RefreshTokenEntity, UserEntity, CodeEntity,
         PassportModule,
         AuthService.registerJwtModule(),
         BullModule.registerQueue({name: SEND_CAPTCHA_QUEUE}),
-        BullModule.registerQueue({name: SAVE_MESSAGE_QUEUE})
+        BullModule.registerQueue({name: SAVE_MESSAGE_QUEUE}),
+        forwardRef(() => RbacModule)
     ],
     providers: [
         UserSubscriber,
@@ -45,11 +48,11 @@ const entities = [AccessTokenEntity, RefreshTokenEntity, UserEntity, CodeEntity,
         JwtWsGuard,
         {
             provide: APP_GUARD,
-            useClass: JwtAuthGuard,
+            useClass: RbacGuard,
         },
         ...queues,
         ...gateways
     ],
-    exports: [...services, ...queues],
+    exports: [...services, ...queues, DatabaseModule.forRepository([...repos])],
 })
 export class UserModule {}

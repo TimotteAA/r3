@@ -1,6 +1,7 @@
 import { SelectQueryBuilder, ObjectLiteral, FindTreeOptions } from 'typeorm';
 import { ClassTransformOptions } from '@nestjs/common/interfaces/external/class-transform-options.interface';
 import { OrderType, QueryTrashMode } from './constants';
+import { Type } from '@nestjs/common';
 
 /**
  * 排序类型,{字段名称: 排序升序或降序}
@@ -70,7 +71,7 @@ export interface TrashedDto {
 /**
  * 所有的controller方法
  */
-export type CurdMethod =
+export type CrudMethod =
     | 'list'
     | 'detail'
     | 'delete'
@@ -83,7 +84,7 @@ export type CurdMethod =
 /**
  * 路由方法的配置项
  */
-export interface CurdMethodOptions {
+export interface CrudMethodOption {
     /**
      * 路由是否允许匿名访问
      */
@@ -92,23 +93,27 @@ export interface CurdMethodOptions {
      * 路由方法的序列化选项，noGroup不传参，否则根据'id'+方法匹配来传参
      */
     serialize?: ClassTransformOptions | 'noGroup';
+    /**
+     * 装饰器hook
+     */
+    hook?: (target: Type<any>, method: string) => void
 }
 
-export interface CurdItem {
-    name: CurdMethod;
-    options?: CurdMethodOptions;
+export interface CrudItem {
+    name: CrudMethod;
+    options?: CrudMethodOption;
 }
 
-export interface CurdOptions {
+export interface CrudOptions {
     id: string;
     /**
      * 启用的路由方法
      */
-    enabled: Array<CurdMethod | CurdItem>;
+    enabled: Array<CrudMethod | CrudItem>;
     /**
      * 列表查询、创建、更新的Dto
      */
     dtos: {
-        [key in 'query' | 'create' | 'update']: any;
+        [key in 'query' | 'create' | 'update']?: any;
     };
 }

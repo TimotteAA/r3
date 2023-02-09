@@ -16,7 +16,7 @@ export class WsExceptionFilter extends BaseWsExceptionFilter {
     handleError(client: any, exception: any) {
         const result = super.handleError(client, exception);
         if (client instanceof WebSocket) {
-            const error = exception.getError();
+            const error = exception?.getError();
             const message = isObject(error)
                 ? error
                 : {

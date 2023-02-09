@@ -7,6 +7,8 @@ import { PaginateOptions } from '@/modules/utils';
 import { toNumber } from 'lodash';
 import { UserQueryOrder, UserDtoGroups } from '../constants';
 import { toBoolean } from '@/modules/core/helpers/index';
+import { IsExist } from '@/modules/database/constraints';
+import { PermissionEntity, RoleEntity } from '@/modules/rbac/entities';
 
 @CustomDtoValidation({ type: 'query' })
 export class QueryUserDto implements PaginateOptions {
@@ -40,7 +42,39 @@ export class QueryUserDto implements PaginateOptions {
 }
 
 @CustomDtoValidation({ groups: [UserDtoGroups.CREATE] })
-export class CreateUserDto extends PickType(BaseUserDto, ['username', 'nickname', 'password', 'email', 'phone']) {}
+export class CreateUserDto extends PickType(BaseUserDto, ['username', 'nickname', 'password', 'email', 'phone']) {
+    @IsBoolean()
+    @Transform(({value}) => toBoolean(value))
+    @IsOptional({always: true})
+    actived?: boolean;
+
+    @IsExist(RoleEntity, {
+        message: "角色不存在",
+        always: true,
+        each: true
+    })
+    @IsUUID(undefined, {
+        message: "角色ID格式错误",
+        always: true,
+        each: true
+    })
+    @IsOptional({always: true})
+    roles?: string[]
+
+    
+    @IsExist(PermissionEntity, {
+        message: "权限不存在",
+        always: true,
+        each: true
+    })
+    @IsUUID(undefined, {
+        message: "权限ID格式错误",
+        always: true,
+        each: true
+    })
+    @IsOptional({always: true})
+    permissions?: string[]
+}
 
 @CustomDtoValidation({ groups: [UserDtoGroups.UPDATE] })
 export class UpdateUserDto extends PartialType(CreateUserDto) {

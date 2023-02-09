@@ -4,7 +4,9 @@ import { RbacResolver } from "../rbac/rbac.resolver";
 import { PermissionAction, SystemRoles } from "../rbac/constants";
 import { CategoryEntity, CommentEntity, PostEntity } from "./entities";
 
-
+/**
+ * 模块启动时，添加权限与角色
+ */
 @Injectable()
 export class ContentRbac implements OnModuleInit {
   constructor(protected moduleRef: ModuleRef) {}

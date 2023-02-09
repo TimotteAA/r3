@@ -5,18 +5,18 @@ import { isNil } from 'lodash';
 import { ALLOW_GUEST, CRUD_OPTIONS } from '../constants';
 import { BaseController } from '../crud/controller';
 
-import { CurdItem, CurdMethod, CurdOptions } from '../types';
+import { CrudItem, CrudMethod, CrudOptions } from '../types';
 
 export const Crud =
-    (options: CurdOptions) =>
+    (options: CrudOptions) =>
     <T extends BaseController<any>>(Target: Type<T>) => {
         Reflect.defineMetadata(CRUD_OPTIONS, options, Target);
-        const { id, enabled, dtos } = Reflect.getMetadata(CRUD_OPTIONS, Target) as CurdOptions;
-        const changed: Array<CurdMethod> = [];
+        const { id, enabled, dtos } = Reflect.getMetadata(CRUD_OPTIONS, Target) as CrudOptions;
+        const changed: Array<CrudMethod> = [];
         // 遍历所用启用的方法添加验证DTO类
         for (const value of enabled) {
             // 方法名
-            const { name } = (typeof value === 'string' ? { name: value } : value) as CurdItem;
+            const { name } = (typeof value === 'string' ? { name: value } : value) as CrudItem;
             if (changed.includes(name)) continue;
             if (name in Target.prototype) {
                 // 在Controller中自己定义了
@@ -37,6 +37,10 @@ export const Crud =
             }
         }
         // 添加序列化选项以及是否允许匿名访问等metadata
+        if (Target.name === "PermissionController") {
+            console.log(changed)
+        }
+
         for (const key of changed) {
             const find = enabled.find((v) => v === key || (v as any).name === key);
             const option = typeof find === 'string' ? {} : find.options ?? {};
@@ -54,6 +58,7 @@ export const Crud =
             if (option.allowGuest) {
                 Reflect.defineMetadata(ALLOW_GUEST, true, Target.prototype, key);
             }
+            if (option.hook) option.hook(Target, key)
         }
         // 对于不启用的方法返回404
         const fixedProperties = ['constructor', 'service', 'setService'];

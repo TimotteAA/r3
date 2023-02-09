@@ -60,15 +60,18 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
         // user的权限通过角色查询而出，因此权限可能会有重复
         let permissions = (entity.permissions ?? []) as PermissionEntity[];
         // 查询角色所有的权限
-        for (const role of entity.roles) {
-            const roleEntity = await RoleEntity.findOneOrFail({
-                where: {
-                    id: role.id
-                },
-                relations: ['permissions']
-            });
-            permissions = [...permissions, ...(roleEntity.permissions ?? [])]
-        };
+        if (entity.roles && entity.roles.length > 0) {
+            for (const role of entity.roles) {
+                const roleEntity = await RoleEntity.findOneOrFail({
+                    where: {
+                        id: role.id
+                    },
+                    relations: ['permissions']
+                });
+                permissions = [...permissions, ...(roleEntity.permissions ?? [])]
+            };
+        }
+
 
         permissions = permissions.reduce<PermissionEntity[]>((o, n) => {
             if (o.map(item => item.name).includes(n.name)) {

@@ -19,7 +19,6 @@ export class AppPipe extends ValidationPipe {
         const { transformOptions, type: optionType, ...dtoValidatorOptions } = options;
         // 请求类型，默认是body
         const requestType: Paramtype = optionType ?? 'body';
-
         // 比较定义在dto类上的与controller入参是否一致
         if (requestType !== type) {
             return value;
@@ -44,7 +43,15 @@ export class AppPipe extends ValidationPipe {
               )
             : value;
         // 序列化并验证dto对象
+
         let result = await super.transform(toValidate, metadata);
+
+        // 如果dto类的中存在transform静态方法,则返回调用进一步transform之后的结果
+        if (typeof result.transform === 'function') {
+            result = await result.transform(result);
+            const { transform, ...data } = result;
+            result = data;
+        }
         // 重置验证选项
         this.validatorOptions = originValidatorOptions;
         // 重置transform选项

@@ -4,7 +4,7 @@ import { FastifyRequest as Request } from "fastify";
 import { UserEntity } from "../user/entities";
 
 import { ClassToPlain } from "../utils";
-
+import { CrudMethodOption, CrudMethod, CrudOptions } from "../core/types";
 import { RoleEntity, PermissionEntity } from "./entities";
 
 /**
@@ -26,10 +26,16 @@ export type PermissionType<A extends AbilityTuple, C extends MongoQuery> = Pick<
   }
 }
 
+/**
+ * 权限校验器类
+ */
 interface PermissionCheckerClass {
   handle(ability: MongoAbility, ref: ModuleRef, request?: Request): Promise<boolean>;
 }
 
+/**
+ * 权限校验函数
+ */
 type PermissionCheckerCallback = (
   ability: MongoAbility,
   ref: ModuleRef,
@@ -40,3 +46,15 @@ type PermissionCheckerCallback = (
  * 类或函数校验器
  */
 export type PermissionChecker = PermissionCheckerClass | PermissionCheckerCallback;
+
+export type RbacCrudOption = CrudMethodOption & { rbac?: PermissionChecker[] }
+export interface RbacCrudItem {
+  name: CrudMethod;
+  options?: RbacCrudOption;
+}
+/**
+ * rbac装饰器
+ */
+export type RbacCrudOptions = Omit<CrudOptions, "enabled"> & {
+  enabled: Array<CrudMethod | RbacCrudItem>
+}
