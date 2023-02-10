@@ -142,7 +142,7 @@ export class CaptchaJob {
             type,
             code,
           })
-          console.log(12345);
+          // console.log(12345);
           results[key] = result;
           logs[key] = log;
         } catch (err) {
@@ -168,7 +168,7 @@ export class CaptchaJob {
       const config = (this.config.captcha as any)[type][action];
       // console.log(this.config.captcha[type]);
       // console.log(type, action);
-      console.log(config);
+      // console.log(config);
       if (isNil(config)) throw new BadRequestException(error);
       // 创建验证码
       // console.log(this.config.captcha);

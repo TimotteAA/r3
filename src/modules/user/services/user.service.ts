@@ -7,12 +7,17 @@ import { isBoolean, isNil, omit } from 'lodash';
 import { EntityNotFoundError, SelectQueryBuilder } from 'typeorm';
 import { QueryUserDto, CreateUserDto, UpdateUserDto } from '../dto';
 import { decrypt } from "../helpers";
+import { SystemRoles } from '@/modules/rbac/constants';
+import { PermissionRepository, RoleRepository } from '@/modules/rbac/repository';
  
 type FindParams = Omit<QueryUserDto, "limit" | 'page'>
 
 @Injectable()
 export class UserService extends BaseService<UserEntity, UserRepository> {
-    constructor(protected repo: UserRepository) {
+    constructor(protected repo: UserRepository,
+        protected roleRepo: RoleRepository,
+        protected permissionRepo: PermissionRepository    
+    ) {
         super(repo);
     }
 
@@ -35,7 +40,9 @@ export class UserService extends BaseService<UserEntity, UserRepository> {
                     .add(permissions)
         }
 
-        return this.detail(res.id);
+        const user = await this.detail(res.id);
+        await this.syncActived(user);
+        return this.detail(user.id);
     }
 
     async update(data: UpdateUserDto) {
@@ -66,7 +73,9 @@ export class UserService extends BaseService<UserEntity, UserRepository> {
                     )
         }
 
-        return this.detail(user.id);
+        const res = await this.detail(user.id);
+        await this.syncActived(res);
+        return this.detail(res.id);
     }
 
     /**
@@ -144,6 +153,47 @@ export class UserService extends BaseService<UserEntity, UserRepository> {
     }
 
 
+    protected async syncActived(user: UserEntity) {
+        const roleRelation = this.repo.createQueryBuilder()
+            .relation('roles')
+            .of(user);
+        const permissionRelation = this.repo.createQueryBuilder()
+            .relation("permissions")
+            .of(user)
+        // 激活的用户
+        if (user.actived) {
+            const roleNames = (user.roles ?? []).map(item => item.name);
+            // 是否没有角色
+            const noRoles = roleNames.length <= 0 ||    
+                (!roleNames.includes(SystemRoles.ADMIN) && !roleNames.includes(SystemRoles.USER));
+            const isSuperAdmin = roleNames.includes(SystemRoles.ADMIN);
+            
+            if (noRoles) {
+                // 分配普通角色
+                const customRole = await this.roleRepo.findOne({
+                    where: {
+                        name: SystemRoles.USER
+                    },
+                    relations: ['users']
+                });
+                if (!isNil(customRole)) await roleRelation.add(customRole)
+            } else if (isSuperAdmin) {
+                // 分配超级管理员角色
+                const adminRole = await this.roleRepo.findOne({
+                    where: {
+                        name: SystemRoles.ADMIN
+                    },
+                    relations: ['users']
+                });
+                if (!isNil(adminRole)) await roleRelation.addAndRemove(adminRole, user.roles)
+            }
+        } else {
+            // 没有激活的用户，删除所有权限与角色
+            await roleRelation.remove((user.roles ?? []).map(item => item.id));
+            await permissionRelation.remove((user.permissions ?? []).map(item => item.id))
+        }
+    }
+
     /**
      * 用于分页查询
      * @param qb 
@@ -165,6 +215,7 @@ export class UserService extends BaseService<UserEntity, UserRepository> {
 
         // 额外查询，比如关联关系？
         qb = !isNil(callback) ? await callback(qb) : qb;
+        qb = await super.buildListQuery(qb, options, callback);
         return qb;
     }
 }

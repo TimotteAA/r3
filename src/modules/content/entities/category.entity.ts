@@ -54,7 +54,7 @@ export class CategoryEntity extends BaseEntity {
     @DeleteDateColumn()
     deletedAt!: Date;
 
-    // // 虚拟字段，有几篇文章用了这个标签
-    // @Expose()
-    // postsCount: number;
+    // 虚拟字段，有几篇文章用了这个标签
+    @Expose()
+    postsCount: number;
 }

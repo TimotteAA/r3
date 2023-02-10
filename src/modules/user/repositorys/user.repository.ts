@@ -7,7 +7,6 @@ export class UserRepository extends BaseRepository<UserEntity> {
     protected alias = 'user';
 
     buildBaseQuery() {
-        console.log("this", this);
         return this.createQueryBuilder(this.alias)
             .leftJoinAndSelect(`${this.alias}.roles`, 'roles')
             .leftJoinAndSelect(`${this.alias}.permissions`, 'permissions')

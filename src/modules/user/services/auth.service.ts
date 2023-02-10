@@ -33,7 +33,7 @@ export class AuthService {
         const user = await this.userService.findOneByCredential(credential, async (qb: SelectQueryBuilder<UserEntity>) => {
             return qb.addSelect('user.password');
         });
-        console.log("user", user);
+        // console.log("user", user);
         if (decrypt(pass, user.password)) {
             return omit(user, 'password');
         }
@@ -206,7 +206,7 @@ export class AuthService {
 
     protected async checkIsCaptchaValid(code: string, type: CaptchaType, media: string) {
         const condition = { code, type, media }
-        console.log(condition);
+        // console.log(condition);
         
         const captcha = await this.codeRepo.findOne({where: condition});
         if (isNil(captcha)) throw new BadRequestException(CodeEntity, '验证码不正确');

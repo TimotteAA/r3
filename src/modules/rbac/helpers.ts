@@ -33,15 +33,16 @@ export const checkOwner = async <E extends ObjectLiteral> (
   permission?: string,
 ) => {  
   const models = await getModels(getRequestItems(request));
+  if (!models || !models.length) return false;
   return models.every((model) => ability.can(permission ?? PermissionAction.OWNER, model));
 }
 
 export const simpleCrudOptions = (
   permissions?: PermissionChecker[],
 ): CrudMethodOption => {
-  console.log("执行了吗", permissions)
+  // console.log("执行了吗", permissions)
   
-
+  
   return {
     hook: (target, method) => {
       if (permissions) ManualPermission(target, method, permissions);

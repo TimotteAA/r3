@@ -22,5 +22,5 @@ export class ListQueryDto implements PaginateOptions, TrashedDto {
     @Min(1, { message: '每页显示数据必须大于1' })
     @IsNumber()
     @IsOptional()
-    limit = 10;
+    limit = 5;
 }

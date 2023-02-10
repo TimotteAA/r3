@@ -1,8 +1,6 @@
-import { PaginateOptions } from '@/modules/utils';
 import { Body, Get, Post, Delete, Patch, Param, ParseUUIDPipe, Query } from '@nestjs/common';
-import { TrashedDto } from '../types';
 import { ServiceListQueryParams } from '../types';
-import { DeleteDto,  QueryDetailDto, RestoreMultiDto } from './dtos';
+import { DeleteDto, ListQueryDto, QueryDetailDto, RestoreDto } from '@/modules/restful/dto';
 
 export abstract class BaseController<S, P extends ServiceListQueryParams<any> = ServiceListQueryParams<any>> {
     protected service: S;
@@ -12,7 +10,7 @@ export abstract class BaseController<S, P extends ServiceListQueryParams<any> = 
     }
 
     @Get()
-    async list(@Query() params: PaginateOptions & P & TrashedDto) {
+    async list(@Query() params:  P & ListQueryDto) {
         return (this.service as any).paginate(params);
     }
 
@@ -31,45 +29,54 @@ export abstract class BaseController<S, P extends ServiceListQueryParams<any> = 
         return (this.service as any).update(data);
     }
 
-    @Delete(':id')
+    @Delete()
     async delete(@Body() options: DeleteDto) {
         return (this.service as any).delete(options.ids, options.trashed);
     }
 
-    /**
-     * 批量删除
-     * @param options 
-     * @param param1 
-     * @param args 
-     */
-    @Delete()
-    async deleteMulti(
-        @Query()
-        options: PaginateOptions & TrashedDto & P,
-        @Body()
-        { trashed, ids }: DeleteDto,
-        ...args: any[]
-    ) {
-        return (this.service as any).deletePaginate(ids, options, trashed);
-    }
+    // /**
+    //  * 批量删除
+    //  * @param options 
+    //  * @param param1 
+    //  * @param args 
+    //  */
+    // @Delete()
+    // async deleteMulti(
+    //     @Query()
+    //     options: PaginateOptions & TrashedDto & P,
+    //     @Body()
+    //     { trashed, ids }: DeleteDto,
+    //     ...args: any[]
+    // ) {
+    //     return (this.service as any).deletePaginate(ids, options, trashed);
+    // }
 
-    @Patch('restore/:item')
-    async restore(
-        @Param('item', new ParseUUIDPipe())
-        item: string,
-        ...args: any[]
-    ) {
-        return (this.service as any).restore(item);
-    }
+    // @Patch('restore/:item')
+    // async restore(
+    //     @Param('item', new ParseUUIDPipe())
+    //     item: string,
+    //     ...args: any[]
+    // ) {
+    //     return (this.service as any).restore(item);
+    // }
+
+    // @Patch('restore')
+    // async restore(
+    //     @Query()
+    //     options: PaginateOptions & TrashedDto & P,
+    //     @Body()
+    //     { ids }: RestoreDto,
+    //     ...args: any[]
+    // ) {
+    //     return (this.service as any).restore(ids, options);
+    // }
 
     @Patch('restore')
-    async restoreMulti(
-        @Query()
-        options: PaginateOptions & TrashedDto & P,
+    async restore(
         @Body()
-        { ids }: RestoreMultiDto,
+        { ids }: RestoreDto,
         ...args: any[]
     ) {
-        return (this.service as any).restorePaginate(ids, options);
+        return (this.service as any).restore(ids);
     }
 }

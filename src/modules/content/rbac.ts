@@ -12,7 +12,6 @@ export class ContentRbac implements OnModuleInit {
   constructor(protected moduleRef: ModuleRef) {}
 
   onModuleInit() {
-    console.log("1234545")
     const resolver = this.moduleRef.get(RbacResolver, { strict: false });
     // 添加权限
     resolver.addPermissions([

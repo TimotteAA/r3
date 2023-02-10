@@ -115,30 +115,34 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
      * @param id 
      * @param trashed 
      */
-    async delete(id: string[], trashed?: boolean): Promise<PostEntity[]> {
+    async delete(ids: string[], trashed?: boolean): Promise<PostEntity[]> {
         // 删除es中的结果
         if (!isNil(this.searchService)) {
             try {
-                await this.searchService.delete(id[0]);
+                for (const id of ids) {
+                    await this.searchService.delete(id);
+                }
             } catch (err) {
                 throw new InternalServerErrorException(err)
             }
         }
-        const post = await super.delete(id, trashed);
+        const post = await super.delete(ids, trashed);
 
         return post;
     }
 
-    async restore(id: string, callback?: QueryHook<PostEntity>): Promise<PostEntity> {
-        const post = await super.restore(id, callback);
+    async restore(ids: string[]): Promise<PostEntity[]> {
+        const posts = await super.restore(ids);
         if (!isNil(this.searchService)) {
             try {
-                await this.searchService.create(post);
+                for (const post of posts) {
+                    await this.searchService.create(post);
+                }
             } catch (err) {
                 throw new InternalServerErrorException(err)
             }
         }
-        return post;
+        return posts;
     }
 
     /**

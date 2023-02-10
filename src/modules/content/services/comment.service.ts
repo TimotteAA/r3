@@ -1,6 +1,6 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
 import { EntityNotFoundError } from 'typeorm';
-import { QueryCommentDto, CreateCommentDto, QueryCommentTreeDto } from '../dtos';
+import { CreateCommentDto, QueryCommentTreeDto } from '../dtos';
 import { CommentRepository, PostRepository } from '../repositorys';
 import { treePaginate } from '@/modules/database/paginate';
 import { CommentEntity } from '../entities';
@@ -8,6 +8,7 @@ import { isNil } from 'lodash';
 import { SelectQueryBuilder } from 'typeorm';
 import { BaseService } from '@/modules/core/crud';
 import { UserService } from '@/modules/user/services';
+import { ManageCommentQuery } from '../dtos/manage';
 
 @Injectable()
 export class CommentService extends BaseService<CommentEntity, CommentRepository> {
@@ -20,7 +21,13 @@ export class CommentService extends BaseService<CommentEntity, CommentRepository
      * @returns 评论树
      */
     async findTrees(options: QueryCommentTreeDto = {}) {
-        return this.repo.findTrees({ post: options.post });
+        const { post } = options;
+        return this.repo.findTrees({
+            addQuery: (qb) => {
+                if (!isNil(post)) qb = qb.andWhere("post.id = :id", { id: post })
+                return qb;
+            }
+        });
     }
 
     /**
@@ -28,13 +35,12 @@ export class CommentService extends BaseService<CommentEntity, CommentRepository
      * @param options：页数与每页数量
      * @returns
      */
-    async paginate(options: QueryCommentDto) {
-        const { post, ...rest } = options;
+    async paginate(options: ManageCommentQuery) {
+        const { post, author, ...rest } = options;
         const addQuery = (qb: SelectQueryBuilder<CommentEntity>) => {
-            // return isNil(post) ? qb :  qb.andWhere('post.id = :id', { id: post})
-            const condition: Record<string, string> = {};
-            if (!isNil(post)) condition.post = post;
-            return Object.keys(condition).length > 0 ? qb.andWhere(condition) : qb;
+            if (!isNil(post)) qb = qb.andWhere('post.id = :id', { id: post });
+            if (!isNil(author)) qb = qb.andWhere('author.id = :id', { id: author });
+            return qb;
         };
         const data = await this.repo.findTrees({ addQuery });
         let comments: CommentEntity[] = [];

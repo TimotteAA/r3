@@ -1,7 +1,4 @@
-import { PaginateOptions } from '@/modules/utils';
 import {
-    IsNumber,
-    Min,
     IsOptional,
     IsUUID,
     ValidateIf,
@@ -9,45 +6,17 @@ import {
     MaxLength,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { toNumber } from 'lodash';
-import { PickType } from '@nestjs/swagger';
+import { OmitType, PickType } from '@nestjs/swagger';
 import { CustomDtoValidation } from '@/modules/core/decorators';
 import { IsExist } from '@/modules/database/constraints';
 import { CommentEntity, PostEntity } from '../entities';
+import { ManageCommentQuery } from './manage';
 
 @CustomDtoValidation({ type: 'query' })
 /**
  * 评论分页查询
  */
-export class QueryCommentDto implements PaginateOptions {
-    @IsExist(PostEntity, {
-        groups: ['create'],
-        message: '文章不存在',
-    })
-    @IsUUID(undefined, {
-        message: '文章ID格式不对',
-    })
-    @ValidateIf((value) => value.post && value.post !== null)
-    @IsOptional({ always: true })
-    @Transform(({ value }) => (value === 'null' ? null : value))
-    post?: string;
-
-    @Transform(({ value }) => toNumber(value))
-    @IsNumber()
-    @Min(1, {
-        message: '页数最小为$constraint1',
-    })
-    @IsOptional()
-    page = 1;
-
-    @Transform(({ value }) => toNumber(value))
-    @IsNumber()
-    @Min(10, {
-        message: '每页数量最小为$constraint1',
-    })
-    @IsOptional()
-    limit = 10;
-}
+export class QueryCommentDto extends OmitType(ManageCommentQuery, ['trashed']) {}
 
 @CustomDtoValidation({ type: 'query' })
 /**

@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { EntityNotFoundError,} from 'typeorm';
-import { CreateCategoryDto, QueryCategoryTreeDto, UpdateCategoryDto } from '../dtos';
+import { CreateCategoryDto, UpdateCategoryDto } from '../dtos/manage';
+
 import { CategoryRepository } from '../repositorys';
 // import { treePaginate } from '@/modules/database/paginate';
 import { CategoryEntity } from '../entities';
 import { isNil, omit } from 'lodash';
 import { BaseService } from '@/modules/core/crud';
-import { QueryTrashMode } from '@/modules/core/constants'
 
 @Injectable()
 export class CategoryService extends BaseService<CategoryEntity, CategoryRepository> {
@@ -19,16 +19,16 @@ export class CategoryService extends BaseService<CategoryEntity, CategoryReposit
      * 返回分类树
      * @returns 分类树
      */
-    async findTrees(options: QueryCategoryTreeDto) {
+    async findTrees() {
         const res = await this.repo.findTrees({
-            withTrashed: options.trashed === QueryTrashMode.ALL || options.trashed === QueryTrashMode.ONLY,
-            addQuery: (qb) => {
-                // 仅查询回收站数据
-                if (options.trashed === QueryTrashMode.ONLY) {
-                    qb = qb.where(`${this.repo.getAlias()}.deletedAt IS NOT NUll`)
-                }
-                return qb;
-            }
+            // withTrashed: options.trashed === QueryTrashMode.ALL || options.trashed === QueryTrashMode.ONLY,
+            // addQuery: (qb) => {
+            //     // 仅查询回收站数据
+            //     if (options.trashed === QueryTrashMode.ONLY) {
+            //         qb = qb.where(`${this.repo.getAlias()}.deletedAt IS NOT NUll`)
+            //     }
+            //     return qb;
+            // }
         });
         return res;
     }

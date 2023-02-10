@@ -34,7 +34,7 @@ export const getCheckers = (context: ExecutionContext, reflector: Reflector) => 
       context.getHandler()
     ]
   );
-  console.log(crudCheckers, defaultCheckers)
+  // console.log(crudCheckers, defaultCheckers)
   return crudCheckers ?? defaultCheckers;
 }
 
@@ -58,7 +58,7 @@ export const solveChecker = async ({
     if (o.find(item => item.name === n.name)) return o;
     return [...o, n];
   }, []);
-  console.log("permissions", permissions);
+  // console.log("permissions", permissions);
   // 创建ability
   const ability = createMongoAbility(
     permissions.map(permission => {
@@ -71,7 +71,7 @@ export const solveChecker = async ({
       return rule;
     })
   );
-  console.log(ability);
+  // console.log(ability);
   const results = await Promise.all(
     checkers.map(async (checker) => execChecker(checker, ability, moduleRef, request))
   );

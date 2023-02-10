@@ -90,12 +90,12 @@ export class UserEntity extends BaseEntity {
     @Expose({ groups: ['user-detail', 'user-list'] })
     trashed!: boolean;
 
-    @Expose()
+    @Expose({ groups: ['user-detail', 'user-list'] })
     @ManyToMany(() => RoleEntity, (role: RoleEntity) => role.users)
     @JoinTable()
     roles!: RoleEntity[]
 
-    @Expose()
+    @Expose({ groups: ['user-detail', 'user-list'] })
     @ManyToMany(() => PermissionEntity, (p: PermissionEntity) => p.users)
     @JoinTable()
     permissions!: PermissionEntity[]

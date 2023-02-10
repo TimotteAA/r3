@@ -114,13 +114,15 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
     // 开启事务
     await queryRunner.startTransaction();
     // console.log(chalk.red(1231231))
+    await queryRunner.commitTransaction()
+
     try {
       // 同步模块角色
       await this.syncRoles(queryRunner.manager);
       // 同步模块权限
       await this.syncPermissions(queryRunner.manager);
     } catch (err) {
-      console.log(chalk.red(err));
+      console.log(chalk.red(err), 2222);
       await queryRunner.rollbackTransaction();
     } finally {
       await queryRunner.release();
@@ -140,6 +142,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
       }
       return [...o, n];
     }, [])
+
 
     for (const item of this.roles) {
       // 角色数据库中进行查找
@@ -183,6 +186,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
     } 
     // console.log("toDels", toDels)
     if (toDels.length > 0) await manager.delete(RoleEntity, toDels);
+
   }
 
   /**
@@ -194,7 +198,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
     const superAdmin = userConfigFn().super;
     // 数据库中所有的权限
     const permissions = await manager.find(PermissionEntity);
-  
+    // console.log('permissions1', permissions)
     // 非超级管理员的所有角色
     const roles = await manager.find(RoleEntity, {
       where: {
@@ -203,7 +207,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
       relations: ['permissions']
     });
     const roleRepo = manager.getRepository(RoleEntity);
-    
+    // console.log("2", this.permissions)
     // 合并并去除重名权限
     this._permissions = this.permissions.reduce<PermissionType<A, C>[]>((o, n) => {
       if (o.map(({ name }) => name).includes(n.name)) {
@@ -214,12 +218,14 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
     }, []);
     // 当前所有的权限名
     const names = this.permissions.map(p => p.name);
+    // console.log("3", this.permissions)
 
     // 同步权限
     for (const item of this.permissions) {
       // 去掉rule.conditions
       // const permission = omit(item, ['conditions']);
       const permission = { ...item, rule: omit(item.rule, "conditions") }
+      // console.log("4", permission)
       const old = await manager.findOne(PermissionEntity, {
         where: {
           name: permission.name
@@ -231,7 +237,6 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
         await manager.update(PermissionEntity, old.id, permission);
       }
     }
-
 
     // 删除冗余权限
     // 去除硬编码的代码中不存在的角色，不可删除系统管理权限
@@ -245,21 +250,28 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
 
     /************* 同步普通角色 *************** */
     for (const role of roles) {
-      // 新配置的权限
-      const rolePermissions = await manager.findBy(PermissionEntity, {
-        // 新配置的role的权限
-        name: In(this.roles.find(r => r.name === role.name).permissions)
-      })
-      // 删除老的权限，增加新配置的
-      await roleRepo.
-        createQueryBuilder("role")
-        .relation(RoleEntity, "permissions")
-        .of(role)
-        .addAndRemove(
-          rolePermissions.map(p => p.id),
-          // 同步权限前的角色权限
-          role.permissions ? role.permissions.map(p => p.id) : []
-        )
+      
+      // const p = this.roles.find(r => r.name === role.name).permissions
+      // 动态创建的角色不会同步
+      const roleMemory = this.roles.find(r => r.name === role.name);
+
+      if (roleMemory) {
+        // 新配置的权限
+        const rolePermissions = await manager.findBy(PermissionEntity, {
+          // 新配置的role的权限
+          name: In(roleMemory.permissions)
+        })
+        // 删除老的权限，增加新配置的
+        await roleRepo.
+          createQueryBuilder("role")
+          .relation(RoleEntity, "permissions")
+          .of(role)
+          .addAndRemove(
+            rolePermissions.map(p => p.id),
+            // 同步权限前的角色权限
+            role.permissions ? role.permissions.map(p => p.id) : []
+          )
+      }
     }
 
     
@@ -280,7 +292,6 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
         name: "system-manage"
       }
     });
-
     await roleRepo
       .createQueryBuilder("role")
       .relation(RoleEntity, "permissions")

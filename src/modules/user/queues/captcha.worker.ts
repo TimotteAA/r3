@@ -63,7 +63,7 @@ export class CaptchaWorker {
     } = data;
     const { code, media } = captcha;
     const { templateId } = option as SmsCaptchaOption;
-    console.log(data);
+    // console.log(data);
     const result = await this.sms.send({
       PhoneNumberSet: [media],
       TemplateId: templateId,

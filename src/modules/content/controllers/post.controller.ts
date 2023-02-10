@@ -21,9 +21,7 @@ import { UserEntity } from '@/modules/user/entities';
         'update',
         'create',
         'delete',
-        "deleteMulti",
-        "restore",
-        "restoreMulti"
+        "restore"
     ],
     dtos: {
         query: QueryPostDto,

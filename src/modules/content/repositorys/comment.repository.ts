@@ -2,12 +2,14 @@ import { BaseTreeRepository } from '@/modules/core/crud/tree.repository';
 import { CommentEntity } from '../entities';
 import { CustomRepository } from '@/modules/database/decorators';
 import { QueryTreeOptions } from '@/modules/core/types';
-import { isNil } from 'lodash';
 import { SelectQueryBuilder } from 'typeorm';
+import { TreeChildrenResolve } from '@/modules/core/constants';
 
 @CustomRepository(CommentEntity)
 export class CommentRepository extends BaseTreeRepository<CommentEntity> {
     protected alias = 'comment';
+
+    protected _childrenResolve = TreeChildrenResolve.DELETE;
 
     buildBaseQuery(qb: SelectQueryBuilder<CommentEntity>): SelectQueryBuilder<CommentEntity> {
         return qb
@@ -23,12 +25,8 @@ export class CommentRepository extends BaseTreeRepository<CommentEntity> {
      * @returns
      */
     async findTrees(
-        options: QueryTreeOptions<CommentEntity> & { post?: string },
-    ): Promise<CommentEntity[]> {
-        return super.findTrees({
-            ...options,
-            addQuery: (qb: SelectQueryBuilder<CommentEntity>) =>
-                isNil(options.post) ? qb : qb.where('post.id = :id', { id: options.post }),
-        });
+        options: QueryTreeOptions<CommentEntity>,
+    ): Promise<CommentEntity[]> {   
+        return super.findTrees(options)
     }
 }

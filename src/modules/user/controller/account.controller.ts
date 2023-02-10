@@ -4,10 +4,14 @@ import {
     Get,
     Patch,
     Post,
+    Param,
     SerializeOptions,
     Request,
     UseGuards,
+    ParseUUIDPipe,
 } from '@nestjs/common';
+import { omit } from 'lodash';
+
 import { GUEST } from '../decorators';
 import { LocalAuthGuard } from '../guards';
 import { AuthService, UserService } from '../services';
@@ -24,6 +28,11 @@ import { CredentialDto, PhoneRegisterDto, RegisterDto, EmailRegisterDto, UpdateA
 export class AccountController {
     constructor(private authService: AuthService, private userService: UserService) {}
 
+    /**
+     * 用户名、手机、邮箱+密码登录
+     * @param user 
+     * @param _data 
+     */
     @Post('login')
     @GUEST()
     @UseGuards(LocalAuthGuard)
@@ -43,13 +52,17 @@ export class AccountController {
 
     /**
      * 查看详情
+     * 可以匿名访问，登录是查看自己
      * @param user 
      */
-    @Get('profile')
+    @Get('profile/:id')
     @SerializeOptions({ groups: ['user-detail'] })
-    async profile(@User() user: ClassToPlain<UserEntity>) {
-        console.log(user);
-        return this.userService.detail(user.id);
+    @GUEST()
+    async profile(
+        @Param("id", new ParseUUIDPipe()) id: string,
+    ) {
+        const user = await this.userService.detail(id);
+        return omit(user, ['permissions', 'roles', 'password'])
     }
 
     /**

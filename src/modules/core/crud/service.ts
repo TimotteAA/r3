@@ -1,5 +1,5 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { ObjectLiteral, SelectQueryBuilder, In } from 'typeorm';
+import { ObjectLiteral, SelectQueryBuilder, In, TreeRepository } from 'typeorm';
 import { BaseRepository } from './repository';
 import { BaseTreeRepository } from './tree.repository';
 import { ServiceListQueryParams, QueryParams } from '../types';
@@ -198,7 +198,6 @@ export abstract class BaseService<
                             c.parent = item.parent;
                             return item;
                         });
-                        console.log("nchildren", nchildren);
                         await this.repo.save(nchildren);
                     }
                 }
@@ -227,7 +226,7 @@ export abstract class BaseService<
     /**
      *
      */
-    async restore(id: string, callback?: QueryHook<E>) {
+    async restore(ids: string[]): Promise<E[]> {
         if (!this.enable_trash) {
             // 默认不开启软删除
             throw new ForbiddenException(
@@ -235,40 +234,53 @@ export abstract class BaseService<
             );
         }
         // 恢复前查找
-        const item = await this.repo.findOneOrFail({
+        const items = await this.repo.find({
             where: {
-                id,
+                id: In(ids)
             } as any,
             withDeleted: true,
         });
         // deletedAt有值表示确实是软删除，防止误传
-        if ((item as any).deletedAt) {
-            await this.repo.restore(item.id);
+        // if ((item as any).deletedAt) {
+        //     await this.repo.restore(item.id);
+        // }
+        const itemIds = items.filter((item) => !isNil(item.deletedAt)).map(item => item.id);
+        // console.log(items, itemIds)
+        if (!isNil(itemIds) && itemIds.length > 0) {
+            await this.repo.restore(itemIds)
         }
-        return this.detail(item.id, false, callback);
+
+        if (this.repo instanceof TreeRepository) {
+            const res = (await this.list({} as P, async (qb) => qb.andWhereInIds(itemIds))) as E[];
+            return res;
+        } else {
+            const qb = (await this.list({} as P, async (qb) => qb.andWhereInIds(itemIds))) as SelectQueryBuilder<E>;
+            const res = await qb.getMany();
+            return res;
+        }
     }
 
-    /**
-     * 恢复数据
-     * @returns 返回恢复后的数据列表
-     */
-    async restoreList(ids: string[], params?: P, callback?: QueryHook<E>) {
-        for (const id of ids) {
-            await this.restore(id);
-        }
-        return this.list(params, callback);
-    }
+    // /**
+    //  * 恢复数据
+    //  * @returns 返回恢复后的数据列表
+    //  */
+    // async restoreList(ids: string[], params?: P, callback?: QueryHook<E>) {
+    //     for (const id of ids) {
+    //         await this.restore(id);
+    //     }
+    //     return this.list(params, callback);
+    // }
 
-    /**
-     * 恢复数据
-     * @returns 返回恢复后的数据列表
-     */
-    async restorePaginate(ids: string[], params?: PaginateOptions & P, callback?: QueryHook<E>) {
-        for (const id of ids) {
-            await this.restore(id);
-        }
-        return this.paginate(params, callback);
-    }
+    // /**
+    //  * 恢复数据
+    //  * @returns 返回恢复后的数据列表
+    //  */
+    // async restorePaginate(ids: string[], params?: PaginateOptions & P, callback?: QueryHook<E>) {
+    //     for (const id of ids) {
+    //         await this.restore(id);
+    //     }
+    //     return this.paginate(params, callback);
+    // }
 
     /**
      * 构建列表查询器，非树形entity

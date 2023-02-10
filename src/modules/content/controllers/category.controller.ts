@@ -1,46 +1,39 @@
-import { Controller, Get, Query, SerializeOptions} from '@nestjs/common';
-import { CategoryService } from '../services';
-import { QueryCategoryDto, CreateCategoryDto, UpdateCategoryDto, QueryCategoryTreeDto } from '../dtos';
-import { BaseController } from '@/modules/core/crud';
-import { Crud } from '@/modules/core/decorators';
+import { Controller, Get, SerializeOptions, Query, ParseUUIDPipe, Param } from "@nestjs/common";
 
-@Controller('categories')
-@Crud({
-    id: 'category',
-    enabled: [
-        'create',
-        'delete',
-        'update',
-        {
-            name: 'list',
-            options: { allowGuest: true },
-        },
-        {
-            name: 'detail',
-            options: { allowGuest: true },
-        },
-        "deleteMulti",
-        "restore",
-        "restoreMulti"
-    ],
-    dtos: {
-        create: CreateCategoryDto,
-        update: UpdateCategoryDto,
-        query: QueryCategoryDto,
-    },
-})
-export class CategoryController extends BaseController<CategoryService> {
-    constructor(protected categoryService: CategoryService) {
-        super(categoryService);
-    }
+import { CategoryService } from "../services";
+import { GUEST } from "@/modules/user/decorators";
+import { ApiQueryCategoryDto } from "../dtos";
 
-    /**
-     * 获取某篇文章的评论树
-     * @param options
-     */
-    @SerializeOptions({ groups: ['category-tree'] })
-    @Get('tree')
-    async tree(@Query() options: QueryCategoryTreeDto) {
-        return this.categoryService.findTrees(options);
-    }
+@Controller("api/categories") 
+export class CategoryController {
+  constructor(protected categoryService: CategoryService) {}
+
+  /**
+   * 获取分类树
+   * @param options
+   */
+  @GUEST()
+  @SerializeOptions({ groups: ['category-tree'] })
+  @Get('tree')
+  async tree() {
+      return this.categoryService.findTrees();
+  }
+
+  /**
+   * 评论列表
+   * @param data 
+   */
+  @GUEST()
+  @SerializeOptions({ groups: ['category-list'] })
+  @Get()
+  async list(@Query() data: ApiQueryCategoryDto) {
+    return this.categoryService.paginate({...data, trashed: false})
+  }
+
+  @GUEST()
+  @SerializeOptions({ groups: ['category-detail'] })
+  @Get(":id")
+  async detail(@Param("id", new ParseUUIDPipe()) id: string) {
+    return this.categoryService.detail(id, false)
+  }
 }

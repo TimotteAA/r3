@@ -1,5 +1,4 @@
 import { DynamicModule, Module, ModuleMetadata } from '@nestjs/common';
-import { PostController, CommentController, CategoryController } from './controllers';
 import { PostService, SanitizeService, CommentService, CategoryService, ElasticSearchService } from './services';
 import { DatabaseModule } from '../database/database.module';
 import { PostRepository, CategoryRepository, CommentRepository } from './repositorys';
@@ -10,6 +9,10 @@ import { UserModule } from '../user/user.module';
 import { ContentConfig } from './types';
 import { UserService } from '../user/services';
 import { ContentRbac } from './rbac';
+
+import * as controllerMaps from './controllers';
+import * as manageMaps from "./controllers/manage";
+
 
 @Module({})
 export class ContentModule {
@@ -33,7 +36,7 @@ export class ContentModule {
             CategoryService,
         ];
 
-        const controllers: ModuleMetadata['controllers' ] = [PostController, CommentController, CategoryController]
+        const controllers: ModuleMetadata['controllers' ] = [...Object.values(controllerMaps), ...Object.values(manageMaps)]
 
         const providers: ModuleMetadata['providers'] = [
             SanitizeService, PostSubscriber, CommentService, CategoryService, ElasticSearchService, ContentRbac,

@@ -9,6 +9,7 @@ import { BullModule } from '@nestjs/bullmq';
 
 import { RbacGuard } from '../rbac/guards';
 import { RbacModule } from '../rbac/rbac.module';
+import { UserRbac } from './rbac';
 import { LocalAuthGuard, JwtAuthGuard, JwtWsGuard } from './guards';
 import { SEND_CAPTCHA_QUEUE, SAVE_MESSAGE_QUEUE } from './constants';
 
@@ -18,6 +19,7 @@ import * as strategiesMap from './strategies';
 import * as serviceMaps from './services';
 import * as queueMaps from "./queues";
 import * as gatewayMaps from "./gateways";
+import * as manageMaps from "./controller/manage";
 import { addEntities } from '../database/helpers';
 
 const services = Object.values(serviceMaps);
@@ -29,7 +31,7 @@ const gateways = Object.values(gatewayMaps)
 const entities = [AccessTokenEntity, RefreshTokenEntity, UserEntity, CodeEntity, MessageEntity, MessageReceiveEntity];
 
 @Module({
-    controllers: [...controllers],
+    controllers: [...controllers, ...Object.values(manageMaps)],
     imports: [
         addEntities(entities),
         DatabaseModule.forRepository([...repos]),
@@ -51,7 +53,8 @@ const entities = [AccessTokenEntity, RefreshTokenEntity, UserEntity, CodeEntity,
             useClass: RbacGuard,
         },
         ...queues,
-        ...gateways
+        ...gateways,
+        UserRbac
     ],
     exports: [...services, ...queues, DatabaseModule.forRepository([...repos])],
 })

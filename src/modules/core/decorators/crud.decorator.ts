@@ -1,3 +1,4 @@
+import { ListQueryDto } from '@/modules/restful/dto';
 import { NotFoundException, Type } from '@nestjs/common';
 import { CLASS_SERIALIZER_OPTIONS } from '@nestjs/common/serializer/class-serializer.constants';
 import { isNil } from 'lodash';
@@ -30,16 +31,17 @@ export const Crud =
                 const params = [...paramTypes];
                 if (name === 'create') params[0] = dtos.create;
                 else if (name === 'update') params[0] = dtos.update;
-                else if (name === 'list' || name === 'deleteMulti' || name === 'restoreMulti')
-                    params[0] = dtos.query;
+                // else if (name === 'list' || name === 'deleteMulti' || name === 'restoreMulti')
+                else if (name === "list")
+                    params[0] = dtos.query ?? ListQueryDto;
                 Reflect.defineMetadata('design:paramtypes', params, Target.prototype, name);
                 changed.push(name);
             }
         }
-        // 添加序列化选项以及是否允许匿名访问等metadata
-        if (Target.name === "PermissionController") {
-            console.log(changed)
-        }
+        // // 添加序列化选项以及是否允许匿名访问等metadata
+        // if (Target.name === "UserController") {
+        //     console.log(changed)
+        // }
 
         for (const key of changed) {
             const find = enabled.find((v) => v === key || (v as any).name === key);
@@ -58,6 +60,7 @@ export const Crud =
             if (option.allowGuest) {
                 Reflect.defineMetadata(ALLOW_GUEST, true, Target.prototype, key);
             }
+            // if (key === "list" && Target.name === "UserController") console.log(option)
             if (option.hook) option.hook(Target, key)
         }
         // 对于不启用的方法返回404
