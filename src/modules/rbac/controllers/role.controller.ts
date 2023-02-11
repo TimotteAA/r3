@@ -19,11 +19,11 @@ const permissions: PermissionChecker[] = [
 @Crud({
   id: "role",
   enabled: [
-    // { name: "create", options: simpleCrudOptions(permissions) },
+    { name: "create", options: simpleCrudOptions(permissions) },
     { name: "list", options: simpleCrudOptions(permissions) },
-    // { name: "update", options: simpleCrudOptions(permissions) },
-    // { name: "delete", options: simpleCrudOptions(permissions) },
-    // { name: "detail", options: simpleCrudOptions(permissions) }
+    { name: "update", options: simpleCrudOptions(permissions) },
+    { name: "delete", options: simpleCrudOptions(permissions) },
+    { name: "detail", options: simpleCrudOptions(permissions) }
   ],
   dtos: {
     query: QueryRoleDto,

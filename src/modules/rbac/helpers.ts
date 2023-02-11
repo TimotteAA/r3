@@ -13,7 +13,7 @@ import { PermissionChecker } from "./types";
  */
 export const getRequestItems = (request?: Request): string[] => {
   const { params = {}, body = {} } = (request ?? {}) as any;
-  const id = params.id ?? body.id ?? params.item ?? body.item;
+  const id = params.id ?? body.id ?? params.item ?? body.item ?? body.receives;
   const { ids } = body;
   if (!isNil(id)) return [id];
   return !isNil(ids) && Array.isArray(ids) ? ids : []
@@ -22,9 +22,9 @@ export const getRequestItems = (request?: Request): string[] => {
 /**
  * 验证是否是数据所有者
  * @param ability 
- * @param getModels 
+ * @param getModels 获取entity的方法
  * @param request 
- * @param permission 
+ * @param permission 权限的action
  */
 export const checkOwner = async <E extends ObjectLiteral> (
   ability: MongoAbility,
@@ -32,17 +32,22 @@ export const checkOwner = async <E extends ObjectLiteral> (
   request?: Request,
   permission?: string,
 ) => {  
+
   const models = await getModels(getRequestItems(request));
+  // console.log("models", models);
+  // console.log("permission", permission);
   if (!models || !models.length) return false;
+  // console.log(models.every((model) => ability.can(permission ?? PermissionAction.OWNER, model)))
   return models.every((model) => ability.can(permission ?? PermissionAction.OWNER, model));
 }
 
+/**
+ * 给crud装饰器添加权限
+ * @param permissions 
+ */
 export const simpleCrudOptions = (
   permissions?: PermissionChecker[],
 ): CrudMethodOption => {
-  // console.log("执行了吗", permissions)
-  
-  
   return {
     hook: (target, method) => {
       if (permissions) ManualPermission(target, method, permissions);

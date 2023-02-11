@@ -62,7 +62,9 @@ export class UserEntity extends BaseEntity {
     sends: MessageEntity[]
 
     // 收到的消息
-    @OneToMany(() => MessageReceiveEntity, (item) => item.receiver)
+    @OneToMany(() => MessageReceiveEntity, (item) => item.receiver, {
+        cascade: true
+    })
     messages: MessageReceiveEntity[]
 
     @OneToMany(() => AccessTokenEntity, (token: AccessTokenEntity) => token.user, {

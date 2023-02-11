@@ -116,9 +116,8 @@ export class MessageService extends BaseService<MessageEntity, MessageRepository
         userId: string,
         options: QueryMessageDto,
     ) { 
-      console.log(options);
-        await this.updateRecevies(data.receives, type, userId);
-        return this.paginate({ ...options, receiver: userId } as any);
+      await this.updateRecevies(data.receives, type, userId);
+      return this.paginate({ ...options, receiver: userId } as any);
     }
 
 

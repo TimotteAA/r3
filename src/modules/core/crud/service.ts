@@ -93,7 +93,7 @@ export abstract class BaseService<
             let addQuery: QueryParams<E>['addQuery'];
             if (trashed === QueryTrashMode.ONLY) {
                 // 仅查询回收站数据
-                addQuery = (qb) => qb.where(`${alias}.deletedAt IS NOT NUll`);
+                addQuery = (qb) => qb.andWhere(`${alias}.deletedAt IS NOT NUll`);
             }
             const tree = await this.repo.findTrees({
                 ...options,

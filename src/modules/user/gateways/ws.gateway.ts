@@ -4,7 +4,7 @@ import Redis from "ioredis";
 import WebSocket, { Server } from "ws";
 
 import { WsPipe, WsExceptionFilter } from "@/modules/core/providers"; 
-import { AccessTokenEntity, UserEntity } from "../entities";
+import { AccessTokenEntity, MessageEntity, UserEntity } from "../entities";
 import { ClassToPlain, getTime} from "@/modules/utils";
 import { SaveMessageQueueJob } from "../types";
 import { RedisService } from "@/modules/core/services";
@@ -16,6 +16,13 @@ import { WSAuthDto, WsMessageDto } from "../dto";
 import { pick, isNil } from "lodash";
 import { instanceToPlain } from "class-transformer";
 import { SelectQueryBuilder } from "typeorm";
+import { PermissionChecker } from "@/modules/rbac/types";
+import { PermissionAction } from "@/modules/rbac/constants";
+import { Permission } from "@/modules/rbac/decorators";
+
+const permissions: PermissionChecker[] = [
+  async (ab) => ab.can(PermissionAction.CREATE, MessageEntity.name)
+]
 
 /**
  * 返回给客户端的用户信息
@@ -36,7 +43,7 @@ interface Onliner {
 @UsePipes(
   new WsPipe({
     transform: true,
-    forbidUnknownValues: true,
+    // forbidUnknownValues: true,
     validationError: {
       target: false
     }
@@ -64,6 +71,7 @@ export class WsMessageGateway {
   @WebSocketServer()
   server!: Server;
 
+  @Permission(...permissions)
   @UseGuards(RbacWsGuard)
   @SubscribeMessage("online")
   async onLine(
@@ -116,6 +124,7 @@ export class WsMessageGateway {
      * 消息异常
      * @param data
      */
+    @Permission(...permissions)
     @SubscribeMessage('exception')
     sendException(
         @MessageBody()
@@ -131,6 +140,7 @@ export class WsMessageGateway {
    * websocket发送消息
    * @param data 
    */
+  @Permission(...permissions)
   @UseGuards(RbacWsGuard)
   @SubscribeMessage("message")
   async sendMessage(
@@ -172,6 +182,7 @@ export class WsMessageGateway {
    * websocket主动下线
    * @param data 
    */
+  @Permission(...permissions)
   @UseGuards(RbacWsGuard)
   @SubscribeMessage("offline")
   async offline(

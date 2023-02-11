@@ -37,11 +37,13 @@ export class ElasticSearchService {
    * @param post 
    */
   async create(post: PostEntity): Promise<WriteResponseBase> {
+    const categories = (post.categories ?? []).map(({content}) => content).join("")
     return this.elasticService.index<PostSearchBody>({
       index: this.index,
       document: {
         ...pick(instanceToPlain(post), ['id', 'title', 'body', 'summary']),
-        categories: post.categories ? post.categories.join(",") : ""
+        // categories: post.categories ? post.categories.join(",") : ""
+        categories
       }
     });
   }

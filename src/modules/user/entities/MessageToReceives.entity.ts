@@ -18,13 +18,13 @@ export class MessageReceiveEntity extends BaseEntity {
      * inverse-side类那边的多
      */
     @Expose()
-    @ManyToOne(() => MessageEntity, (message) => message.receives, { onDelete: "CASCADE" })
+    @ManyToOne(() => MessageEntity, (message) => message.receives, { onDelete: "CASCADE", onUpdate:"CASCADE" })
     message!: MessageEntity
 
     /**
      * 接收者
      */
     @Expose()
-    @ManyToOne(() => UserEntity, (receiver) => receiver.messages)
+    @ManyToOne(() => UserEntity, (receiver) => receiver.messages, { onDelete: "CASCADE", onUpdate:"CASCADE"})
     receiver: UserEntity
 }

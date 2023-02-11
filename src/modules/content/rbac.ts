@@ -49,7 +49,7 @@ export class ContentRbac implements OnModuleInit {
           })
         }
       },
-      // 后台权限
+      // 后台权限：三个Entity的管理
       {
         name: "post.manage",
         rule: {

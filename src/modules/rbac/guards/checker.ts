@@ -71,7 +71,8 @@ export const solveChecker = async ({
       return rule;
     })
   );
-  // console.log(ability);
+  // console.log("permissions", permissions);
+  console.log(ability);
   const results = await Promise.all(
     checkers.map(async (checker) => execChecker(checker, ability, moduleRef, request))
   );

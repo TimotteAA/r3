@@ -24,7 +24,7 @@ export class CoreModule {
                 useFactory() {
                     const pipe = new AppPipe({
                         transform: true,
-                        forbidUnknownValues: true,
+                        // forbidUnknownValues: true,
                         validationError: { target: false },
                     });
                     return pipe;

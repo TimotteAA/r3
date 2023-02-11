@@ -30,6 +30,7 @@ export class RbacWsGuard extends JwtWsGuard {
     const tokenUser = (await this.tokenService.verifyAccessToken(accessToken.value)) as ClassToPlain<UserEntity>;
     // 权限校验器
     const checkers = getCheckers(context, this.reflector);
+    console.log(checkers)
     if (isNil(checkers) || checkers.length <= 0) return true;
     const user = await this.userRepo.findOneOrFail({
       where: {

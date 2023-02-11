@@ -8,7 +8,8 @@ import { PaginateOptions, PaginateReturn, QueryHook } from '@/modules/utils';
 import { PostEntity } from '../entities';
 import { QueryTrashMode } from '@/modules/core/constants';
 // import { paginate } from '@/modules/database/paginate';
-import { CreatePostDto, QueryPostDto, UpdatePostDto } from '../dtos';
+import { QueryPostDto } from '../dtos';
+import { ManageCreatePostDto, ManageUpdatePostDto } from '../dtos/manage/post.dto';
 import { BaseService } from '@/modules/core/crud';
 import { UserService } from '@/modules/user/services';
 import { SearchType } from '../types';
@@ -49,14 +50,13 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
                 limit: options.limit,
             }, posts)
         }
-
         // 普通的分页搜索
         const queryOptions = options ?? {};
         const qb = (await this.list(queryOptions, callback)) as SelectQueryBuilder<PostEntity>;
         return paginate(qb, options);
     }
 
-    async create(data: CreatePostDto, author: string) {
+    async create(data: ManageCreatePostDto, author: string) {
         const post = await this.repo.save({
             ...data,
             categories:
@@ -85,7 +85,7 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
      * @param data 更新方法可以id不存在，直接update即可
      * @returns
      */
-    async update(data: UpdatePostDto) {
+    async update(data: ManageUpdatePostDto) {
         // post
         await this.repo.update(data.id, omit(data, ['id', 'categories']));
         const post = await this.detail(data.id);
@@ -98,14 +98,15 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
                 .addAndRemove(data.categories, post.categories ?? []);
         }
 
-        // 更新es中的结果
-        if (!isNil(this.searchService)) {
-            try {
-                await this.searchService.update(post);
-            } catch (err) {
-                throw new InternalServerErrorException(err)
-            }
-        }
+        // // 更新es中的结果
+        // // es更新有问题
+        // if (!isNil(this.searchService)) {
+        //     try {
+        //         await this.searchService.update(post);
+        //     } catch (err) {
+        //         throw new InternalServerErrorException(err)
+        //     }
+        // }
 
         return this.detail(data.id);
     }
@@ -157,7 +158,13 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
         options: FindParams,
         callback?: QueryHook<PostEntity>,
     ) {
-        const { customOrder, isPublished, category, search, trashed } = options;
+        const { customOrder, isPublished, category, search, trashed, author } = options;
+
+        if (!isNil(author)) {
+            qb = qb.andWhere(`author.id = :id`, {
+                id: author
+            })
+        }
 
         if (typeof isPublished === 'boolean') {
             qb = isPublished
