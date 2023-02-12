@@ -6,6 +6,7 @@ import { Attachment } from 'nodemailer/lib/mailer';
 import dayjs from "dayjs"
 import { JwtConfig, CaptchaConfig } from '../user/types';
 import { DynamicRelation } from '../database/types';
+import { GetCredentialOptions } from "qcloud-cos-sts"
 
 /**
  * 时间配置
@@ -220,4 +221,13 @@ export interface CoreModuleOptions {
     redis?: RedisOptions;
     smtp?: SmtpOptions;
     queue?: QueueOptions;
+    cos?: CosStsOptions;
 }
+
+/**
+ * 腾讯云获取临时授权的配置
+ */
+export type CosStsOptions = {
+    credential: GetCredentialOptions;
+}
+

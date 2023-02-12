@@ -1,7 +1,7 @@
 import { DynamicModule, Provider, ModuleMetadata} from '@nestjs/common';
 import { APP_INTERCEPTOR, APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { AppInterceptor, AppFilter, AppPipe } from '@/modules/core/providers';
-import { RedisService, SmsService, SmtpService } from './services';
+import { RedisService, SmsService, SmtpService, CosService } from './services';
 import { CoreModuleOptions } from "@/modules/utils"
 import { createRedisOptions, createQueueOptions } from '../utils/options';
 import { isNil, omit} from 'lodash';
@@ -94,6 +94,18 @@ export class CoreModule {
             exports.push(SmtpService);
         }
 
+        if (options.cos) {
+            const cosService: Provider = {
+                provide: CosService,
+                useFactory() {
+                    const service = new CosService(options.cos);
+                    return service;
+                }
+            }
+            providers.push(cosService);
+            exports.push(cosService);
+        }
+        
 
         return {
             global: true,

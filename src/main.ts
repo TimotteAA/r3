@@ -12,6 +12,11 @@ async function bootstrap() {
     });
     app.enableCors();
     app.useWebSocketAdapter(new WsAdapter(app))
+    // 注册fastify multipart插件
+    // eslint-disable-next-line global-require
+    app.register(require('@fastify/multipart'), {
+        attachFieldsToBody: true,
+    });
     await app.listen(3000, '0.0.0.0');
 }
 bootstrap();

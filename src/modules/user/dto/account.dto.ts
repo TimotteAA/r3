@@ -4,6 +4,7 @@ import { PickType } from "@nestjs/swagger";
 import { BaseUserDto } from "./base-user.dto";
 import { CaptchaDtoGroups, UserDtoGroups } from "../constants";
 import { Length } from "class-validator";
+import { UploadFileDto } from "@/modules/media/dtos";
 
 /**
  * 用户、邮箱、手机+密码登录
@@ -83,3 +84,9 @@ export class BoundPhoneDto extends PickType(BaseUserDto, ['code', 'phone']) {}
  */
 @CustomDtoValidation({ groups: [CaptchaDtoGroups.BOUND_SMS] })
 export class BoundEmailDto extends PickType(BaseUserDto, ['code', 'email']) {}
+
+/**
+ * 上传文件
+ */
+@CustomDtoValidation({ groups: ['create'] })
+export class UploadAvatarDto extends PickType(UploadFileDto, ['image']) {}

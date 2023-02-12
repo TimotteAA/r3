@@ -19,14 +19,19 @@ import { User } from '../decorators';
 import { ClassToPlain } from '@/modules/utils';
 import { CaptchaType } from '../constants';
 import { UserEntity } from '../entities';
-import { CredentialDto, PhoneRegisterDto, RegisterDto, EmailRegisterDto, UpdateAccountDto, PhoneLoginDto, EmailLoginDto, PhoneRetrievePasswordDto, EmailRetrievePasswordDto, UpdatePasswordDto, BoundPhoneDto, BoundEmailDto } from '../dto';
+import { CredentialDto, PhoneRegisterDto, RegisterDto, EmailRegisterDto, UpdateAccountDto, PhoneLoginDto, EmailLoginDto, PhoneRetrievePasswordDto, EmailRetrievePasswordDto, UpdatePasswordDto, BoundPhoneDto, BoundEmailDto, UploadAvatarDto } from '../dto';
+import { CosService } from '@/modules/core/services';
 
 /**
  * 账户中心控制器
  */
 @Controller('account')
 export class AccountController {
-    constructor(private authService: AuthService, private userService: UserService) {}
+    constructor(
+        private authService: AuthService, 
+        private userService: UserService,
+        protected cosService: CosService
+    ) {}
 
     /**
      * 用户名、手机、邮箱+密码登录
@@ -174,5 +179,17 @@ export class AccountController {
     @Patch("bound-email")
     async boundEmail(@User() user: ClassToPlain<UserEntity>, @Body() data: BoundEmailDto) {
         return this.authService.bound(user, data, CaptchaType.EMAIL);
+    }
+
+
+    @Post("avatar")
+    async uploadAvatar(
+        @Body() { image }: UploadAvatarDto,
+        @User() user: ClassToPlain<UserEntity>
+    ) { 
+        const buffer = await image.toBuffer();
+        const mimetype = image.mimetype;
+        await this.cosService.upload(buffer, mimetype);
+        return "12345";
     }
 }

@@ -9,6 +9,8 @@ import {
     UpdateDateColumn,
     ManyToMany,
     JoinTable,
+    OneToOne,
+    JoinColumn,
 } from 'typeorm';
 import { AccessTokenEntity, MessageEntity, MessageReceiveEntity } from './';
 import { Exclude, Expose, Type } from 'class-transformer';
@@ -16,6 +18,7 @@ import { AddRelations } from '@/modules/database/decorators';
 import { userConfigFn } from '@/modules/configs';
 import { RoleEntity } from '@/modules/rbac/entities/role.entity';
 import { PermissionEntity } from '@/modules/rbac/entities/permission.entity';
+import { MediaEntity } from '@/modules/media/entities/media.entity';
 
 /**
  * 给user字段加上动态关联
@@ -50,6 +53,11 @@ export class UserEntity extends BaseEntity {
     @Column({ comment: '用户邮箱', default: null, unique: true })
     email?: string;
 
+    @OneToOne(() => MediaEntity, (media) => media.member, {
+        nullable: true
+    })
+    @JoinColumn()
+    avatar?: MediaEntity
 
     // 下面是关联关系、软删除等字段
     @Column({comment: "用户是否激活", default: true})
@@ -101,4 +109,10 @@ export class UserEntity extends BaseEntity {
     @ManyToMany(() => PermissionEntity, (p: PermissionEntity) => p.users)
     @JoinTable()
     permissions!: PermissionEntity[]
+
+    // 上传的文件
+    @OneToMany(() => MediaEntity, (media) => media.user, {
+        cascade: true
+    })
+    medias: MediaEntity[]
 }

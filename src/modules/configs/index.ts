@@ -11,3 +11,4 @@ export * from "./sms.config"
 export * from "./smtp.config";
 export * from "./content.config"
 export * from "./elastic-search.config";
+export * from "./cqs.config"
