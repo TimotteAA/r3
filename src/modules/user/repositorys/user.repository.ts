@@ -10,6 +10,9 @@ export class UserRepository extends BaseRepository<UserEntity> {
         return this.createQueryBuilder(this.alias)
             .leftJoinAndSelect(`${this.alias}.roles`, 'roles')
             .leftJoinAndSelect(`${this.alias}.permissions`, 'permissions')
-            .orderBy(`${this.alias}.createdAt`, 'ASC');
+            .leftJoinAndSelect(`${this.alias}.avatar`, 'avatar')
+            .orderBy(`${this.alias}.createdAt`, 'DESC');
     }
+
+    
 }

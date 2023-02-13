@@ -1,1 +1,1 @@
-export * from "./media.repository";
+export * from "./avatar.repository";

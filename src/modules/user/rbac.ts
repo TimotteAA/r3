@@ -1,17 +1,20 @@
 import { Injectable, OnModuleInit } from "@nestjs/common";
 import { ModuleRef } from "@nestjs/core";
+
 import { RbacResolver } from "../rbac/rbac.resolver";
 import { PermissionAction, SystemRoles } from "../rbac/constants";
 import { MessageEntity, UserEntity } from "./entities";
+
 
 /**
  * 模块启动时，添加权限与角色
  */
 @Injectable()
 export class UserRbac implements OnModuleInit {
-  constructor(protected moduleRef: ModuleRef) {}
+  constructor(protected moduleRef: ModuleRef, 
+  ) {}
 
-  onModuleInit() {
+  async onModuleInit() {
     const resolver = this.moduleRef.get(RbacResolver, { strict: false });
     // 添加权限
     resolver.addPermissions([
@@ -65,6 +68,7 @@ export class UserRbac implements OnModuleInit {
         description: "系统默认角色",
         permissions: ['message.create', 'message.sended-message', 'message.recevied-message']
       }
-  ]);
+    ]);
+
   }
 }

@@ -38,7 +38,4 @@ const controllers = Object.values(controllerMaps);
   exports: [DatabaseModule.forRepository(repos), ...services, RbacResolver, RbacGuard, RbacWsGuard]
 })
 export class RbacModule {
-  onModuleInit() {
-    // console.log(1);
-  }
 }

@@ -47,6 +47,7 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
      * @memberof UserSubscriber
      */
     async beforeUpdate(event: UpdateEvent<UserEntity>) {
+        console.log("entity", event.entity)
         if (!isNil(event.entity.password)) {
             event.entity.password = encrypt(event.entity.password)
         }
@@ -80,6 +81,7 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
             return [...o, n]
         }, []);
         entity.permissions = permissions;
+
     }
 
     /**

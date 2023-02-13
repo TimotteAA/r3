@@ -35,6 +35,7 @@ export class CaptchaWorker {
    */
   protected async sendCode(job: Job<SendCaptchaQueueJob>) {
     const { captcha } = job.data;
+    console.log("captcha", captcha);
     try {
       if (job.name === EMAIL_CAPTCHA_JOB || job.name === SMS_CAPTCHA_JOB) {
         if (job.name === SMS_CAPTCHA_JOB) {
@@ -63,7 +64,7 @@ export class CaptchaWorker {
     } = data;
     const { code, media } = captcha;
     const { templateId } = option as SmsCaptchaOption;
-    // console.log(data);
+    console.log(data);
     const result = await this.sms.send({
       PhoneNumberSet: [media],
       TemplateId: templateId,
@@ -71,6 +72,7 @@ export class CaptchaWorker {
       // 会被覆盖，随便填即可
       SmsSdkAppId: "1"
     });
+    console.log("Result", result)
     return result;
   }
 

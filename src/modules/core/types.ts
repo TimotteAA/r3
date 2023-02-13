@@ -2,6 +2,7 @@ import { SelectQueryBuilder, ObjectLiteral, FindTreeOptions } from 'typeorm';
 import { ClassTransformOptions } from '@nestjs/common/interfaces/external/class-transform-options.interface';
 import { OrderType, QueryTrashMode } from './constants';
 import { Type } from '@nestjs/common';
+import { PutObjectParams } from 'cos-nodejs-sdk-v5';
 
 /**
  * 排序类型,{字段名称: 排序升序或降序}
@@ -117,3 +118,8 @@ export interface CrudOptions {
         [key in 'query' | 'create' | 'update']?: any;
     };
 }
+
+/**
+ * cos简单上传参数
+ */
+export type SimpleUploadParams = Omit<PutObjectParams, "Bucket" | "Region" | "Key" | "StorageClass" | "Body" | "ContentEncoding">

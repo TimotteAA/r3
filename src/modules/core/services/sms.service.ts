@@ -17,6 +17,7 @@ export class SmsService {
    */
   protected makeClient(options: SmsSdkOptions) {
     const { secretId, secretKey, region, endpoint  } = options;
+    // console.log("region", region)
     return new smsClient({
       credential: {
         secretId,
@@ -37,8 +38,11 @@ export class SmsService {
    * @param options 
    */
   async send(params: SendSmsRequest, options?: SmsSdkOptions) {
+    // console.log("params", params);
     const settings = deepMerge(this.options, options ?? {}) as SmsSdkOptions;
+    // console.log("settings", settings);
     const client = this.makeClient(settings);
+    // console.log({...params, SmsSdkAppId: settings.appid, SignName: settings.sign})
     const res = await client.SendSms({...params, SmsSdkAppId: settings.appid, SignName: settings.sign})
     return res;
   }

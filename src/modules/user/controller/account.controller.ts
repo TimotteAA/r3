@@ -20,7 +20,7 @@ import { ClassToPlain } from '@/modules/utils';
 import { CaptchaType } from '../constants';
 import { UserEntity } from '../entities';
 import { CredentialDto, PhoneRegisterDto, RegisterDto, EmailRegisterDto, UpdateAccountDto, PhoneLoginDto, EmailLoginDto, PhoneRetrievePasswordDto, EmailRetrievePasswordDto, UpdatePasswordDto, BoundPhoneDto, BoundEmailDto, UploadAvatarDto } from '../dto';
-import { CosService } from '@/modules/core/services';
+import { AvatarService } from '@/modules/media/service/media.service';
 
 /**
  * 账户中心控制器
@@ -30,7 +30,7 @@ export class AccountController {
     constructor(
         private authService: AuthService, 
         private userService: UserService,
-        protected cosService: CosService
+        private avatarService: AvatarService
     ) {}
 
     /**
@@ -187,9 +187,16 @@ export class AccountController {
         @Body() { image }: UploadAvatarDto,
         @User() user: ClassToPlain<UserEntity>
     ) { 
-        const buffer = await image.toBuffer();
-        const mimetype = image.mimetype;
-        await this.cosService.upload(buffer, mimetype);
-        return "12345";
+        // return this.cosService.upload(image);
+        return this.avatarService.upload({
+            file: image,
+            user,
+            relation: {
+                id: user.id,
+                entity: UserEntity,
+                field: "avatar"
+            },
+            description: `${user.nickname ?? user.username}的头像`
+        })
     }
 }

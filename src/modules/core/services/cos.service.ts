@@ -1,8 +1,14 @@
 import { CosStsOptions } from "@/modules/utils";
-import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import { randomBytes } from 'crypto';
+import { BadRequestException, Injectable } from "@nestjs/common";
 import STS from "qcloud-cos-sts";
-import COS from "cos-nodejs-sdk-v5";
-import { env } from "@/modules/utils";
+import COS, { PutObjectResult } from "cos-nodejs-sdk-v5";
+import { SimpleUploadParams } from "../types";
+import chalk from "chalk";
+import { MultipartFile } from "@fastify/multipart";
+import { getTime } from "@/modules/utils";
+import { extname } from "path";
+
 
 @Injectable()
 export class CosService {
@@ -13,24 +19,69 @@ export class CosService {
     this.config = config;
   }
   
-  async upload(body: Buffer, mimetype: string) {
+  /**
+   * 简单上传文件到cos中
+   * @param body 
+   * @param mimetype 
+   */
+  async upload(file: MultipartFile, key: string, options?: SimpleUploadParams) {
+    const uploadOptions = (options ?? {}) as SimpleUploadParams
     this.cos = await this.setCOS();
-    console.log("mimetype", mimetype);
-    // 文件名不可少
-    const res = await this.cos.putObject({
-      Bucket: env("BUCKET"), 
-      Region: env("REGION"),   
-      Key: 'blog/avatar/exampleobject.jpeg',             
-      StorageClass: 'MAZ_STANDARD',
-      Body: body,
-      ContentEncoding: mimetype
-    });
-    console.log("res", res);
-    return res;
+    const body = await file.toBuffer();
+    const mimetype = file.mimetype;
+    let res: PutObjectResult
+    try {
+      res = await this.cos.putObject({
+        Bucket: this.config.bucket, 
+        Region: this.config.region,   
+        Key: this.config.bucketPrefix + key,             
+        StorageClass: 'MAZ_STANDARD',
+        Body: body,
+        ContentEncoding: mimetype,
+        ...uploadOptions
+      });
+    } catch (err) {
+      console.log(chalk.red(err));
+      throw new BadRequestException({}, "oss上传失败，请联系服务器管理员")
+    }
+    return {
+      status: res.statusCode,
+      message: "上传成功"
+    }
   }
 
   /**
-   * 获取cos临时凭证
+   * 删除指定key的记录
+   * @param key 
+   */
+  async delete(key: string) {
+    this.cos = await this.setCOS();
+    try {
+      await this.cos.deleteObject({
+        Bucket: this.config.bucket, 
+        Region: this.config.region,   
+        Key: this.config.bucketPrefix + key,    
+      })
+    } catch (err) {
+      console.log(chalk.red(err));
+      throw new BadRequestException({}, "oss删除失败，请联系服务器管理员")
+    }
+  }
+
+  /**
+   * 生成存储的key
+   * @param file 
+   */
+  generateKey(file: MultipartFile) {
+    // 柑橘当前时间生成key名
+    const filename = `${getTime().format('YYYYMMDDHHmmss')}${randomBytes(4)
+      .toString('hex')
+      .slice(0, 8)}${extname(file.filename)}`;
+    return filename
+  }
+
+  /**
+   * 获取cos临时凭证，可以作为一个借口，让前端自己去传
    */
   protected async getCredential() {
     let res: any;
@@ -38,15 +89,14 @@ export class CosService {
     try {
       res = await STS.getCredential(this.config.credential);
     } catch (err) {
-      throw new InternalServerErrorException({}, "获取凭证失败，请联系服务器管理员")
-    } finally {
-      console.log("获取凭证", res);
+      throw new BadRequestException({}, "获取凭证失败，请联系服务器管理员")
     }
     return res;
   }
 
-
-
+  /**
+   * 根据配置生成生成cos实例
+   */
   protected async setCOS() {
     const getCredential = this.getCredential.bind(this);
     return new COS({

@@ -229,5 +229,8 @@ export interface CoreModuleOptions {
  */
 export type CosStsOptions = {
     credential: GetCredentialOptions;
+    region: string;
+    bucket: string;
+    bucketPrefix: string;
 }
 

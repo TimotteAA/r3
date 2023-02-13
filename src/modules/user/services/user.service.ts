@@ -1,7 +1,7 @@
 import { UserEntity } from '../entities';
 import { UserRepository } from '../repositorys';
 import { BaseService } from '@/modules/core/crud';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, OnModuleInit } from '@nestjs/common';
 import { QueryHook } from '@/modules/utils';
 import { isBoolean, isNil, omit } from 'lodash';
 import { EntityNotFoundError, SelectQueryBuilder } from 'typeorm';
@@ -10,10 +10,27 @@ import { decrypt } from "../helpers";
 import { SystemRoles } from '@/modules/rbac/constants';
 import { PermissionRepository, RoleRepository } from '@/modules/rbac/repository';
  
+// import { env } from '@/modules/utils';
+
 type FindParams = Omit<QueryUserDto, "limit" | 'page'>
 
 @Injectable()
-export class UserService extends BaseService<UserEntity, UserRepository> {
+export class UserService extends BaseService<UserEntity, UserRepository> implements OnModuleInit {
+    async onModuleInit() {
+        // const superAdmin = await this.repo.findOneBy({
+        //     username: env("ADMIN")
+        // } as any)
+        // if (isNil(superAdmin)) {
+        //     const superAdmin = new UserEntity();
+        //     superAdmin.username = env("ADMIN");
+        //     superAdmin.password = env("ADMIN_PASSWORD")
+        //     await superAdmin.save({reload: true})
+        // }
+        // return this.findOneByCondition({
+        //     username: env("ADMIN")
+        // })
+    }
+
     constructor(protected repo: UserRepository,
         protected roleRepo: RoleRepository,
         protected permissionRepo: PermissionRepository    

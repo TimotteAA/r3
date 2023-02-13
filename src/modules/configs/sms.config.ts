@@ -5,7 +5,7 @@ export const smsConfigFn: () => SmsSdkOptions = () => {
   return {
     secretId: env("secretId"),
     secretKey: env("secretKey"),
-    region: env("region"),
+    region: env("SMS_regioncl"),
     endpoint: env("endpoint"),
     sign: env("sign"),
     appid: env("appid")

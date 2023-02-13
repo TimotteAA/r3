@@ -21,6 +21,8 @@ import * as queueMaps from "./queues";
 import * as gatewayMaps from "./gateways";
 import * as manageMaps from "./controller/manage";
 import { addEntities } from '../database/helpers';
+import { MediaModule } from '../media/media.module';
+// import { MediaModule } from '../media/media.module';
 
 const services = Object.values(serviceMaps);
 const strategies = Object.values(strategiesMap);
@@ -39,7 +41,8 @@ const entities = [AccessTokenEntity, RefreshTokenEntity, UserEntity, CodeEntity,
         AuthService.registerJwtModule(),
         BullModule.registerQueue({name: SEND_CAPTCHA_QUEUE}),
         BullModule.registerQueue({name: SAVE_MESSAGE_QUEUE}),
-        forwardRef(() => RbacModule)
+        forwardRef(() => RbacModule),
+        forwardRef(() => MediaModule)
     ],
     providers: [
         UserSubscriber,

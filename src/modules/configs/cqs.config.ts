@@ -30,8 +30,21 @@ export const cqsConfigFn = (): CosStsOptions => ({
               "resource": [
                 `qcs::cos:${env("REGION")}:uid/${env("APP_ID")}:${env("BUCKET")}/${env("ALLOW_PREFIX")}/*`
               ]
-          }
+          },
+          {
+            "action": [
+                "name/cos:DeleteObject",
+            ],
+            "effect": "allow",
+            "resource": [
+              `qcs::cos:${env("REGION")}:uid/${env("APP_ID")}:${env("BUCKET")}/${env("ALLOW_PREFIX")}/*`
+            ]
+        },
       ]
     }
-  }
+  },
+  region: env("REGION"),
+  bucket: env("BUCKET"),
+  // bucker文件路径
+  bucketPrefix: env("URL_PREFIX")
 })

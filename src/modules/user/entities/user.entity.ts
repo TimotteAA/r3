@@ -18,7 +18,7 @@ import { AddRelations } from '@/modules/database/decorators';
 import { userConfigFn } from '@/modules/configs';
 import { RoleEntity } from '@/modules/rbac/entities/role.entity';
 import { PermissionEntity } from '@/modules/rbac/entities/permission.entity';
-import { MediaEntity } from '@/modules/media/entities/media.entity';
+import { AvatarEntity } from '@/modules/media/entities';
 
 /**
  * 给user字段加上动态关联
@@ -53,11 +53,12 @@ export class UserEntity extends BaseEntity {
     @Column({ comment: '用户邮箱', default: null, unique: true })
     email?: string;
 
-    @OneToOne(() => MediaEntity, (media) => media.member, {
+    @Expose({ groups: ['user-detail', "user-list"] })
+    @OneToOne(() => AvatarEntity, (avatar) => avatar.user, {
         nullable: true
     })
     @JoinColumn()
-    avatar?: MediaEntity
+    avatar?: AvatarEntity
 
     // 下面是关联关系、软删除等字段
     @Column({comment: "用户是否激活", default: true})
@@ -101,18 +102,22 @@ export class UserEntity extends BaseEntity {
     trashed!: boolean;
 
     @Expose({ groups: ['user-detail', 'user-list'] })
-    @ManyToMany(() => RoleEntity, (role: RoleEntity) => role.users)
+    @ManyToMany(() => RoleEntity, (role: RoleEntity) => role.users, {
+        cascade: true
+    })
     @JoinTable()
     roles!: RoleEntity[]
 
     @Expose({ groups: ['user-detail', 'user-list'] })
-    @ManyToMany(() => PermissionEntity, (p: PermissionEntity) => p.users)
+    @ManyToMany(() => PermissionEntity, (p: PermissionEntity) => p.users, {
+        cascade: true
+    })
     @JoinTable()
     permissions!: PermissionEntity[]
 
-    // 上传的文件
-    @OneToMany(() => MediaEntity, (media) => media.user, {
-        cascade: true
-    })
-    medias: MediaEntity[]
+    // // 上传的文件
+    // @OneToMany(() => MediaEntity, (media) => media.user, {
+    //     cascade: true
+    // })
+    // medias: MediaEntity[]
 }
