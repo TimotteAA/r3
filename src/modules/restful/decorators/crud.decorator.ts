@@ -3,8 +3,8 @@ import { NotFoundException, Type } from '@nestjs/common';
 import { CLASS_SERIALIZER_OPTIONS } from '@nestjs/common/serializer/class-serializer.constants';
 import { isNil } from 'lodash';
 
-import { ALLOW_GUEST, CRUD_OPTIONS } from '../constants';
-import { BaseController } from '../crud/controller';
+import { ALLOW_GUEST, CRUD_OPTIONS } from '@/modules/restful/constants';
+import { BaseController } from '../controller';
 
 import { CrudItem, CrudMethod, CrudOptions } from '../types';
 

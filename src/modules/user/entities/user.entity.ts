@@ -12,7 +12,7 @@ import {
     OneToOne,
     JoinColumn,
 } from 'typeorm';
-import { AccessTokenEntity, MessageEntity, MessageReceiveEntity } from './';
+import { AccessTokenEntity, MessageEntity, MessageReceiveEntity } from '.';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { AddRelations } from '@/modules/database/decorators';
 import { userConfigFn } from '@/modules/configs';
@@ -53,12 +53,15 @@ export class UserEntity extends BaseEntity {
     @Column({ comment: '用户邮箱', default: null, unique: true })
     email?: string;
 
-    @Expose({ groups: ['user-detail', "user-list"] })
+    // @Expose({ groups: ['user-detail', "user-list"] })
     @OneToOne(() => AvatarEntity, (avatar) => avatar.user, {
         nullable: true
     })
     @JoinColumn()
     avatar?: AvatarEntity
+    
+    @Expose()
+    avatarSrc?: string;
 
     // 下面是关联关系、软删除等字段
     @Column({comment: "用户是否激活", default: true})

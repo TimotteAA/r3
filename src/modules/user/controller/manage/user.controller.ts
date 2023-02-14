@@ -1,6 +1,6 @@
-import { BaseController } from '@/modules/core/crud';
+import { Crud } from "@/modules/restful/decorators";
+import { BaseController } from "@/modules/restful/controller";
 import { UserService } from '../../services';
-import { Crud } from '@/modules/core/decorators';
 import { Controller } from '@nestjs/common';
 import { QueryUserDto, CreateUserDto, UpdateUserDto } from '../../dto';
 import { PermissionChecker } from '@/modules/rbac/types';

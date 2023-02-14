@@ -5,9 +5,9 @@ import STS from "qcloud-cos-sts";
 import COS, { PutObjectResult } from "cos-nodejs-sdk-v5";
 import { SimpleUploadParams } from "../types";
 import chalk from "chalk";
-import { MultipartFile } from "@fastify/multipart";
 import { getTime } from "@/modules/utils";
 import { extname } from "path";
+import { MultipartFile } from "@fastify/multipart";
 
 
 @Injectable()
@@ -50,6 +50,7 @@ export class CosService {
     }
   }
 
+
   /**
    * 删除指定key的记录
    * @param key 
@@ -72,11 +73,11 @@ export class CosService {
    * 生成存储的key
    * @param file 
    */
-  generateKey(file: MultipartFile) {
+  generateKey(file: string) {
     // 柑橘当前时间生成key名
     const filename = `${getTime().format('YYYYMMDDHHmmss')}${randomBytes(4)
       .toString('hex')
-      .slice(0, 8)}${extname(file.filename)}`;
+      .slice(0, 8)}${extname(file)}`;
     return filename
   }
 

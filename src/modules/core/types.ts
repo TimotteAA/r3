@@ -1,7 +1,5 @@
 import { SelectQueryBuilder, ObjectLiteral, FindTreeOptions } from 'typeorm';
-import { ClassTransformOptions } from '@nestjs/common/interfaces/external/class-transform-options.interface';
 import { OrderType, QueryTrashMode } from './constants';
-import { Type } from '@nestjs/common';
 import { PutObjectParams } from 'cos-nodejs-sdk-v5';
 
 /**
@@ -69,55 +67,7 @@ export interface TrashedDto {
     trashed?: QueryTrashMode;
 }
 
-/**
- * 所有的controller方法
- */
-export type CrudMethod =
-    | 'list'
-    | 'detail'
-    | 'delete'
-    | 'deleteMulti'
-    | 'restore'
-    | 'restoreMulti'
-    | 'create'
-    | 'update';
 
-/**
- * 路由方法的配置项
- */
-export interface CrudMethodOption {
-    /**
-     * 路由是否允许匿名访问
-     */
-    allowGuest?: boolean;
-    /**
-     * 路由方法的序列化选项，noGroup不传参，否则根据'id'+方法匹配来传参
-     */
-    serialize?: ClassTransformOptions | 'noGroup';
-    /**
-     * 装饰器hook
-     */
-    hook?: (target: Type<any>, method: string) => void
-}
-
-export interface CrudItem {
-    name: CrudMethod;
-    options?: CrudMethodOption;
-}
-
-export interface CrudOptions {
-    id: string;
-    /**
-     * 启用的路由方法
-     */
-    enabled: Array<CrudMethod | CrudItem>;
-    /**
-     * 列表查询、创建、更新的Dto
-     */
-    dtos: {
-        [key in 'query' | 'create' | 'update']?: any;
-    };
-}
 
 /**
  * cos简单上传参数

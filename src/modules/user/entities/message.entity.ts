@@ -1,6 +1,6 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, OneToMany } from "typeorm";
 import { Exclude, Expose, Transform } from "class-transformer";
-import { UserEntity, MessageReceiveEntity } from "./";
+import { UserEntity, MessageReceiveEntity } from ".";
 
 @Exclude()
 @Entity("user_messages")

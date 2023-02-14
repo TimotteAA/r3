@@ -1,11 +1,11 @@
 import { Controller,  } from "@nestjs/common";
 
-import { Crud } from "@/modules/core/decorators";
+import { Crud } from "@/modules/restful/decorators";
+import { BaseController } from "@/modules/restful/controller";
 import { PermissionChecker } from "../types";
 import { PermissionAction } from "../constants";
 import { PermissionEntity } from "../entities";
 import { QueryPermissionDto } from "../dtos";
-import { BaseController } from "@/modules/core/crud";
 import { PermissionService } from "../services";
 import { simpleCrudOptions } from "../helpers";
 

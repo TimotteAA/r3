@@ -2,7 +2,7 @@ import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/com
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { TokenService } from '../services';
-import { ALLOW_GUEST } from '@/modules/core/constants';
+import { ALLOW_GUEST } from '@/modules/restful/constants';
 import { ExtractJwt } from 'passport-jwt';
 import { isNil } from 'lodash';
 

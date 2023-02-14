@@ -19,6 +19,8 @@ const checkFileAndLimit = async (file: MultipartFile, limits: FileLimitConstrain
   if (!('mimetype' in file)) return false;
   if (limits.mimetypes && !limits.mimetypes.includes(file.mimetype)) return false;
   const buf = await file.toBuffer();
+  // console.log("buf", buf);
+  // console.log("file", (file as any)._buf);
   // if (has(file, '_buf') && Buffer.byteLength((file as any)._buf) > limits.fileSize) return false;
   if (Buffer.byteLength(buf) > limits.fileSize) return false;
   return true;

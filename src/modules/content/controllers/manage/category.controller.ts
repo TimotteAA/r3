@@ -1,8 +1,8 @@
 import { Controller } from '@nestjs/common';
 import { CategoryService } from '../../services';
 import { CreateCategoryDto, UpdateCategoryDto } from '../../dtos/manage';
-import { BaseController } from '@/modules/core/crud';
-import { Crud } from '@/modules/core/decorators';
+import { Crud } from "@/modules/restful/decorators";
+import { BaseController } from "@/modules/restful/controller";
 import { simpleCrudOptions } from '@/modules/rbac/helpers';
 import { PermissionChecker } from '@/modules/rbac/types';
 import { PermissionAction } from '@/modules/rbac/constants';

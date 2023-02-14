@@ -2,7 +2,7 @@ import { MongoAbility } from "@casl/ability";
 import { FastifyRequest as Request } from "fastify";
 import { isNil } from "lodash";
 import { ObjectLiteral } from "typeorm";
-import { CrudMethodOption } from "../core/types";
+import { CrudMethodOption } from "@/modules/restful/types";
 import { PermissionAction } from "./constants";
 import { ManualPermission } from "./decorators";
 import { PermissionChecker } from "./types";

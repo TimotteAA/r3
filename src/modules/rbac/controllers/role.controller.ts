@@ -1,5 +1,5 @@
-import { BaseController } from "@/modules/core/crud";
-import { Crud } from "@/modules/core/decorators";
+import { Crud } from "@/modules/restful/decorators";
+import { BaseController } from "@/modules/restful/controller";
 import { Controller } from "@nestjs/common";
 import { PermissionAction } from "../constants";
 import { RoleEntity } from "../entities";
@@ -23,7 +23,8 @@ const permissions: PermissionChecker[] = [
     { name: "list", options: simpleCrudOptions(permissions) },
     { name: "update", options: simpleCrudOptions(permissions) },
     { name: "delete", options: simpleCrudOptions(permissions) },
-    { name: "detail", options: simpleCrudOptions(permissions) }
+    { name: "detail", options: simpleCrudOptions(permissions) },
+    { name: "restore", options: simpleCrudOptions(permissions) }
   ],
   dtos: {
     query: QueryRoleDto,

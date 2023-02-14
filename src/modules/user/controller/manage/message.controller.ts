@@ -1,5 +1,5 @@
-import { BaseController } from "@/modules/core/crud";
-import { Crud } from "@/modules/core/decorators";
+import { Crud } from "@/modules/restful/decorators";
+import { BaseController } from "@/modules/restful/controller";
 import { PermissionAction } from "@/modules/rbac/constants";
 import { simpleCrudOptions } from "@/modules/rbac/helpers";
 import { PermissionChecker } from "@/modules/rbac/types";

@@ -28,8 +28,8 @@ export class AvatarService extends BaseService<AvatarEntity, AvatarRepository> {
     const { file, user, relation, description } = data;
     const mediaEntity = new AvatarEntity();
     // oss存储key
-    const ossKey = this.cosService.generateKey(file);
-    console.log("ossKey", ossKey);
+    const ossKey = this.cosService.generateKey(file.filename);
+
     mediaEntity.key = ossKey;
     mediaEntity.ext = extname(ossKey);
     mediaEntity.description = description;
@@ -37,13 +37,9 @@ export class AvatarService extends BaseService<AvatarEntity, AvatarRepository> {
     if (!isNil(user)) {
       mediaEntity.user = await this.userService.detail(user.id)
     };
-    console.log("user done")
-    console.log("mediaEntity", mediaEntity)
-    await AvatarEntity.save(mediaEntity);
-    console.log("save")
     // 上传到阿里云oss中
     const res = await this.cosService.upload(file, ossKey);
-    console.log(1235661241412);
+    // console.log(1235661241412);
     // 处理关联关系: user的avatar
     if (!isNil(relation)) {
       const { entity, id } = relation;
@@ -63,6 +59,8 @@ export class AvatarService extends BaseService<AvatarEntity, AvatarRepository> {
       const oldMedia = !isNil(relationEntity[field]) ? await this.repo.findOneByOrFail({
         id: (relationEntity[field] as any).id
       }) : null;
+      // 先拿到老的再保存新的
+      await AvatarEntity.save(mediaEntity);
       // console.log("oldMedia", oldMedia)
       // 更新新的entity关系
       // user.avatar = new avatar
@@ -77,6 +75,8 @@ export class AvatarService extends BaseService<AvatarEntity, AvatarRepository> {
       if (!isNil(oldMedia)) {
         await this.cosService.delete(oldMedia.key);
       }
+    } else {
+      await AvatarEntity.save(mediaEntity);
     }
     
     // 返回结果

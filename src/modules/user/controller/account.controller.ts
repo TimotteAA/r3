@@ -20,7 +20,7 @@ import { ClassToPlain } from '@/modules/utils';
 import { CaptchaType } from '../constants';
 import { UserEntity } from '../entities';
 import { CredentialDto, PhoneRegisterDto, RegisterDto, EmailRegisterDto, UpdateAccountDto, PhoneLoginDto, EmailLoginDto, PhoneRetrievePasswordDto, EmailRetrievePasswordDto, UpdatePasswordDto, BoundPhoneDto, BoundEmailDto, UploadAvatarDto } from '../dto';
-import { AvatarService } from '@/modules/media/service/media.service';
+import { AvatarService } from '@/modules/media/service';
 
 /**
  * 账户中心控制器

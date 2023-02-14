@@ -1,6 +1,5 @@
 export const CUSTOM_DTO_VALIDATION_KEY = 'CUSTOM_DTO_VALIDATION_KEY';
-export const CRUD_OPTIONS = 'CRUD_OPTIONS';
-export const ALLOW_GUEST = 'ALLOW_GUEST';
+
 
 /**
  * crud相关的类型

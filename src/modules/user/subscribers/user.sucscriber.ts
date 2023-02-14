@@ -11,6 +11,7 @@ import { encrypt, generateRandonString } from '../helpers';
 import crypto from 'crypto';
 import { isNil } from 'lodash';
 import { PermissionEntity, RoleEntity } from '@/modules/rbac/entities';
+import { env } from '@/modules/utils';
 
 @EventSubscriber()
 export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
@@ -42,13 +43,14 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
 
     /**
      * 当密码更改时加密密码
-     *
+     * 仅有更新字段
+     * 
      * @param {UpdateEvent<UserEntity>} event
      * @memberof UserSubscriber
      */
     async beforeUpdate(event: UpdateEvent<UserEntity>) {
-        console.log("entity", event.entity)
-        if (!isNil(event.entity.password)) {
+        
+        if (!isNil(event.entity) &&  !isNil(event.entity.password)) {
             event.entity.password = encrypt(event.entity.password)
         }
     }
@@ -81,7 +83,11 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
             return [...o, n]
         }, []);
         entity.permissions = permissions;
-
+        entity.avatarSrc = env("DEFAULT_AVATAR");
+        if (!isNil(entity.avatar)) {
+            entity.avatarSrc = this.genAvatarSrc(entity.avatar.key);
+        }
+        
     }
 
     /**
@@ -99,6 +105,15 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
             where: { username },
         });
         return !user ? username : this.generateUserName(event);
+    }
+
+    /**
+     * 生成头像src
+     * @param key 
+     */
+    protected genAvatarSrc(key: string) {
+        const prefix = env("COS_URL_PREFIX");
+        return (prefix + "/" + key).replace("//", '/')
     }
 
     /*
