@@ -1,33 +1,38 @@
 import { UserEntity } from '../entities';
 import { UserRepository } from '../repositorys';
 import { BaseService } from '@/modules/core/crud';
-import { BadRequestException, Injectable, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, OnModuleInit } from '@nestjs/common';
 import { QueryHook } from '@/modules/utils';
 import { isBoolean, isNil, omit } from 'lodash';
-import { EntityNotFoundError, SelectQueryBuilder } from 'typeorm';
+import { EntityNotFoundError, SelectQueryBuilder, In } from 'typeorm';
 import { QueryUserDto, CreateUserDto, UpdateUserDto } from '../dto';
 import { decrypt } from "../helpers";
 import { SystemRoles } from '@/modules/rbac/constants';
 import { PermissionRepository, RoleRepository } from '@/modules/rbac/repository';
  
-import { env } from '@/modules/utils';
+import { userConfigFn } from '@/modules/configs';
 
 type FindParams = Omit<QueryUserDto, "limit" | 'page'>
 
 @Injectable()
 export class UserService extends BaseService<UserEntity, UserRepository> implements OnModuleInit {
     async onModuleInit() {
-        const superAdmin = await this.repo.findOneBy({
-            username: env("ADMIN")
+        const adminConf = userConfigFn().super
+        const admin = await this.repo.findOneBy({
+            username: adminConf.username
         } as any)
-        if (isNil(superAdmin)) {
-            const superAdmin = new UserEntity();
-            superAdmin.username = env("ADMIN");
-            superAdmin.password = env("ADMIN_PASSWORD")
-            await superAdmin.save({reload: true})
+        if (!isNil(admin)) {
+            if (!admin.isCreator) {
+                await this.repo.save({ id: admin.id, isCreator: true });
+                return this.findOneByCredential(admin.username);
+            }
+            return admin;
         }
-        return this.findOneByCondition({
-            username: env("ADMIN")
+        return this.repo.create({
+            ...adminConf,
+            isCreator: true,
+            phone: "+8617301780942",
+            email: "1273871844@qq.com"
         })
     }
 
@@ -64,10 +69,15 @@ export class UserService extends BaseService<UserEntity, UserRepository> impleme
 
     async update(data: UpdateUserDto) {
         // id字段不更新
-        const { roles, permissions, ...rest } = data;;
-        await this.repo.update(data.id, omit(rest, "id") as any);
+        const { roles, permissions, ...rest } = data;
 
         const user = await this.detail(data.id);
+        if (user.isCreator && data.actived === false) {
+            throw new ForbiddenException("can not disable superadmin")
+        }
+
+        await this.repo.save(omit(rest, ["id", "isCreator"]) as any, { reload: true });
+
         
         if (!isNil(roles) && roles.length > 0) {
             await this.repo.createQueryBuilder("user")
@@ -93,6 +103,22 @@ export class UserService extends BaseService<UserEntity, UserRepository> impleme
         const res = await this.detail(user.id);
         await this.syncActived(res);
         return this.detail(res.id);
+    }
+
+    // 防止删除超级管理员
+    async delete(ids: string[], trash?: boolean): Promise<UserEntity[]> {
+        const users = await this.repo.find({
+            where: {
+                id: In(ids)
+            },
+            withDeleted: true
+        });
+        for (const user of users) {
+            if (user.isCreator) {
+                throw new ForbiddenException("can not delete first super admin user!")
+            }
+        }
+        return super.delete(ids, trash);
     }
 
     /**

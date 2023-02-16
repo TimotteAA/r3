@@ -15,7 +15,8 @@ export abstract class BaseController<S, P extends ServiceListQueryParams<any> = 
     }
 
     @Get(':id')
-    async detail(@Param('id', new ParseUUIDPipe()) id: string, @Query() options: QueryDetailDto) {
+    async detail(@Param('id', ParseUUIDPipe) id: string, @Query() options: QueryDetailDto) {
+        console.log("id", id)
         return (this.service as any).detail(id, options.trashed);
     }
 

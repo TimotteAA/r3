@@ -66,20 +66,26 @@ export class ElasticSearchService {
     //   return result;
     // }, "")
     const script = Object.entries(newBody).reduce(
-      (result, [key, value]) => `${result} ctx._source.${key}=>${value};`,
+      (result, [key, value]) => `${result} ctx._source.${key}=>'${value}';`,
       '',
     );
     console.log(chalk.red(script));
-
-    return this.elasticService.updateByQuery({
-      index: this.index,
-      query: {
-        match: {
-          id: post.id
-        }
-      },
-      script
-    })
+    let res: any;
+    try {
+        res = await this.elasticService.updateByQuery({
+        index: this.index,
+        query: {
+          match: {
+            id: post.id
+          }
+        },
+        script
+      })
+    } catch (err) {
+      console.log(chalk.red(123456));
+      console.log(err);
+    }
+    return res;
   }
 
   /**

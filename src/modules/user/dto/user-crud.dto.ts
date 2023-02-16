@@ -46,7 +46,7 @@ export class CreateUserDto extends PickType(BaseUserDto, ['username', 'nickname'
     @IsBoolean()
     @Transform(({value}) => toBoolean(value))
     @IsOptional({always: true})
-    actived?: boolean;
+    actived?: boolean = true;
 
     @IsExist(RoleEntity, {
         message: "角色不存在",

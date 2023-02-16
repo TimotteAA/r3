@@ -2,6 +2,7 @@ import { MongoAbility } from "@casl/ability";
 import { FastifyRequest as Request } from "fastify";
 import { isNil } from "lodash";
 import { ObjectLiteral } from "typeorm";
+import { ApiOperation, ApiOperationOptions } from "@nestjs/swagger";
 import { CrudMethodOption } from "@/modules/restful/types";
 import { PermissionAction } from "./constants";
 import { ManualPermission } from "./decorators";
@@ -47,10 +48,18 @@ export const checkOwner = async <E extends ObjectLiteral> (
  */
 export const simpleCrudOptions = (
   permissions?: PermissionChecker[],
+  options?: ApiOperationOptions
 ): CrudMethodOption => {
   return {
     hook: (target, method) => {
+      // 手动执行装饰器与装饰器工厂
       if (permissions) ManualPermission(target, method, permissions);
+      if (options) {
+        // console.log("options", options);
+        // console.log(target, method, Object.getOwnPropertyDescriptor(target.prototype, method));
+        // ApiOperation(options)(target, method, Object.getOwnPropertyDescriptor(target.prototype, method))
+        ApiOperation(options)
+      }
     },
   };
 }

@@ -98,15 +98,15 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
                 .addAndRemove(data.categories, post.categories ?? []);
         }
 
-        // // 更新es中的结果
-        // // es更新有问题
-        // if (!isNil(this.searchService)) {
-        //     try {
-        //         await this.searchService.update(post);
-        //     } catch (err) {
-        //         throw new InternalServerErrorException(err)
-        //     }
-        // }
+        // 更新es中的结果
+        // es更新有问题
+        if (!isNil(this.searchService)) {
+            try {
+                await this.searchService.update(post);
+            } catch (err) {
+                throw new InternalServerErrorException(err)
+            }
+        }
 
         return this.detail(data.id);
     }

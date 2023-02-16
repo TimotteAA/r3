@@ -1,5 +1,7 @@
+import { OmitType } from "@nestjs/swagger";
+
 import { CustomDtoValidation } from "@/modules/core/decorators";
-import { QueryCommentDto } from "./comment.dto";
+import { ListQueryDto } from "@/modules/restful/dto";
 
 @CustomDtoValidation({type: "query"})
-export class ApiQueryCategoryDto extends QueryCommentDto {}
+export class ApiQueryCategoryDto extends OmitType(ListQueryDto, ['trashed']) {}

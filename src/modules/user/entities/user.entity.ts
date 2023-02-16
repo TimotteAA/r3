@@ -63,6 +63,10 @@ export class UserEntity extends BaseEntity {
     @Expose()
     avatarSrc?: string;
 
+    @Expose()
+    @Column({ comment: "是否是创始人", default: false })
+    isCreator?: boolean
+
     // 下面是关联关系、软删除等字段
     @Column({comment: "用户是否激活", default: true})
     actived?: boolean;

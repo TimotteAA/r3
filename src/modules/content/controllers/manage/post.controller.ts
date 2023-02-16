@@ -12,21 +12,27 @@ import { PermissionAction } from '@/modules/rbac/constants';
 import { PostEntity } from '../../entities';
 import { simpleCrudOptions } from '@/modules/rbac/helpers';
 import { Permission } from '@/modules/rbac/decorators';
+import { Depends } from '@/modules/restful/decorators';
+import { ContentModule } from '../../content.module';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 // 文章的后台管理权限
 const permissions: PermissionChecker[] = [
     async ab => ab.can(PermissionAction.MANAGE, PostEntity.name)
 ]
 
+@ApiTags("文章管理")
+@ApiBearerAuth()
+@Depends(ContentModule)
 @Crud({
     id: 'post',
     enabled: [
-        { name: "list", options: simpleCrudOptions(permissions) },
-        { name: "detail", options: simpleCrudOptions(permissions) },
-        { name: "create", options: simpleCrudOptions(permissions) },
-        { name: "update", options: simpleCrudOptions(permissions) },
-        { name: "delete", options: simpleCrudOptions(permissions) },
-        { name: "restore", options: simpleCrudOptions(permissions) }
+        { name: "list", options: simpleCrudOptions(permissions, { description: "文章分页查询" }) },
+        { name: "detail", options: simpleCrudOptions(permissions, { description: "查看文章详情" }) },
+        { name: "create", options: simpleCrudOptions(permissions, { description: "创建文章" }) },
+        { name: "update", options: simpleCrudOptions(permissions, { description: "更新文章" }) },
+        { name: "delete", options: simpleCrudOptions(permissions, { description: "删除文章，支持批量删除" }) },
+        { name: "restore", options: simpleCrudOptions(permissions, { description: "恢复软删除文章，支持批量恢复" }) }
     ],
     dtos: {
         query: QueryPostDto,

@@ -1,68 +1,122 @@
 import { ListQueryDto } from '@/modules/restful/dto';
-import { NotFoundException, Type } from '@nestjs/common';
-import { CLASS_SERIALIZER_OPTIONS } from '@nestjs/common/serializer/class-serializer.constants';
+import { NotFoundException, SerializeOptions, Type } from '@nestjs/common';
+import { Get, Post, Delete, Patch } from '@nestjs/common';
 import { isNil } from 'lodash';
+import { ApiBody, ApiQuery} from '@nestjs/swagger';
 
 import { ALLOW_GUEST, CRUD_OPTIONS } from '@/modules/restful/constants';
 import { BaseController } from '../controller';
 
-import { CrudItem, CrudMethod, CrudOptions } from '../types';
+import { CrudItem, CrudOptions } from '../types';
 
 export const Crud =
     (options: CrudOptions) =>
     <T extends BaseController<any>>(Target: Type<T>) => {
         Reflect.defineMetadata(CRUD_OPTIONS, options, Target);
-        const { id, enabled, dtos } = Reflect.getMetadata(CRUD_OPTIONS, Target) as CrudOptions;
-        const changed: Array<CrudMethod> = [];
-        // 遍历所用启用的方法添加验证DTO类
-        for (const value of enabled) {
-            // 方法名
-            const { name } = (typeof value === 'string' ? { name: value } : value) as CrudItem;
-            if (changed.includes(name)) continue;
-            if (name in Target.prototype) {
-                // 在Controller中自己定义了
-                let method = Object.getOwnPropertyDescriptor(Target.prototype, name);
-                if (isNil(method)) {
-                    // 没定义，取BaseController的方法描述符
-                    method = Object.getOwnPropertyDescriptor(BaseController.prototype, name);
-                }
-                // 拿到方法入参
-                const paramTypes = Reflect.getMetadata('design:paramtypes', Target.prototype, name);
-                const params = [...paramTypes];
-                if (name === 'create') params[0] = dtos.create;
-                else if (name === 'update') params[0] = dtos.update;
-                // else if (name === 'list' || name === 'deleteMulti' || name === 'restoreMulti')
-                else if (name === "list")
-                    params[0] = dtos.query ?? ListQueryDto;
-                Reflect.defineMetadata('design:paramtypes', params, Target.prototype, name);
-                changed.push(name);
-            }
-        }
-        // // 添加序列化选项以及是否允许匿名访问等metadata
-        // if (Target.name === "UserController") {
-        //     console.log(changed)
-        // }
 
-        for (const key of changed) {
-            const find = enabled.find((v) => v === key || (v as any).name === key);
-            const option = typeof find === 'string' ? {} : find.options ?? {};
-            let serialize = {};
-            if (isNil(option.serialize)) {
-                if (['detail', 'store', 'update', 'delete', 'restore'].includes(key)) {
-                    serialize = { groups: [`${id}-detail`] };
-                } else if (['list', 'deleteMulti', 'restoreMulti'].includes(key)) {
-                    serialize = { groups: [`${id}-list`] };
-                }
-            } else if (option.serialize === 'noGroup') {
-                serialize = {};
-            }
-            Reflect.defineMetadata(CLASS_SERIALIZER_OPTIONS, serialize, Target.prototype, key);
-            if (option.allowGuest) {
-                Reflect.defineMetadata(ALLOW_GUEST, true, Target.prototype, key);
-            }
-            // if (key === "list" && Target.name === "UserController") console.log(option)
-            if (option.hook) option.hook(Target, key)
+        const { id, enabled, dtos } = Reflect.getMetadata(CRUD_OPTIONS, Target) as CrudOptions;
+        const methods: CrudItem[] = [];
+
+        for (const value of enabled) {            
+            // 将字符串改成对象类型
+            const item = ((typeof value === "string") ? { name: value } : value) as CrudItem;
+            if (
+                // 包含了同名方法或自己实现、改写了父类的路由方法，不处理
+                methods.map(({name}) => name).includes(item.name) || 
+                !isNil(Object.getOwnPropertyDescriptor(Target.prototype, item.name))
+            ) 
+                continue;
+            methods.push(item);
         }
+
+        // 添加参数、路径装饰器、序列化选项、是否允许匿名访问等
+        for (const { name, options = {} } of methods) {
+            if (isNil(Object.getOwnPropertyDescriptor(Target.prototype, name))) {
+                // 没实现的方法，默认继承的方法
+                const descriptor = Object.getOwnPropertyDescriptor(BaseController.prototype, name);
+
+                Object.defineProperty(Target.prototype, name, {
+                    ...descriptor,
+                    async value(...args: any[]) {
+                        return descriptor.value.apply(this, args)
+                    }
+                })
+            }
+
+            const descriptor = Object.getOwnPropertyDescriptor(Target.prototype, name);
+
+            // 添加入参
+            const [_, ...params] = Reflect.getMetadata("design:paramtypes", Target.prototype, name);
+            
+            if (name === "create" && !isNil(dtos.create)) {
+                // 添加入参
+                Reflect.defineMetadata(
+                    "design:paramtypes",
+                    [dtos.create, ...params],
+                    Target.prototype,
+                    name,
+                );
+                ApiBody({type: dtos.create})(Target, name, descriptor);
+            } else if (name === "update" && !isNil(dtos.update)) {
+                Reflect.defineMetadata(
+                    "design:paramtypes",
+                    [dtos.update, ...params],
+                    Target.prototype,
+                    name,
+                );
+                ApiBody({type: dtos.update})(Target, name, descriptor);
+            } else if (name === "list") {
+                const dto = dtos.query ?? ListQueryDto
+                Reflect.defineMetadata(
+                    "design:paramtypes",
+                    [dto, ...params],
+                    Target.prototype,
+                    name
+                )
+                ApiQuery({ type: dtos.query })(Target, name, descriptor)
+            }
+
+            if (options.allowGuest) {
+                Reflect.defineMetadata(ALLOW_GUEST, true, Target.prototype, name);
+            }
+
+            // 添加序列化group
+            let serialize = {};
+            if (isNil(options.serialize)) {
+                if (['detail', 'create', 'update', 'delete', 'restore'].includes(name)) {
+                    serialize = { groups: [`${id}-detail`] }
+                } else if (['list'].includes(name)) {
+                    serialize = { groups: [`${id}-list`] }
+                }
+            } else if (options.serialize === "noGroup") {
+                serialize = {}
+            }
+            SerializeOptions(serialize)(Target, name, descriptor);
+            // 添加路由装饰器
+            switch (name) {
+                case 'list':
+                    Get()(Target, name, descriptor);
+                    break;
+                case 'detail':
+                    Get(':id')(Target, name, descriptor);
+                    break;
+                case 'create':
+                    Post()(Target, name, descriptor);
+                    break;
+                case 'update':
+                    Patch()(Target, name, descriptor);
+                    break;
+                case 'delete':
+                    Delete()(Target, name, descriptor);
+                    break;
+                default:
+                    break;
+            }
+
+            if (!isNil(options.hook)) options.hook(Target, name);
+        } 
+
+
         // 对于不启用的方法返回404
         const fixedProperties = ['constructor', 'service', 'setService'];
         for (const key of Object.getOwnPropertyNames(BaseController.prototype)) {

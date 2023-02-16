@@ -3,14 +3,24 @@ import { Injectable } from '@nestjs/common';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsOptional, IsDefined, IsUUID } from 'class-validator';
 import { toBoolean } from '@/modules/core/helpers/index';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @Injectable()
 export class DeleteDto {
+    @ApiPropertyOptional({
+        description: "是否软删除",
+        default: false,
+        type: Boolean
+    })
     @IsBoolean()
     @Transform(({ value }) => toBoolean(value))
     @IsOptional()
     trashed?: boolean;
 
+    @ApiProperty({
+        description: "删除的数据id列表，支持批量删除",
+        type: [String]
+    })
     @IsUUID(undefined, {
         each: true,
         message: 'ID格式错误',

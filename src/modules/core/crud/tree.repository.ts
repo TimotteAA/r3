@@ -85,8 +85,8 @@ export class BaseTreeRepository<E extends ObjectLiteral> extends TreeRepository<
         }
 
         // 是否排序
-        qb = !isNil(orderBy) ? getQrderByQuery(qb, this.alias, orderBy || this.orderBy) : qb;
-
+        qb = !isNil(orderBy) ? getQrderByQuery(qb, this.alias, orderBy) : qb;
+        qb = !isNil(this.orderBy) ? getQrderByQuery(qb, this.alias, this.orderBy) : qb;
         return qb.getMany();
     }
 
@@ -112,6 +112,7 @@ export class BaseTreeRepository<E extends ObjectLiteral> extends TreeRepository<
         );
         qb = !isNil(addQuery) ? addQuery(qb) : qb;
         qb = !isNil(orderBy) ? getQrderByQuery(qb, this.alias, orderBy) : qb;
+        qb = !isNil(this.orderBy) ? getQrderByQuery(qb, this.alias, this.orderBy) : qb;
         qb = withTrashed ? qb.withDeleted() : qb;
         return qb;
     }
@@ -131,6 +132,7 @@ export class BaseTreeRepository<E extends ObjectLiteral> extends TreeRepository<
         );
         qb = !isNil(addQuery) ? addQuery(qb) : qb;
         qb = !isNil(orderBy) ? getQrderByQuery(qb, this.alias, orderBy) : qb;
+        qb = !isNil(this.orderBy) ? getQrderByQuery(qb, this.alias, this.orderBy) : qb;
         qb = withTrashed ? qb.withDeleted() : qb;
         return qb;
     }

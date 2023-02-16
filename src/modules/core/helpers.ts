@@ -1,3 +1,4 @@
+import { Module, ModuleMetadata, Type } from "@nestjs/common";
 import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 import { isNil } from "lodash";
 import { OrderQueryType } from "./types";
@@ -32,4 +33,30 @@ export function getQrderByQuery<E extends ObjectLiteral>(
       return qb;
   }
   return qb.orderBy(`${alias}.${orderBy.name}`, `${orderBy.order}`);
+}
+
+/**
+ * 动态创建模块
+ * @param target 
+ * @param moduleMetadataSetter 
+ */
+export const CreateModule = (
+    target: string | Type<any>,
+    moduleMetadataSetter: () => ModuleMetadata = () => ({})
+) => {
+    let ModuleClass: Type<any>;
+    if (typeof target === "string") {
+        // 传入类的名称，创建匿名类，并赋予name属性
+        ModuleClass = class {}
+        // ModuleClass.name = target
+        Object.defineProperty(ModuleClass, "name", {
+            value: target
+        });
+    } else {
+        // 直接传入类
+        ModuleClass = target;
+    }
+    // 执行模块装饰器
+    Module(moduleMetadataSetter())(ModuleClass);
+    return ModuleClass;
 }

@@ -7,20 +7,26 @@ import { simpleCrudOptions } from '@/modules/rbac/helpers';
 import { PermissionChecker } from '@/modules/rbac/types';
 import { PermissionAction } from '@/modules/rbac/constants';
 import { CategoryEntity } from '../../entities';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Depends } from '@/modules/restful/decorators';
+import { ContentModule } from '../../content.module';
 
 const permissions: PermissionChecker[] = [
     async (ab) => ab.can(PermissionAction.MANAGE, CategoryEntity.name)
 ]
 
+@ApiTags("分类管理")
+@ApiBearerAuth()
+@Depends(ContentModule)
 @Crud({
     id: 'category',
     enabled: [
-        { name: "create", options: simpleCrudOptions(permissions) },
-        { name: "delete", options: simpleCrudOptions(permissions) },
-        { name: "update", options: simpleCrudOptions(permissions) },
-        { name: "list", options: simpleCrudOptions(permissions) },
-        { name: "detail", options: simpleCrudOptions(permissions) },
-        { name: "restore", options: simpleCrudOptions(permissions) },
+        { name: "create", options: simpleCrudOptions(permissions, {description: "创建分类"}) },
+        { name: "delete", options: simpleCrudOptions(permissions, {description: "删除分类，支持批量删除与软删除"}) },
+        { name: "update", options: simpleCrudOptions(permissions, {description: "更新分类"}) },
+        { name: "list", options: simpleCrudOptions(permissions, {description: "查询分类分页列表"}) },
+        { name: "detail", options: simpleCrudOptions(permissions, {description: "查询分类详情"}) },
+        { name: "restore", options: simpleCrudOptions(permissions, {description: "恢复软删除分类"}) },
     ],
     dtos: {
         create: CreateCategoryDto,

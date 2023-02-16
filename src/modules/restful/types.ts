@@ -122,3 +122,61 @@ export interface ApiDocSource {
 export interface AppOption extends RouteOption {
     doc?: ApiDocSource;
 }
+
+/**
+ * 一个版本配置，可以配置不同的版本app
+ */
+export interface VersionOption extends ApiDocSource {
+    /**
+     * 各个app的配置
+     */
+    apps?: AppOption[]
+}
+
+/**
+ * rest模块配置：前缀、版本管理
+ */
+export interface ApiConfig extends ApiDocSource {
+    /**
+     * 分别指定应用和Open API的总前缀
+     */
+    prefix?: {
+        route?: string;
+        doc?: string;
+    };
+    /**
+     * 默认版本
+     */
+    default: string;
+    /**
+     * 启用的版本
+     * 默认版本不需要添加,如果是空数组则只启用默认版本
+     */
+    enabled: string[];
+    /**
+     * 所有版本的配置
+     */
+    versions: Record<string, VersionOption>;
+}
+
+// 每个app、version、rest模块配置都有title、description、auth
+
+/**
+ * swagger选项
+ */
+export interface SwaggerOption extends ApiDocSource {
+    version: string;
+    path: string;
+    include: Type<any>[];
+}
+
+/**
+ * API与swagger整合的选项
+ * 默认api的文档与各个版本api的文档
+ */
+export interface APIDocOption {
+    // version的配置
+    default?: SwaggerOption;
+    // 每个app的配置
+    apps?: { [key: string]: SwaggerOption };
+}

@@ -1,11 +1,5 @@
 import deepmerge from 'deepmerge';
 
-
-/**
- * content模块
- */
-
-
 /**
  * 深度合并对象
  * @param x 初始值

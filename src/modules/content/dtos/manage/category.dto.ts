@@ -9,7 +9,7 @@ import {
     ValidateIf
 } from 'class-validator';
 import { toNumber } from 'lodash';
-import { PartialType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { CustomDtoValidation } from '@/modules/core/decorators';
 import { IsExist, IsUniqueTree, IsUniqueTreeUpdate } from '@/modules/database/constraints';
 import { CategoryEntity, PostEntity } from '../../entities';
@@ -19,6 +19,9 @@ import { CategoryEntity, PostEntity } from '../../entities';
  */
 @CustomDtoValidation({ type: 'query' })
 export class QueryCategoryDto {
+    @ApiPropertyOptional({
+        description: "查询某篇文章的分类"
+    })
     @IsExist(PostEntity, {
         message: "文章不存在",
         each: true,
@@ -38,6 +41,11 @@ export class QueryCategoryDto {
  * 在某一分类下创建分类，不需要children
  */
 export class CreateCategoryDto {
+    @ApiProperty({
+        description: "分类名称，在分类树的同层中必须唯一",
+        uniqueItems: true,
+        maxLength: 30
+    })
     @IsUniqueTree(CategoryEntity, {
         groups: ['create'],
         message: '分类名在同层分类中重复！',
@@ -53,6 +61,9 @@ export class CreateCategoryDto {
     @IsOptional({ groups: ['update'] })
     content!: string;
 
+    @ApiPropertyOptional({
+        description: "可选的父分类ID"
+    })
     @IsExist(CategoryEntity, {
         always: true,
         message: '父分类不存在',
@@ -69,6 +80,12 @@ export class CreateCategoryDto {
     @Transform(({ value }) => (value === 'null' ? null : value))
     parent?: string;
 
+    @ApiPropertyOptional({
+        description: "可选的自定义排序：该排序仅生效于获取树形分类，且仅作用于同一父类下的同级别的子分类",
+        default: 0,
+        minimum: 0,
+        type: Number
+    })
     @Transform(({ value }) => toNumber(value))
     @IsNumber(undefined, {
         always: true,
@@ -85,6 +102,9 @@ export class CreateCategoryDto {
 
 @CustomDtoValidation({ groups: ['update'] })
 export class UpdateCategoryDto extends PartialType(CreateCategoryDto) {
+    @ApiProperty({
+        description: "更新的分类ID"
+    })
     @IsUUID(undefined, {
         groups: ['update'],
         message: '分类ID格式错误',

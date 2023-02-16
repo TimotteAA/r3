@@ -8,16 +8,24 @@ import { PermissionAction } from '@/modules/rbac/constants';
 import { CommentEntity } from '../../entities';
 import { simpleCrudOptions } from '@/modules/rbac/helpers';
 import { DeleteDto } from '@/modules/restful/dto';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Depends } from '@/modules/restful/decorators';
+import { ContentModule } from '../../content.module';
 
 const permissions: PermissionChecker[] = [
     async ab => ab.can(PermissionAction.MANAGE, CommentEntity.name)
 ]
 
+@ApiTags("文章管理")
+@ApiBearerAuth()
+@Depends(ContentModule)
 @Crud({
     id: "comment",
     enabled: [
-        { name: "list", options: simpleCrudOptions(permissions) },
-        { name: "delete", options: simpleCrudOptions(permissions) }
+        { name: "list", options: simpleCrudOptions(permissions, { description: "评论分类列表查询，支持查询某个作者、某篇文章的评论" }) },
+        { name: "delete", options: simpleCrudOptions(permissions, {
+            description: "删除评论，支持批量删除"
+        }) }
     ],
     dtos: {
         query: ManageCommentQuery
@@ -29,6 +37,7 @@ export class CommentController extends BaseController<CommentService> {
         super(commentService)
     }
 
+    @ApiOperation({ summary: "删除评论，支持批量删除" })
     @Delete()
     async delete(@Body() options: DeleteDto): Promise<any> {
         return super.delete({ ...options, trashed: false })

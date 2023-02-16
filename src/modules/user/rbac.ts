@@ -26,6 +26,7 @@ export class UserRbac implements OnModuleInit {
           subject: UserEntity,
         }
       },
+      // 前台权限
       {
         name: "message.create",
         rule: {
