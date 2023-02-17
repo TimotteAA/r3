@@ -16,22 +16,22 @@ const permissions: PermissionChecker[] = [
   }
 ]
 
-@Crud({
+@Crud(async () => ({
   id: "role",
   enabled: [
-    { name: "create", options: simpleCrudOptions(permissions) },
-    { name: "list", options: simpleCrudOptions(permissions) },
-    { name: "update", options: simpleCrudOptions(permissions) },
-    { name: "delete", options: simpleCrudOptions(permissions) },
-    { name: "detail", options: simpleCrudOptions(permissions) },
-    { name: "restore", options: simpleCrudOptions(permissions) }
+    { name: "create", options: simpleCrudOptions(permissions, { description: "创建角色" }) },
+    { name: "list", options: simpleCrudOptions(permissions, { description: "分页查询角色" }) },
+    { name: "update", options: simpleCrudOptions(permissions, { description: "更新指定角色" }) },
+    { name: "delete", options: simpleCrudOptions(permissions, { description: "删除角色，支持批量删除" }) },
+    { name: "detail", options: simpleCrudOptions(permissions, { description: "查看角色详情" }) },
+    { name: "restore", options: simpleCrudOptions(permissions, { description: "恢复软删除角色，支持批量恢复" }) }
   ],
   dtos: {
     query: QueryRoleDto,
     create: CreateRoleDto,
     update: UpdateRoleDto
   }
-})
+}))
 @Controller("roles")
 export class RoleController extends BaseController<RoleService> {
   constructor(

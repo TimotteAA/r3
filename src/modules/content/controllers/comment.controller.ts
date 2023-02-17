@@ -11,6 +11,7 @@ import { Permission } from '@/modules/rbac/decorators';
 import { checkOwner } from '@/modules/rbac/helpers';
 import { CommentRepository } from '../repositorys';
 import { In } from 'typeorm';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DeleteDto } from '@/modules/restful/dto';
 
 const permission: Record<"create" | "delete", PermissionChecker> = {
@@ -27,6 +28,7 @@ const permission: Record<"create" | "delete", PermissionChecker> = {
     )
 }
 
+@ApiTags("前台评论API")
 @Controller('api/comments')
 export class CommentController {
     constructor(protected commentService: CommentService) {}
@@ -35,6 +37,9 @@ export class CommentController {
      * 获取某篇文章的评论树
      * @param options
      */
+    @ApiOperation({
+        summary: "查询评论树，可以查询某篇文章的评论"
+    })
     @SerializeOptions({ groups: ['comment-tree'] })
     @Get('tree')
     @GUEST()
@@ -45,6 +50,9 @@ export class CommentController {
         return this.commentService.findTrees(options);
     }
 
+    @ApiOperation({
+        summary: "查询评论树，可以查询某篇文章、某个用户的评论"
+    })
     @SerializeOptions({groups: ['comment-list']})
     @Get()
     @GUEST()
@@ -55,12 +63,18 @@ export class CommentController {
         return this.commentService.paginate(options);
     }
 
+    @ApiOperation({
+        summary: "创建新的评论"
+    })
     @Permission(permission.create)
     @Post()
     async create(@Body() data: CreateCommentDto, @User() user: ClassToPlain<UserEntity>) {
         return this.commentService.create(data, user.id)
     }
 
+    @ApiOperation({
+        summary: "删除评论，支持批量删除"
+    })
     @Permission(permission.delete)
     @Delete()
     async delete(

@@ -19,18 +19,18 @@ const permissions: PermissionChecker[] = [
 @ApiTags("文章管理")
 @ApiBearerAuth()
 @Depends(ContentModule)
-@Crud({
+@Crud(() => ({
     id: "comment",
     enabled: [
-        { name: "list", options: simpleCrudOptions(permissions, { description: "评论分类列表查询，支持查询某个作者、某篇文章的评论" }) },
+        { name: "list", options: simpleCrudOptions(permissions, { summary: "评论分类列表查询，支持查询某个作者、某篇文章的评论" }) },
         { name: "delete", options: simpleCrudOptions(permissions, {
-            description: "删除评论，支持批量删除"
+            summary: "删除评论，支持批量删除"
         }) }
     ],
     dtos: {
         query: ManageCommentQuery
     }
-})
+}))
 @Controller('comments')
 export class CommentController extends BaseController<CommentService> {
     constructor(protected commentService: CommentService) {

@@ -1,40 +1,49 @@
-import { IsNotEmpty, IsOptional, IsUUID, IsNumber, Min, IsEnum, IsBoolean } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsUUID, IsEnum, IsBoolean } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { CustomDtoValidation } from '@/modules/core/decorators';
 import { BaseUserDto } from './base-user.dto';
-import { PartialType, PickType } from '@nestjs/swagger';
-import { PaginateOptions } from '@/modules/utils';
-import { toNumber } from 'lodash';
+import { ApiProperty, ApiPropertyOptional, PartialType, PickType } from '@nestjs/swagger';
 import { UserQueryOrder, UserDtoGroups } from '../constants';
 import { toBoolean } from '@/modules/core/helpers/index';
 import { IsExist } from '@/modules/database/constraints';
 import { PermissionEntity, RoleEntity } from '@/modules/rbac/entities';
+import { ListQueryDto } from '@/modules/restful/dto';
 
 @CustomDtoValidation({ type: 'query' })
-export class QueryUserDto implements PaginateOptions {
-    // 给了默认值可以不传
-    @Transform(({ value }) => toNumber(value))
-    @Min(1, {
-        message: '最少是第$constraint1页',
+export class QueryUserDto extends ListQueryDto {
+    @ApiPropertyOptional({
+        description: "角色ID:根据用户角色，限制用户查询"
     })
-    @IsNumber()
-    @IsOptional()
-    page: number = 1;
-
-    @Transform(({ value }) => toNumber(value))
-    @Min(5, {
-        message: '每页最少数量是$constraint1个',
+    @IsExist(RoleEntity, {
+        message: "角色不存在"
     })
-    @IsNumber()
+    @IsUUID()
     @IsOptional()
-    limit: number = 5;
+    role?: string;
 
+    @ApiPropertyOptional({
+        description: "权限ID:根据用户权限（包含角色的权限）去重后，限制用户查询"
+    })
+    @IsExist(PermissionEntity, {
+        message: "权限不存在"
+    })
+    @IsUUID()
+    @IsOptional()
+    permission?: string;
+
+    @ApiPropertyOptional({
+        description: "用户排序"
+    })
     @IsEnum(UserQueryOrder, {
         message: `排序值必须是${Object.values(UserQueryOrder).join(',')}中的一个`
     })
     @IsOptional()
     orderBy?: UserQueryOrder
 
+    @ApiPropertyOptional({
+        description: "用户是否启用",
+        type: Boolean
+    })
     @IsBoolean({message: "isActive不是布尔类型"})
     @Transform(({value}) => toBoolean(value))
     @IsOptional()
@@ -43,11 +52,19 @@ export class QueryUserDto implements PaginateOptions {
 
 @CustomDtoValidation({ groups: [UserDtoGroups.CREATE] })
 export class CreateUserDto extends PickType(BaseUserDto, ['username', 'nickname', 'password', 'email', 'phone']) {
+    @ApiPropertyOptional({
+        description: "用户是否激活",
+        type: Boolean
+    })
     @IsBoolean()
     @Transform(({value}) => toBoolean(value))
     @IsOptional({always: true})
     actived?: boolean = true;
 
+    @ApiPropertyOptional({
+        description: "角色ID数组",
+        type: [String]
+    })
     @IsExist(RoleEntity, {
         message: "角色不存在",
         always: true,
@@ -61,7 +78,10 @@ export class CreateUserDto extends PickType(BaseUserDto, ['username', 'nickname'
     @IsOptional({always: true})
     roles?: string[]
 
-    
+    @ApiPropertyOptional({
+        description: "权限ID数组",
+        type: [String]
+    })
     @IsExist(PermissionEntity, {
         message: "权限不存在",
         always: true,
@@ -78,6 +98,9 @@ export class CreateUserDto extends PickType(BaseUserDto, ['username', 'nickname'
 
 @CustomDtoValidation({ groups: [UserDtoGroups.UPDATE] })
 export class UpdateUserDto extends PartialType(CreateUserDto) {
+    @ApiProperty({
+        description: "更新的角色ID"
+    })
     @IsUUID(undefined, {
         groups: ['update'],
         message: 'ID格式错误',

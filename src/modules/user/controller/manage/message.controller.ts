@@ -12,16 +12,16 @@ const permissions: PermissionChecker[] = [
   async (ab) => ab.can(PermissionAction.MANAGE, MessageEntity.name)
 ]
 
-@Crud({
+@Crud(async () => ({
   id: "message",
   enabled: [
-    { name: "list", options: simpleCrudOptions(permissions) },
-    { name: "delete", options: simpleCrudOptions(permissions) }
+    { name: "list", options: simpleCrudOptions(permissions, { summary: "消息列表" }) },
+    { name: "delete", options: simpleCrudOptions(permissions, { summary: "删除消息，支持批量删除" }) }
   ],
   dtos: {
     query: ListQueryDto
   }
-})
+}))
 @Controller("messages")
 export class MessageController extends BaseController<MessageService> {
   constructor(protected messageService: MessageService) {

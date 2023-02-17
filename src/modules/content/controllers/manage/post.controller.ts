@@ -24,22 +24,22 @@ const permissions: PermissionChecker[] = [
 @ApiTags("文章管理")
 @ApiBearerAuth()
 @Depends(ContentModule)
-@Crud({
+@Crud(() => ({
     id: 'post',
     enabled: [
-        { name: "list", options: simpleCrudOptions(permissions, { description: "文章分页查询" }) },
-        { name: "detail", options: simpleCrudOptions(permissions, { description: "查看文章详情" }) },
-        { name: "create", options: simpleCrudOptions(permissions, { description: "创建文章" }) },
-        { name: "update", options: simpleCrudOptions(permissions, { description: "更新文章" }) },
-        { name: "delete", options: simpleCrudOptions(permissions, { description: "删除文章，支持批量删除" }) },
-        { name: "restore", options: simpleCrudOptions(permissions, { description: "恢复软删除文章，支持批量恢复" }) }
+        { name: "list", options: simpleCrudOptions(permissions, { summary: "文章分页查询" }) },
+        { name: "detail", options: simpleCrudOptions(permissions, { summary: "查看文章详情" }) },
+        { name: "create", options: simpleCrudOptions(permissions, { summary: "创建文章" }) },
+        { name: "update", options: simpleCrudOptions(permissions, { summary: "更新文章" }) },
+        { name: "delete", options: simpleCrudOptions(permissions, { summary: "删除文章，支持批量删除" }) },
+        { name: "restore", options: simpleCrudOptions(permissions, { summary: "恢复软删除文章，支持批量恢复" }) }
     ],
     dtos: {
         query: QueryPostDto,
         create: ManageCreatePostDto,
         update: ManageUpdatePostDto,
     },
-})
+}))
 @Controller('posts')
 export class PostController extends BaseController<PostService> {
     public constructor(protected service: PostService) {

@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { CustomDtoValidation } from "@/modules/core/decorators";
-import { PickType } from "@nestjs/swagger";
+import { ApiProperty, PickType } from "@nestjs/swagger";
 import { BaseUserDto } from "./base-user.dto";
 import { CaptchaDtoGroups, UserDtoGroups } from "../constants";
 import { Length } from "class-validator";
@@ -66,6 +66,11 @@ export class CredentialRetrievePasswordDto extends PickType(BaseUserDto, ['email
  */
 @CustomDtoValidation()
 export class UpdatePasswordDto extends PickType(BaseUserDto, ['password', 'plainPassword']) {
+  @ApiProperty({
+    description: "老密码",
+    minLength: 8,
+    maxLength: 50
+  })
   @Length(8, 50, {
     always: true,
     message: '密码的长度必须介于$constraint1与$constraint2之间',

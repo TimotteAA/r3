@@ -17,6 +17,7 @@ export type CrudMethod =
 import { ClassTransformOptions } from '@nestjs/common/interfaces/external/class-transform-options.interface';
 import { Type } from '@nestjs/common';
 import { ExternalDocumentationObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
+import { Configure } from '../core/Configure';
 
 export interface CrudMethodOption {
     /**
@@ -74,6 +75,10 @@ export interface RouteOption {
      * 路由表
      */
     children?: RouteOption[]
+    /**
+     * 路由对应的说明文档
+     */
+    doc?: ApiDocSource;
 }
 
 /**
@@ -95,7 +100,7 @@ interface TagOption {
 }
 
 /**
- * 每个app对应的doc：tag、每个路由的描述
+ * 每个app对应的文档配置：tag、每个路由的描述
  */
 export interface ApiDocSource {
     /**
@@ -116,21 +121,15 @@ export interface ApiDocSource {
     tags?: (string | TagOption)[]
 }
 
-/**
- * 单个app的配置：路由、路由对应的说明文档
- */
-export interface AppOption extends RouteOption {
-    doc?: ApiDocSource;
-}
 
 /**
  * 一个版本配置，可以配置不同的版本app
  */
 export interface VersionOption extends ApiDocSource {
     /**
-     * 各个app的配置
+     * 路由配置
      */
-    apps?: AppOption[]
+    routes?: RouteOption[]
 }
 
 /**
@@ -178,5 +177,10 @@ export interface APIDocOption {
     // version的配置
     default?: SwaggerOption;
     // 每个app的配置
-    apps?: { [key: string]: SwaggerOption };
+    routes?: { [key: string]: SwaggerOption };
 }
+
+/**
+ * 装饰器配置工厂
+ */
+export type CrudOptionsRegister = (configure: Configure) => CrudOptions | Promise<CrudOptions>

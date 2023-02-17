@@ -16,16 +16,16 @@ const permissions: PermissionChecker[] = [async (ablitiy) => {
   return ablitiy.can(PermissionAction.MANAGE, PermissionEntity.name)
 }]
 
-@Crud({
+@Crud(async() => ({
   id: "permission",
   enabled: [
-    { name: "list", options: simpleCrudOptions(permissions)},
-    { name: "detail", options: simpleCrudOptions(permissions) }
+    { name: "list", options: simpleCrudOptions(permissions, { description: "分页查询权限" })},
+    { name: "detail", options: simpleCrudOptions(permissions, { description: "查看权限详情" }) }
   ],
   dtos: {
     query: QueryPermissionDto
   }
-})
+}))
 @Controller("permissions")
 export class PermissionController extends BaseController<PermissionService> { 
   constructor(

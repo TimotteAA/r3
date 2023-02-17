@@ -1,13 +1,12 @@
-import { Injectable, INestApplication } from "@nestjs/common";
+import { Injectable, INestApplication, Type } from "@nestjs/common";
 import { RouterModule } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
-import { trim } from "lodash";
+import { trim, omit } from "lodash";
 
-import { deepMerge } from "@/modules/utils";
 
 import { RestfulConfigure } from "./configure";
 
-import { ApiConfig, APIDocOption, SwaggerOption, VersionOption, AppOption} from "../types";
+import { ApiConfig, APIDocOption, SwaggerOption, VersionOption, RouteOption, ApiDocSource } from "../types";
 import { genDocPath } from "../helpers";
 
 @Injectable()
@@ -19,19 +18,28 @@ export class RestfulFactory extends RestfulConfigure {
     [version: string]: APIDocOption;
   }
 
+  /**
+   * 排除已经添加的模块
+   */
+  protected excludeVersionModules: string[] = [];
+
   get docs() {
     return this._docs;
   }
 
-  create(config: ApiConfig) {
+  async create(config: ApiConfig) {
     this.createConfig(config);
-    this.createRoutes();
+    await this.createRoutes();
     this.createDocs();
   }
 
+  /**
+   * 整合swagger
+   * @param app 
+   */
   factoryDocs<T extends INestApplication>(app: T) {
     const docs = Object.values(this.docs)
-      .map((vdoc) => [vdoc.default, ...Object.values(vdoc.apps ?? {})])
+      .map((vdoc) => [vdoc.default, ...Object.values(vdoc.routes ?? {})])
       .reduce((o, n) => [...o, ...n], [])
       .filter((i) => !!i);
     
@@ -59,15 +67,19 @@ export class RestfulFactory extends RestfulConfigure {
     return [...Object.values(this.modules), RouterModule.register(this.routes)];
   }
 
+  /**
+   * 创建每个版本的文档
+   */
   protected createDocs() {
     const versionMaps = Object.entries(this.config.versions);
     const vDocs = versionMaps.map(([name, version]) => {
-      return [name, this.getVersionDoc(name, version)]
+      // name是版本号
+      return [name, this.getDocOption(name, version)]
     });
     this._docs = Object.fromEntries(vDocs);
     const defaultVersion = this.config.versions[this._default];
     // 为默认版本再次生成一个文档
-    this._docs.default = this.getVersionDoc(this._default, defaultVersion, true);
+    this._docs.default = this.getDocOption(this._default, defaultVersion, true);
   }
 
   /**
@@ -76,9 +88,9 @@ export class RestfulFactory extends RestfulConfigure {
    * @param option 
    * @param isDefault 
    */
-  protected getVersionDoc(name: string, option: VersionOption, isDefault = false) {
+  protected getDocOption(name: string, option: VersionOption, isDefault = false) {
     const docConfig: APIDocOption = {};
-    // 每个版本的默认文档
+    // version上配置的文档
     const defaultDoc = {
       title: option.title,
       description: option.description,
@@ -88,38 +100,83 @@ export class RestfulFactory extends RestfulConfigure {
       path: trim(`${this.config.prefix?.doc}${isDefault ? "" : `/${name}`}`, "/"),
     };
     // 获取应用的路由文档
-    const versionDoc = isDefault
-      ? this.getAppDoc(defaultDoc, option.apps ?? [], undefined)
-      : this.getAppDoc(defaultDoc, option.apps ?? [], name);
+    const routesDoc = isDefault
+      ? this.getRouteDocs(defaultDoc, option.routes ?? [], undefined)
+      : this.getRouteDocs(defaultDoc, option.routes ?? [], name);
 
-    if (Object.keys(versionDoc).length > 0) {
-      docConfig.apps = versionDoc;
+    // 存在路由文档
+    if (Object.keys(routesDoc).length > 0) {
+      docConfig.routes = routesDoc;
     }
-    if (!docConfig.apps) {
-      docConfig.default = { ...defaultDoc, include: [] };
+    const routeModules = isDefault 
+      ? this.getRouteModules(option.routes ?? [])
+      : this.getRouteModules(option.routes ?? [], name);
+    // 文档所依赖的模块
+    const include = this.filterExcludeModules(routeModules);
+    // 版本DOC中有依赖的路由模块或者版本DOC中没有路由DOC则添加版本默认DOC
+    if (include.length > 0 || !docConfig.routes) {
+        docConfig.default = { ...defaultDoc, include };
     }
+    
     return docConfig;
   }
 
+  protected filterExcludeModules(routeModules: Type<any>[]) {
+    const excludeModules: Type<any>[] = [];
+    const excludeNames = Array.from(new Set(this.excludeVersionModules));
+    for (const [name, module] of Object.entries(this.modules)) {
+      if (excludeNames.includes(name)) excludeModules.push(module)
+    };
+    return routeModules.filter(
+      (module) => !excludeModules.find((m) => m === module)
+    )
+  }
+
   /**
-   * 获取APP的open API配置
+   * 获取路由的路由文档
    * @param option app所属version的配置
    */
-  protected getAppDoc(
+  protected getRouteDocs(
     option: Omit<SwaggerOption, 'include'>,
-    apps: AppOption[],
+    routes: RouteOption[],
     parent?: string
   ) {
-    const docs: Record<string, SwaggerOption> = {};
-    for (const app of apps) {
-      docs[app.name] = {
-        ...deepMerge(option, app.doc, 'merge'),
-        tags: Array.from(new Set([...(option.tags ?? []), ...(app.doc?.tags ?? [])])),
-        path: genDocPath(app.path, this.config.prefix?.doc, parent),
-        // 文档对应的路由模块
-        include: this.getRouteModules([{ ...app, children: app.children ?? [] }], parent)
+    /**
+     * 合并版本文档与路由文档
+     * @param doc 
+     * @param route 
+     */
+    const mergeDoc = (doc: Omit<SwaggerOption, 'include'>, route: RouteOption) => ({
+      ...doc,
+      ...route.doc,
+      tags: Array.from(new Set([...(doc.tags ?? []), ...(route?.doc?.tags ?? [])])),
+      path: genDocPath(route.path, this.config?.prefix?.doc, parent),
+      // 文档包含的路由模块
+      include: this.getRouteModules([route], parent)
+    })
+    let routesDocs: Record<string, SwaggerOption> = {};
+
+    // 判断路由是否有除tags之外的其它doc属性
+    const hasAdditional = (doc?: ApiDocSource) =>
+      doc && Object.keys(omit(doc, 'tags')).length > 0;
+
+    for (const route of routes) {
+      const { name, doc, children } = route;
+      const moduleName = parent ? `${parent}.${name}` : name;
+
+      // 假如在版本DOC中排除模块列表
+      if (hasAdditional(doc) || parent) this.excludeVersionModules.push(moduleName);
+
+      if (hasAdditional(doc)) {
+        routesDocs[moduleName.replace(`${option.version}.`, '')] = mergeDoc(option, route);
       }
+      if (children) {
+        routesDocs = {
+          ...routesDocs,
+          ...this.getRouteDocs(option, children, moduleName)
+        }
+      };
     }
-    return docs;
+    return routesDocs;
   }
 }

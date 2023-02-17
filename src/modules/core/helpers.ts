@@ -60,3 +60,10 @@ export const CreateModule = (
     Module(moduleMetadataSetter())(ModuleClass);
     return ModuleClass;
 }
+
+export function isAsyncFunction<R, A extends any[]>(
+    callback: (...args: A) => Promise<R> | R
+): callback is (...args: A) => Promise<R> {
+    const AsyncFunction = (async () => {}).constructor;
+    return callback instanceof AsyncFunction === true;
+}

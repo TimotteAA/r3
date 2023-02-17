@@ -3,17 +3,19 @@ import { Routes } from "@nestjs/core";
 import { get, pick } from "lodash";
 
 import { createRouteModuleTree, genRoutePath, cleanRoutes } from "../helpers";
-
+import { Configure } from "@/modules/core/Configure";
 import { ApiConfig, RouteOption } from "../types";
 
 export abstract class RestfulConfigure {
+  constructor(protected configure: Configure) {}
+
   /**
    * API配置
    */
   protected config!: ApiConfig;
 
   /**
-   * 最终创建出的路由表
+   * 最终创建出的nestjs路由表
    */
   protected _routes: Routes = [];
 
@@ -28,7 +30,7 @@ export abstract class RestfulConfigure {
   protected _versions: string[] = [];
 
   /**
-   * 创建出的所有路由模块
+   * 创建出的所有路由模块RouteModule
    */
   protected _modules: Record<string, Type<any>> = {};
 
@@ -73,14 +75,14 @@ export abstract class RestfulConfigure {
         if (config.default === name) return true;
         return config.enabled.includes(name);
       })
-      // 合并版本配置到总配置中
+      // 文档配置合并版本配置到总配置中
       .map(([name, version]) => [
         name,
         {
           ...pick(config, ['title', 'auth', 'description']),
           ...version,
           tags: Array.from(new Set([...(config.tags ?? []), ...(version.tags ?? [])])),
-          apps: cleanRoutes(version.apps ?? [])
+          routes: cleanRoutes(version.routes ?? [])
         },
       ]);
     config.versions = Object.fromEntries(versionMaps);
@@ -103,7 +105,7 @@ export abstract class RestfulConfigure {
   protected getRouteModules(routes: RouteOption[], parent?: string) {
     const result = routes
       .map(({name, children}) => {
-        const routeName = parent ? `${parent}.${name}` : name;;
+        const routeName = parent ? `${parent}.${name}` : name;
         let modules: Type<any>[] = [this.modules[routeName]];
         if (children) modules = [...modules, ...this.getRouteModules(children, routeName)];
         return modules;
@@ -117,27 +119,46 @@ export abstract class RestfulConfigure {
   /**
    * 创建路由树及模块，所有的路由模块展评放到了this.modules中
    */
-  protected createRoutes() {
+  protected async createRoutes() {
     // 所有版本的version创建对应的路由
     const versionMaps = Object.entries(this.config.versions);
     
-    // 针对每个版本的路由，为每个app创建路由
-    this._routes = versionMaps
-      .map(([name, version]) => 
-        createRouteModuleTree(this._modules, version.apps ?? [], name).map((app) => ({
-          ...app,
-          path: genRoutePath(app.path, this.config.prefix?.route, name)
-        }))
+    // 针对每个版本的路由表，创建对应的路由模块
+    // name为版本前缀
+    this._routes = (
+      await Promise.all(
+        versionMaps
+      .map(async ([name, version]) => 
+        (
+          await createRouteModuleTree(
+            this.configure,
+            this._modules,
+            version.routes ?? [],
+            name
+          )
+        ).map(route => ({
+          ...route,
+          // 处理path
+          path: genRoutePath(route.path, this.config?.prefix?.route, name)
+          }))
+        )
       )
-      .reduce((o, n) => [...o, ...n], []);
+    ).reduce((o, n) => [...o, ...n], [])
+      
 
     // 生成默认省略版本号的路由
     const defaultVersion = this.config.versions[this.default];
     this._routes = [
       ...this._routes,
-      ...createRouteModuleTree(this._modules, defaultVersion.apps ?? []).map((app) => ({
-        ...app,
-        path: genRoutePath(app.path, this.config.prefix?.route)
+      ...(
+        await createRouteModuleTree(
+          this.configure,
+          this._modules,
+          defaultVersion.routes ?? []
+        )
+      ).map((route) => ({
+        ...route,
+        path: genRoutePath(route.path, this.config?.prefix.route)
       }))
     ]
   }

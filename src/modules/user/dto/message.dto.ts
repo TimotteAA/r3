@@ -7,6 +7,7 @@ import { CustomDtoValidation } from "@/modules/core/decorators";
 import { IsExist } from "@/modules/database/constraints";
 import { MessageEntity, UserEntity } from "../entities";
 import { PaginateOptions } from "@/modules/utils";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 /**
  * 连接dto
@@ -54,6 +55,10 @@ export class WsMessageDto extends WSAuthDto {
 @Injectable()
 @CustomDtoValidation({type: "body"})
 export class UpdateReceviesDto {
+  @ApiProperty({
+    description: "消息ID数组",
+    type: [String]
+  })
   @IsExist(MessageEntity, {
     each: true,
     message: "消息不存在"
@@ -100,6 +105,9 @@ export class QueryOwnerMessageDto implements PaginateOptions {
     skipMissingProperties: true,
 })
 export class QueryMessageDto extends QueryOwnerMessageDto {
+    @ApiPropertyOptional({
+      description: "发送者ID"
+    })
     @IsExist(UserEntity, {
         message: '发送者不存在',
     })
@@ -121,6 +129,10 @@ export class QueryReciveMessageDto extends QueryOwnerMessageDto {
      * @description 过滤已读状态
      * @type {boolean}
      */
+    @ApiPropertyOptional({
+      description: "消息是否已读",
+      type: Boolean
+    })
     @Transform(({ value }) => toBoolean(value))
     @IsBoolean()
     readed?: boolean;

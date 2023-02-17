@@ -1,10 +1,15 @@
 import { Type } from "@nestjs/common";
+import { ApiTags } from "@nestjs/swagger";
 import { Routes, RouteTree } from "@nestjs/core";
 import { trim, omit, isNil, camelCase, upperFirst } from "lodash";
 import { CreateModule } from "../core/helpers";
 import { CONTROLLER_DEPENDS } from "./constants";
-
+import { isFunction } from "lodash";
+import { isAsyncFunction } from "util/types";
+import { registerCrud } from "./register-crud";
 import { RouteOption } from "./types";
+import { Configure } from "../core/Configure";
+import { CRUD_OPTIONS_REGISTER } from "./constants";
 
 /**
  * 清理路由前缀：
@@ -59,44 +64,68 @@ export const cleanRoutes = (data: RouteOption[]) => {
 
 /**
  * 便利路由树，创建路由模块
+ * 类似于文档中的RouterModule.register
  * @param modules 
  * @param routes 
  * @param parentModule 
  */
 export const createRouteModuleTree = (
+  configure: Configure,
   modules: Record<string, Type<any>>,
   routes: RouteOption[],
   parentModule?: string
-): Routes => 
-  routes.map((option) => {
-    const { name, path, controllers } = option;
-    // 后续处理的子项
-    let items: RouteOption[];
-    if ("children" in option) items = option.children;
-    // 创建的模块名
-    const moduleName = parentModule ? `${parentModule}.${name}` : name;
-    // 创建的模块名称必须唯一
-    if (Object.keys(modules).includes(moduleName)) {
-      throw new Error(`路由模块名称${moduleName}在同层中不唯一`);
-    }
-    const depends = controllers
-      .map((c) => Reflect.getMetadata(CONTROLLER_DEPENDS, c) || [])
-      .reduce((o: Type<any>[], n) => {
-        // 模块去重
-        if (o.find((i) => i === n)) return o;
-        return [...o, ...n]
-      }, []);
-    // 创建路由模块，并导入所有的依赖模块
-    // AppContentRouteModule
-    const module = CreateModule(`${upperFirst(camelCase(moduleName))}RouteModule`, () => ({
-      controllers,
-      imports: depends,
-    }))
-    // 记录刚创建的模块，并防止重名
-    modules[moduleName] = module;
-    const route: RouteTree = { path, module };
+): Promise<Routes> => 
+  Promise.all(
+    routes.map(async ({ name, path, controllers, children, doc }) => {
+      const moduleName = parentModule ? `${parentModule}.{name}` : name;
+      // 路由模块名称必须唯一
+      if (Object.keys(modules).includes(moduleName)) {
+        throw new Error("路由名称重复 " + moduleName);
+      }
+      // 每个路由的依赖模块
+      const depends = controllers
+        .map((c) => Reflect.getMetadata(CONTROLLER_DEPENDS, c) ?? [])
+        .reduce((o: Type<any>[], n) => {
+          // 模块去重
+          if (o.find(i => i === n)) return o;
+          return [...o, n]
+        });
 
-    // 递归处理子路由
-    if (items) route.children = createRouteModuleTree(modules, items, moduleName);
-    return route;
-  })
+      // 执行crud装饰器
+      for (const controller of controllers) {
+        const crudRegister = Reflect.getMetadata(CRUD_OPTIONS_REGISTER, controller);
+        if (!isNil(crudRegister) && isFunction(crudRegister)) {
+            const crudOptions = isAsyncFunction(crudRegister)
+                ? await crudRegister(configure)
+                : crudRegister(configure);
+            registerCrud(controller, crudOptions);
+        }
+      }
+      // 为没有ApiTags的controller添加Tag
+      if (doc?.tags && doc.tags.length > 0) {
+        controllers.forEach((controller) => {
+          // 源码里定义metadata
+          !Reflect.getMetadata('swagger/apiUseTags', controller) &&
+            ApiTags(
+                ...doc.tags.map((tag) => (typeof tag === 'string' ? tag : tag.name))!,
+            )(controller);
+        })
+      }
+      // 创建路由模块，导入所有控制器的依赖模块（使用xxxService）
+      const module = CreateModule(`${upperFirst(camelCase(name))}RouteModule`, () => ({
+        controllers,
+        imports: depends,
+      }));
+      modules[moduleName] = module;
+      const route: RouteTree = { path, module };
+      if (children) {
+        route.children = await createRouteModuleTree(
+          configure,
+          modules,
+          children,
+          moduleName
+        )
+      };
+      return route
+    })
+  )

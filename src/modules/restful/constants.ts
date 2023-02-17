@@ -1,6 +1,6 @@
 export const CRUD_OPTIONS = 'CRUD_OPTIONS';
 export const ALLOW_GUEST = 'ALLOW_GUEST';
-
+export const CRUD_OPTIONS_REGISTER = 'CRUD_OPTIONS_REGISTER'
 /**
  * 路由依赖模块装饰器key
  */

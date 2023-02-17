@@ -16,6 +16,7 @@ import { PostRepository } from '../repositorys';
 import { DeleteDto } from '@/modules/restful/dto';
 import { QueryTrashMode } from '@/modules/core/constants';
 import { QueryHook } from '@/modules/utils';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 const checkers: Record<"create" | "owner", PermissionChecker> = {
     create: async (ab) => ab.can(PermissionAction.CREATE, PostEntity.name),
@@ -31,10 +32,14 @@ const checkers: Record<"create" | "owner", PermissionChecker> = {
     )
 }
 
+@ApiTags("前台文章api")
 @Controller('api/posts')
 export class PostController {
     public constructor(protected service: PostService) {}
 
+    @ApiOperation({
+        summary: "查询文章列表"
+    })
     @Get()
     @SerializeOptions({groups: ['post-list']})
     async list(
@@ -48,6 +53,9 @@ export class PostController {
         )
     }
 
+    @ApiOperation({
+        summary: "查询文章详情"
+    })
     @Get(':id')
     @SerializeOptions({ groups: ['post-detail'] })
     async detail(
@@ -59,6 +67,9 @@ export class PostController {
     }
 
     // 重写create方法，传入用户id
+    @ApiOperation({
+        summary: "发表文章"
+    })
     @Post()
     @SerializeOptions({groups: ['post-detail']})
     @Permission(checkers.create)
@@ -66,6 +77,9 @@ export class PostController {
         return this.service.create({ ...data, customOrder: 0 }, user.id)
     }
 
+    @ApiOperation({
+        summary: "更新文章"
+    })
     @Patch()
     @SerializeOptions({groups: ['post-detail']})
     @Permission(checkers.owner)
@@ -73,6 +87,9 @@ export class PostController {
         return this.service.update(data);
     }
 
+    @ApiOperation({
+        summary: "删除文章，支持批量删除"
+    })
     @Delete()
     @SerializeOptions({ groups: ['post-detail'] })
     @Permission(checkers.owner)

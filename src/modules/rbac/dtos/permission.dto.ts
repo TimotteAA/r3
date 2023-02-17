@@ -4,11 +4,14 @@ import { RoleEntity } from "../entities";
 import { IsExist } from "@/modules/database/constraints";
 import { ListQueryDto } from "@/modules/restful/dto";
 import { CustomDtoValidation } from "@/modules/core/decorators";
-import { OmitType } from "@nestjs/swagger";
+import { ApiPropertyOptional, OmitType } from "@nestjs/swagger";
 
 @CustomDtoValidation({type: "query"})
 @Injectable()
 export class QueryPermissionDto extends OmitType(ListQueryDto, ['trashed']) {
+  @ApiPropertyOptional({
+    description: "角色ID，查询某个角色的权限"
+  })
   @IsExist(RoleEntity, {
     message: "角色不存在",
   })

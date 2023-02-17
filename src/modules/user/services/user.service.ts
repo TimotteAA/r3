@@ -247,13 +247,29 @@ export class UserService extends BaseService<UserEntity, UserRepository> impleme
         const alias = this.repo.getAlias();
         // 是否查询回收站
         // const { trashed } = options;
-        const { orderBy, isActive } = options;
+        const { orderBy, isActive, role, permission } = options;
         if (!isNil(orderBy)) {
             qb = qb.orderBy(`${alias}.${orderBy}`, "ASC")
         }
 
+        if (!isNil(role)) {
+            qb = qb.andWhere({
+                roles: {
+                    id: In([role])
+                }
+            })
+        }
+
+        if (!isNil(permission)) {
+            qb = qb.andWhere({
+                permissions: {
+                    id: In([permission])
+                }
+            })
+        }
+
         if (!isNil(isActive) && isBoolean(isActive)) {
-            qb = qb.where(`${alias}.actived = :isActive`, { isActive })
+            qb = qb.andWhere(`${alias}.actived = :isActive`, { isActive })
         }
 
         // 额外查询，比如关联关系？
