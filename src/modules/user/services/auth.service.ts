@@ -1,9 +1,12 @@
 import { Injectable, Inject, forwardRef, ForbiddenException, BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { FastifyRequest as Request } from 'fastify';
+import { FastifyRequest, FastifyRequest as Request } from 'fastify';
 import { ExtractJwt } from 'passport-jwt';
 import { isNil, omit } from 'lodash';
-// import { timeObj} from '@/modules/configs';
 import { JwtModule } from '@nestjs/jwt';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom, catchError } from "rxjs";
+import { AxiosError } from "axios";
+
 import { UserService, TokenService } from '../services';
 import { decrypt, encrypt, getUserConfig } from '../helpers';
 import { CodeEntity, UserEntity } from '../entities';
@@ -13,6 +16,7 @@ import { PhoneRegisterDto, RegisterDto, EmailRegisterDto, PhoneLoginDto, EmailLo
 import { InjectRepository } from '@nestjs/typeorm';
 import { CaptchaType } from '../constants';
 import { UserConfig } from '../types';
+import { Configure } from '@/modules/core/configure';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +25,8 @@ export class AuthService {
         // 循环依赖了
         @Inject(forwardRef(() => TokenService)) private tokenService: TokenService,
         @InjectRepository(CodeEntity) private codeRepo: Repository<CodeEntity>,
+        protected httpService: HttpService,
+        protected configure: Configure
     ) {}
     /**
      * localStrategy的用户名验证
@@ -50,6 +56,57 @@ export class AuthService {
         const { accessToken } = await this.tokenService.generateAccessToken(user, getTime());
         // 返回给前端
         return accessToken.value;
+    }
+
+    async loginGithub(req: FastifyRequest) {
+        const { code, error } = (req.query) as any;
+        console.log("code", code);
+        console.log('error', error)
+        if (!isNil(error)) throw new UnauthorizedException()
+        const user = await this.getGithubUser(code);
+        console.log("user", user);
+
+        return {}
+    }
+
+    protected async getGithubUser(code: string): Promise<any> {
+        const res = await firstValueFrom(
+            this.httpService.post(`https://github.com/login/oauth/access_token`, {
+                client_id: this.configure.env('GITHUB_CLIENT_ID'),
+                client_secret: this.configure.env("GITHUB_CLIENT_SECRET"),
+                code
+            }, {
+                headers: {
+                    Accept: "application/json"
+                }
+            })
+            .pipe(
+                catchError((error: AxiosError) => {
+                    console.log("error1", error.message)
+                    throw new UnauthorizedException();
+                }),
+            ),
+          )
+        const data = res.data;
+        if ("error" in data) throw new UnauthorizedException();
+
+        const accessToken = data['access_token'];
+        // https://api.github.com/user
+        const user = await firstValueFrom(
+            this.httpService.get(`https://api.github.com/user`, {
+                headers: {
+                    Authorization: "Bearer " + accessToken
+                }
+            })
+            .pipe(
+                catchError((error: AxiosError) => {
+                    console.log("error2", error.message)
+                    throw new UnauthorizedException();
+                }),
+            ),
+          )
+
+        return user;
     }
 
     async logout(request: Request) {

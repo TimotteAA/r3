@@ -20,7 +20,7 @@ export class RedisService {
 
   async createClients() {
     this.options.forEach(async (o) => {
-      const client = new Redis(o);
+      const client = new Redis(o.connectOptions);
       this.clients.set(o.name, client);
     });
   }

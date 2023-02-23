@@ -58,6 +58,7 @@ export class App {
                 options,
             )
             modules = maps;
+            // 根据BootModule，创建app实例
             this._app = await builder({
                 configure: this.configure,
                 BootModule
@@ -66,6 +67,7 @@ export class App {
             if (await this.configure.get<boolean>("app.websockets")) {
                 this._app.useWebSocketAdapter(new WsAdapter(this._app))
             }
+            // 底层是fastify，启用文件上传
             if (this._app.getHttpAdapter() instanceof FastifyAdapter) {
                 // 启用fastify文件上传
                 this._app.register(require("@fastify/multipart"), {

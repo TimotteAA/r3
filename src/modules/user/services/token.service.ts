@@ -57,7 +57,7 @@ export class TokenService {
         accessToken.user = user;
         // 加上有效期
         const jwtConfig = await getUserConfig<UserConfig['jwt']>("jwt")
-        console.log("jwtConfig", jwtConfig)
+        // console.log("jwtConfig", jwtConfig)
         accessToken.expired_at = now.add(jwtConfig.token_expired, 'second').toDate();
         // 保存accessToken
         await accessToken.save();

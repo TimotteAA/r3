@@ -24,19 +24,19 @@ export class RbacGuard extends JwtAuthGuard {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // 先校验jwt
     const authCheck = await super.canActivate(context);
-    console.log("cnmgb")
+    // console.log("cnmgb")
     let request = context.switchToHttp().getRequest();
     const requestToken = ExtractJwt.fromAuthHeaderAsBearerToken()(request);
-    console.log("authCheck", authCheck)
+    // console.log("authCheck", authCheck)
     if (!authCheck) return false;
     // 匿名访问
     if (authCheck && isNil(requestToken)) return true;
     // 从路由context中获得定义的checkers
     const checkers = getCheckers(context, this.reflector);
     // 没有checkers
-    console.log("checkers", checkers);
+    // console.log("checkers", checkers);
     if (isNil(checkers) || checkers.length <= 0) return true;
-    console.log(checkers)
+    // console.log(checkers)
     // 通过jwt校验后会有user
     request = context.switchToHttp().getRequest();
     if (isNil(request.user)) return false;

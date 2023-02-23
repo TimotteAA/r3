@@ -1,41 +1,39 @@
-import { omit } from "lodash";
+import { isNil } from "lodash";
 
 import { ConfigureRegister, ConfigureFactory } from "../core/types";
-import { RedisConfig, RedisConnectionOption } from "../redis/types";
+import { RedisConfig } from "../redis/types";
 
-import { QueueOptions, QueueConfig } from "./types";
+import { QueueConfig } from "./types";
 
 export const createQueueConfig: (
-    register: ConfigureRegister<QueueOptions>
-) => ConfigureFactory<QueueOptions, QueueConfig | undefined> = (register) => ({
+    register: ConfigureRegister<QueueConfig>
+) => ConfigureFactory<QueueConfig, QueueConfig> = (register) => ({
     register,
     hook: async (configure, value) => 
         createQueueOptions(value, await configure.get<RedisConfig>("redis")),
-    defaultRegister: (configure) => ({
+    defaultRegister: (configure) => ([
+      {
         redis: configure.env("QUEUE_REDIS_NAME", "default")
-    })
+      }
+    ])
 })
 
 export const createQueueOptions = async (
-    options: QueueOptions,
-    redis: Array<RedisConnectionOption> | undefined,
+    options: QueueConfig,
+    redisOptions: RedisConfig,
 ): Promise<QueueConfig | undefined> => {
-    const names = redis.map(({name}) => name);
+    // 所有的redis名称 
+    const names = redisOptions.map(({name}) => name);
     // 没有default的redis配置
-    if (redis.length <= 0 && !names.includes("default")) return undefined;
-    // 一个queue配置
-    if (!Array.isArray(options)) {
-      return {
-        ...omit(options, "redis"),
-        // 找到指定name的redis配置项
-        connection: redis.find(({name}) => name === options.redis ?? "default")
-      }
-    }
-    return options.map(({name, redis: r}) => {
-      return {
-        name,
-        ...omit(options, "redis"),
-        connection: redis.find(({name}) => name === r ?? "default")
-      }
-    })
+    if (redisOptions.length <= 0 && !names.includes("default")) return undefined;
+
+    for (const option of options) {
+        const redisName = option.redis;
+        // 根据队列配置的redis名称，找到redis配置数组中的配置
+        const redis = redisOptions.find(r => r.name === redisName);
+        if (!isNil(redis)) {
+          option.connection = redis.connectOptions
+        }
+    };
+    return options;
 }

@@ -6,11 +6,11 @@ import { QueueConfig } from "./types";
 
 @ModuleBuilder(async (configure) => {
     const queues = await configure.get<QueueConfig>("queue");
+    
     return {
         global: true,
-        imports: Array.isArray(queues) ?
-            queues.map(queue => BullModule.forRoot(queue.name, omit(queue, ['name'])))
-            : [BullModule.forRoot(queues)]
+        imports: 
+            queues.map(queue => BullModule.forRoot(queue.redis, omit(queue, ['redis'])))
     }
 })
 export class QueueModule {}

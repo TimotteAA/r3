@@ -10,6 +10,7 @@ import { MediaModule } from './modules/media/media.module';
 
 import { RbacGuard } from './modules/rbac/guards';
 import { RbacModule } from './modules/rbac/rbac.module';
+import { CoreModule } from './modules/core/core.module';
 // import { RestfulFactory } from './modules/restful/factory';
 // import { echoApi } from './modules/restful/helpers';
 import { UserModule } from './modules/user/user.module';
@@ -21,7 +22,9 @@ import { UserModule } from './modules/user/user.module';
 const creator = createApp({
     configs,
     configure: { storage: false },
-    modules: [ContentModule, MediaModule, UserModule, RbacModule],
+    // 非核心模块的导入模块
+    modules: [ContentModule, MediaModule, UserModule, RbacModule, CoreModule],
+    // 全局的管道、filter、guard等
     globals: { guard: RbacGuard },
     builder: async ({ configure, BootModule }) => {
         return NestFactory.create<NestFastifyApplication>(BootModule, new FastifyAdapter(), {
@@ -33,3 +36,5 @@ const creator = createApp({
 
 // 启动创建出的app
 boot(creator);
+
+

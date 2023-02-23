@@ -5,11 +5,13 @@ import { DatabaseModule } from '../database/database.module';
 import { AuthService } from './services';
 import { PassportModule } from '@nestjs/passport';
 import { BullModule } from '@nestjs/bullmq';
+import { HttpModule } from "@nestjs/axios";
 
 import { RbacModule } from '../rbac/rbac.module';
 import { UserRbac } from './rbac';
 import { LocalAuthGuard, JwtAuthGuard, JwtWsGuard } from './guards';
 import { SEND_CAPTCHA_QUEUE, SAVE_MESSAGE_QUEUE } from './constants';
+import { CoreModule } from '../core/core.module';
 
 import * as repoMaps from "./repositorys";
 import * as controllerMaps from './controller';
@@ -41,7 +43,9 @@ const entities = [AccessTokenEntity, RefreshTokenEntity, UserEntity, CodeEntity,
         BullModule.registerQueue({name: SEND_CAPTCHA_QUEUE}),
         BullModule.registerQueue({name: SAVE_MESSAGE_QUEUE}),
         forwardRef(() => RbacModule),
-        forwardRef(() => MediaModule)
+        forwardRef(() => MediaModule),
+        CoreModule,
+        HttpModule
     ],
     providers: [
         UserSubscriber,

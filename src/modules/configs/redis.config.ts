@@ -1,6 +1,9 @@
 import { createRedisConfig } from "../redis/helpers";
 
-export const redis = createRedisConfig((configure) => ({
-    host: configure.env("REDIS_HOST", "127.0.0.1"),
-    port: configure.env("REDIS_PORT", 6379)
-}))
+export const redis = createRedisConfig((configure) => ([{
+    name: "default",
+    connectOptions: {
+        port: configure.env("REDIS_PORT", 6379),
+        host: configure.env("REDIS_HOST", "127.0.0.1")
+    }
+}]))

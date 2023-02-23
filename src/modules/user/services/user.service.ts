@@ -70,19 +70,18 @@ export class UserService extends BaseService<UserEntity, UserRepository> impleme
     async update(data: UpdateUserDto) {
         // id字段不更新
         const { roles, permissions, ...rest } = data;
-
         const user = await this.detail(data.id);
         if (user.isCreator && data.actived === false) {
             throw new ForbiddenException("can not disable superadmin")
         }
 
-        await this.repo.save(omit(rest, ["id", "isCreator"]) as any, { reload: true });
+        const newRes = await this.repo.save(omit(rest, ["isCreator"]) as any, { reload: true });
 
         
         if (!isNil(roles) && roles.length > 0) {
             await this.repo.createQueryBuilder("user")
                     .relation(UserEntity, "roles")
-                    .of(user)
+                    .of(newRes)
                     .addAndRemove(
                         roles ?? [],
                         user.roles ?? []
@@ -93,14 +92,14 @@ export class UserService extends BaseService<UserEntity, UserRepository> impleme
         if (!isNil(permissions) && permissions.length > 0) {
             await this.repo.createQueryBuilder("user")
                     .relation(UserEntity, "permissions")
-                    .of(user)
+                    .of(newRes)
                     .addAndRemove(
                         permissions ?? [],
                         user.permissions ?? []
                     )
         }
 
-        const res = await this.detail(user.id);
+        const res = await this.detail(newRes.id);
         await this.syncActived(res);
         return this.detail(res.id);
     }

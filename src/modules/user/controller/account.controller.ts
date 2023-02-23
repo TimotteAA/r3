@@ -9,9 +9,12 @@ import {
     Request,
     UseGuards,
     ParseUUIDPipe,
+    Res,
 } from '@nestjs/common';
 import { omit } from 'lodash';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
+import { stringify } from 'querystring';
 
 import { GUEST } from '../decorators';
 import { LocalAuthGuard } from '../guards';
@@ -24,6 +27,8 @@ import { AvatarService } from '@/modules/media/service';
 import { Depends } from '@/modules/restful/decorators';
 import { MediaModule } from '@/modules/media/media.module';
 import { UserModule } from '../user.module';
+import { FastifyReply, FastifyRequest } from 'fastify';
+import { Configure } from '@/modules/core/configure';
 
 /**
  * 账户中心控制器
@@ -35,7 +40,8 @@ export class AccountController {
     constructor(
         private authService: AuthService, 
         private userService: UserService,
-        private avatarService: AvatarService
+        private avatarService: AvatarService,
+        private configure: Configure
     ) {}
 
     /**
@@ -52,6 +58,32 @@ export class AccountController {
     async login(@User() user: ClassToPlain<UserEntity>, @Body() _data: CredentialDto) {
         // local-auth guard已对_data进行了校验
         return { token: await this.authService.createToken(user.id) };
+    }
+
+    @Get("github")
+    @ApiOperation({
+        summary: "github授权登录"
+    })
+    @GUEST()
+    @UseGuards(AuthGuard("github"))
+    async googleLogin(@Res() res: FastifyReply) {
+        return res.status(302).redirect(`https://github.com/login/oauth/authorize?${stringify({
+            client_id: this.configure.env('GITHUB_CLIENT_ID'),
+            redirect_uri: this.configure.env("GITHUB_CALLBACK_URL"),
+            scope: ['user'],
+            state: new Date().toString()
+        })}`,)
+    }
+
+    @Get("github/callback")
+    @ApiOperation({
+        summary: "github登录回调接口"
+    })
+    @GUEST()
+    async googleLoginCallback(@Request() req: FastifyRequest) {
+        // console.log("request", req)
+        const user = await this.authService.loginGithub(req);
+        return user
     }
 
     /**
@@ -97,7 +129,8 @@ export class AccountController {
     @ApiBearerAuth()
     @SerializeOptions({ groups: ['user-detail'] })
     async update(@User() user: ClassToPlain<UserEntity>, @Body() data: UpdateAccountDto) {
-        return this.userService.update({ id: user.id, ...data });
+        const res = await this.userService.update({ id: user.id, ...data });
+        return omit(res, ['permissions', 'roles', 'password'])
     }
 
     /**

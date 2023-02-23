@@ -17,7 +17,6 @@ import { App } from "../core/app";
 import { Creator, CreatorData } from "../core/types";
 import { TecendOsModule } from "../tencent-os/tecent-os.module";
 import { SmtpModule } from "../smtp/smtp.module";
-import chalk from "chalk";
 
 /**
  * 构建应用启动模块
@@ -93,6 +92,11 @@ export async function createBootModule(
     }
 }
 
+/**
+ * 针对所有的导入模块，创建出模块及其metdata的map
+ * @param configure 
+ * @param modules 
+ */
 async function createImportModules(
     configure: Configure,
     modules: ModuleItem[]
@@ -134,9 +138,9 @@ export async function boot(
     creator: () => Promise<CreatorData>,
 ) {
     const { app } = await creator();
-    console.log(chalk.red(1234));
+    // console.log(chalk.red(1234));
     await app.listen(3100, '127.0.0.1', (err, address) => {
-        console.error(err);
-        console.log(address)
+        console.error("err", err);
+        console.log("address", address)
     });
 }
