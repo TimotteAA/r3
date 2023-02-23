@@ -1,6 +1,6 @@
-import { ClassToPlain } from "../utils";
 import { CodeEntity, MessageEntity } from "./entities";
 import { CaptchaActionType, CaptchaType } from "./constants";
+import { DynamicRelation } from '../database/types';
 
 /**
  * 邮件、手机验证码通用配置
@@ -80,3 +80,26 @@ export interface JwtConfig {
   refresh_token_expired: number;
 }
 
+
+/**
+ * 用户模块配置
+ */
+export interface UserConfig {
+  // 加密算法位数，取10就好
+  hash?: number;
+  jwt: JwtConfig;
+  captcha: CaptchaConfig;
+  relations?: DynamicRelation[];
+  // 超级管理员账户
+  super: {
+      username: string;
+      password: string;
+  },
+  avatar: {
+    default: string
+  };
+  captchaTime: {
+    limit: number;
+    age: number;
+  }
+}

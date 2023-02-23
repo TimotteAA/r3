@@ -1,6 +1,6 @@
 import { CustomRepository } from "@/modules/database/decorators";
 import { PermissionEntity } from "../entities";
-import { BaseRepository } from "@/modules/core/crud";
+import { BaseRepository } from "@/modules/database/crud";
 
 @CustomRepository(PermissionEntity)
 export class PermissionRepository extends BaseRepository<PermissionEntity> {

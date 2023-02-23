@@ -1,10 +1,8 @@
-import { QueueOptions } from "@/modules/utils";
+import { createQueueConfig } from "../queue/helpers";
 
 /**
- * 默认用default的redis配置
+ * queue基于默认的redis配置
  */
-export const queueConfigFn: () => QueueOptions = () => {
-  return {
+export const queue = createQueueConfig((configure) => ({
     redis: "default"
-  }
-}
+}))

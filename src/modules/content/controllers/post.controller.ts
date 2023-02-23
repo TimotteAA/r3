@@ -1,11 +1,11 @@
 import { Param, Body, Controller, Post, Patch, Delete, Get, Query, SerializeOptions, ParseUUIDPipe } from '@nestjs/common';
 import { omit, isNil } from 'lodash';
 import { In, Not, IsNull } from 'typeorm';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 import { PostService } from '../services/post.service';
 import { CreatePostDto, QueryPostDto, UpdatePostDto} from '../dtos';
 import { User } from '@/modules/user/decorators';
-import { ClassToPlain } from '@/modules/utils';
 import { UserEntity } from '@/modules/user/entities';
 import { PermissionChecker } from '@/modules/rbac/types';
 import { PermissionAction } from '@/modules/rbac/constants';
@@ -14,9 +14,10 @@ import { Permission } from '@/modules/rbac/decorators';
 import { checkOwner } from '@/modules/rbac/helpers';
 import { PostRepository } from '../repositorys';
 import { DeleteDto } from '@/modules/restful/dto';
-import { QueryTrashMode } from '@/modules/core/constants';
-import { QueryHook } from '@/modules/utils';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { QueryTrashMode } from '@/modules/database/constants';
+import { QueryHook } from '@/modules/database/types';
+import { ContentModule } from '../content.module';
+import { Depends } from '@/modules/restful/decorators';
 
 const checkers: Record<"create" | "owner", PermissionChecker> = {
     create: async (ab) => ab.can(PermissionAction.CREATE, PostEntity.name),
@@ -33,6 +34,7 @@ const checkers: Record<"create" | "owner", PermissionChecker> = {
 }
 
 @ApiTags("前台文章api")
+@Depends(ContentModule)
 @Controller('api/posts')
 export class PostController {
     public constructor(protected service: PostService) {}

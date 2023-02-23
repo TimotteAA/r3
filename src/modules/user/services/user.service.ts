@@ -1,23 +1,22 @@
 import { UserEntity } from '../entities';
 import { UserRepository } from '../repositorys';
-import { BaseService } from '@/modules/core/crud';
+import { BaseService } from '@/modules/database/crud';
 import { BadRequestException, ForbiddenException, Injectable, OnModuleInit } from '@nestjs/common';
-import { QueryHook } from '@/modules/utils';
+import { QueryHook } from '@/modules/database/types';
 import { isBoolean, isNil, omit } from 'lodash';
 import { EntityNotFoundError, SelectQueryBuilder, In } from 'typeorm';
 import { QueryUserDto, CreateUserDto, UpdateUserDto } from '../dto';
-import { decrypt } from "../helpers";
+import { decrypt, getUserConfig } from "../helpers";
 import { SystemRoles } from '@/modules/rbac/constants';
 import { PermissionRepository, RoleRepository } from '@/modules/rbac/repository';
- 
-import { userConfigFn } from '@/modules/configs';
+import { UserConfig } from '../types'; 
 
 type FindParams = Omit<QueryUserDto, "limit" | 'page'>
 
 @Injectable()
 export class UserService extends BaseService<UserEntity, UserRepository> implements OnModuleInit {
     async onModuleInit() {
-        const adminConf = userConfigFn().super
+        const adminConf = await getUserConfig<UserConfig['super']>("super")
         const admin = await this.repo.findOneBy({
             username: adminConf.username
         } as any)
@@ -28,12 +27,13 @@ export class UserService extends BaseService<UserEntity, UserRepository> impleme
             }
             return admin;
         }
-        return this.repo.create({
+        const res = await this.repo.save({
             ...adminConf,
             isCreator: true,
             phone: "+8617301780942",
             email: "1273871844@qq.com"
-        })
+        });
+        return res;
     }
 
     constructor(protected repo: UserRepository,
@@ -252,20 +252,18 @@ export class UserService extends BaseService<UserEntity, UserRepository> impleme
             qb = qb.orderBy(`${alias}.${orderBy}`, "ASC")
         }
 
+        // console.log(role)
         if (!isNil(role)) {
-            qb = qb.andWhere({
-                roles: {
-                    id: In([role])
-                }
+            qb = qb.andWhere(`roles.id IN (:...roles)`, {
+                roles: [role]
             })
         }
 
+        // console.log(permission)
         if (!isNil(permission)) {
-            qb = qb.andWhere({
-                permissions: {
-                    id: In([permission])
-                }
-            })
+            qb = qb.andWhere('permissions.id IN (:...permissions)', {
+                permissions: [permission],
+            });
         }
 
         if (!isNil(isActive) && isBoolean(isActive)) {

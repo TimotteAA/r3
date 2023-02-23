@@ -7,7 +7,7 @@ import { Transform } from 'class-transformer';
 
 import { IsExist } from '@/modules/database/constraints';
 import { PostEntity } from '../../entities';
-import { CustomDtoValidation } from "@/modules/core/decorators";
+import { CustomDtoValidation } from "@/modules/database/decorators";
 import { ListQueryDto } from "@/modules/restful/dto";
 import { UserEntity } from "@/modules/user/entities";
 import { ApiPropertyOptional } from '@nestjs/swagger';

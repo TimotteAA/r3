@@ -4,8 +4,8 @@ import { isNil } from "lodash";
 
 import { PermissionRepository } from "../repository";
 import { PermissionEntity } from "../entities";
-import { BaseService } from "@/modules/core/crud";
-import { QueryHook } from "@/modules/utils";
+import { BaseService } from "@/modules/database/crud";
+import { QueryHook } from "@/modules/database/types";
 import { QueryPermissionDto } from "../dtos";
 
 type FindParams = {

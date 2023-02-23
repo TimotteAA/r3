@@ -3,7 +3,6 @@ import { In } from "typeorm";
 
 import { MessageService } from "../services";
 import { User } from "../decorators";
-import { ClassToPlain } from "@/modules/utils";
 import { RecevierActionType } from "../constants";
 import { UserEntity } from "../entities";
 import { QueryOwnerMessageDto, QueryReciveMessageDto, UpdateReceviesDto } from "../dto";
@@ -11,6 +10,9 @@ import { checkOwner } from "@/modules/rbac/helpers";
 import { PermissionChecker } from "@/modules/rbac/types";
 import { MessageRepository } from "../repositorys";
 import { Permission } from "@/modules/rbac/decorators";
+import { ApiBearerAuth, ApiTags, ApiOperation } from "@nestjs/swagger";
+import { Depends } from "@/modules/restful/decorators";
+import { UserModule } from "../user.module";
 
 const senderChecker: PermissionChecker = async (ab, ref, request) => 
   checkOwner(ab, async (ids) => 
@@ -36,6 +38,9 @@ const recevierChecker: PermissionChecker = async (ab, ref, request) =>
     "recevied-message"
   )
 
+@ApiTags("前端消息API")
+@ApiBearerAuth()
+@Depends(UserModule)
 @Controller("api/messages")
 export class MessageController {
   constructor(protected messageService: MessageService) {}
@@ -45,6 +50,10 @@ export class MessageController {
    */
   // @Permission(senderChecker) 此处不能加，没有消息的id
   @Get("sendeds")
+  @ApiOperation({
+    summary: "查看发送的消息列表"
+  })
+  @ApiBearerAuth()
   async list(@User() user: ClassToPlain<UserEntity>, @Query() options: QueryOwnerMessageDto) {
     return this.messageService.paginate({...options, sender: user.id} as any)
   }
@@ -55,6 +64,10 @@ export class MessageController {
    * @param options 
    */
   @Permission(senderChecker)
+  @ApiOperation({
+    summary: "查看发送的某条消息"
+  })
+  @ApiBearerAuth()
   @Get("sendeds/:item")
   async sended(
     @Param("item", new ParseUUIDPipe()) 
@@ -69,6 +82,10 @@ export class MessageController {
    * @param item
    */
   @Permission(senderChecker)
+  @ApiOperation({
+    summary: "删除已发送的消息"
+  })
+  @ApiBearerAuth()
   @Delete('sendeds/:item')
   @SerializeOptions({
       groups: ['message-detail'],
@@ -87,6 +104,9 @@ export class MessageController {
    * @param query
    */
   @Permission(senderChecker)
+  @ApiOperation({
+    summary: "批量删除已发送的消息"
+  })
   @Delete('sendeds')
   @SerializeOptions({
       groups: ['message-list'],
@@ -103,6 +123,9 @@ export class MessageController {
    * 查看接受到的消息列表
    */
   @Get("receives")
+  @ApiOperation({
+    summary: "查看收到的消息"
+  })
   async sender(
     @User() user: ClassToPlain<UserEntity>, @Query() options: QueryOwnerMessageDto
   ) {
@@ -115,6 +138,9 @@ export class MessageController {
    * @param item 
    */
   @Permission(recevierChecker)
+  @ApiOperation({
+    summary: "设置某条接受到的消息为已读"
+  })
   @Get("readed/:item")
   @SerializeOptions({
     groups: ['message-detail']
@@ -132,6 +158,9 @@ export class MessageController {
    * @param item 
    */
   @Permission(recevierChecker)
+  @ApiOperation({
+    summary: "批量设置某条接受到的消息为已读"
+  })
   @Patch("readed")
   @SerializeOptions({
     groups: ['message-list']
@@ -150,6 +179,9 @@ export class MessageController {
    * @param item 
    */
   @Permission(recevierChecker)
+  @ApiOperation({
+    summary: "删除某条收到的消息"
+  })
   @Delete("receives/:item")
   @SerializeOptions({
     groups: ['message-detail'],
@@ -167,6 +199,9 @@ export class MessageController {
   //  * @param item 
   //  */
   @Permission(recevierChecker)
+  @ApiOperation({
+    summary: "批量删除某条收到的消息"
+  })
   @Delete("receives")
   @SerializeOptions({
     groups: ['message-detail'],

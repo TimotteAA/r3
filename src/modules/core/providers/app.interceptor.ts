@@ -28,7 +28,6 @@ export class AppInterceptor extends ClassSerializerInterceptor {
 
             return response;
         }
-        console.log("response", response)
 
         // 针对自定义的分页数据
         if ('meta' in response && 'items' in response) {
@@ -37,8 +36,7 @@ export class AppInterceptor extends ClassSerializerInterceptor {
             items = items.map((item) => {
                 return isObject(item) ? this.transformToPlain(item, options) : item;
             });
-            console.log("options", options);
-            console.log("items", items)
+
             return {
                 ...response,
                 items,

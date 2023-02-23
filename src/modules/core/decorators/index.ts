@@ -1,1 +1,1 @@
-export * from './custom.dto.validation';
+export * from "./module-builder.decorator";

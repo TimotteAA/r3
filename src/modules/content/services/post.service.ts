@@ -4,13 +4,12 @@ import { PostRepository, CategoryRepository } from '@/modules/content/repository
 import { CategoryService, ElasticSearchService } from './';
 import { OrderField } from '../constants';
 import { isFunction, omit, isNil } from 'lodash';
-import { PaginateOptions, PaginateReturn, QueryHook } from '@/modules/utils';
+import { PaginateOptions, PaginateReturn, QueryHook } from '@/modules/database/types';
 import { PostEntity } from '../entities';
-import { QueryTrashMode } from '@/modules/core/constants';
-// import { paginate } from '@/modules/database/paginate';
+import { QueryTrashMode } from '@/modules/database/constants';
 import { QueryPostDto } from '../dtos';
 import { ManageCreatePostDto, ManageUpdatePostDto } from '../dtos/manage/post.dto';
-import { BaseService } from '@/modules/core/crud';
+import { BaseService } from '@/modules/database/crud';
 import { UserService } from '@/modules/user/services';
 import { SearchType } from '../types';
 import { paginate, treePaginate } from '@/modules/database/paginate'; 

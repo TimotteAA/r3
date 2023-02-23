@@ -36,7 +36,7 @@ export const loadEnvs = () => {
   const finalEnvs = {...process.env, ...envs};
   // 过滤在envs中存在，而在process.env中不存在的
   const keys = Object.keys(finalEnvs).filter((key) => !(key in process.env));
-  // 放到process.env上去
+  // 将不存在的放到process.env上去
   keys.forEach(key => {
     process.env[key] = finalEnvs[key];
   })

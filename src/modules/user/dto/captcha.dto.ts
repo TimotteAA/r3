@@ -1,6 +1,6 @@
 import { PickType } from "@nestjs/swagger";
 import { BaseUserDto } from "./base-user.dto";
-import { CustomDtoValidation } from "@/modules/core/decorators";
+import { CustomDtoValidation } from "@/modules/database/decorators";
 import { CaptchaDtoGroups } from "../constants"
 
 /**

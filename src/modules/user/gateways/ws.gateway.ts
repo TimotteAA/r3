@@ -5,9 +5,9 @@ import WebSocket, { Server } from "ws";
 
 import { WsPipe, WsExceptionFilter } from "@/modules/core/providers"; 
 import { AccessTokenEntity, MessageEntity, UserEntity } from "../entities";
-import { ClassToPlain, getTime} from "@/modules/utils";
+import { getTime} from "@/modules/utils";
 import { SaveMessageQueueJob } from "../types";
-import { RedisService } from "@/modules/core/services";
+import { RedisService } from "@/modules/redis/services";
 import { TokenService, UserService } from "../services";
 import { MessageJob } from "../queues";
 // import { JwtWsGuard } from "../guards/jwt-ws.guart";

@@ -3,7 +3,6 @@ import { AbilityTuple, MongoQuery, RawRuleFrom, MongoAbility } from "@casl/abili
 import { FastifyRequest as Request } from "fastify";
 import { UserEntity } from "../user/entities";
 
-import { ClassToPlain } from "../utils";
 import { CrudMethodOption, CrudMethod, CrudOptions } from "@/modules/restful/types";
 import { RoleEntity, PermissionEntity } from "./entities";
 

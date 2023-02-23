@@ -1,4 +1,4 @@
-import { BaseRepository } from '@/modules/core/crud';
+import { BaseRepository } from '@/modules/database/crud';
 import { CustomRepository } from '@/modules/database/decorators';
 import { MessageReceiveEntity } from '../entities';
 

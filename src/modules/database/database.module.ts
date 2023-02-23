@@ -1,5 +1,5 @@
-import { Module, DynamicModule, Type, Provider } from '@nestjs/common';
-import { getDataSourceToken, TypeOrmModule } from '@nestjs/typeorm';
+import { DynamicModule, Type, Provider, ModuleMetadata } from '@nestjs/common';
+import { getDataSourceToken, TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { CUSTOM_REPOSITORY_METADATA } from '@/modules/database/constants';
 import { DataSource } from 'typeorm';
 import {
@@ -9,25 +9,34 @@ import {
     IsUniqueTreeConstraint,
     IsUniqueTreeUpdateConstraint,
 } from './constraints';
+import { ModuleBuilder } from '../core/decorators';
+import { DbConfig } from './types';
 
-@Module({})
-export class DatabaseModule {
-    // 在全局模块中注册数据库连接
-    static forRoot(configFn: () => TypeOrmModule): DynamicModule {
-        return {
-            global: true,
-            module: DatabaseModule,
-            imports: [TypeOrmModule.forRoot(configFn())],
-            providers: [
-                IsExistConstraint,
-                IsUniqueConstraint,
-                IsUniqueUpdateConstraint,
-                IsUniqueTreeConstraint,
-                IsUniqueTreeUpdateConstraint,
-            ],
-        };
+@ModuleBuilder(async configure => {
+    if (!configure.has("database")) {
+        throw new Error("数据库配置不存在")
+        process.exit(1)
     }
-
+    const imports: ModuleMetadata['imports'] = [];
+    const options = await configure.get<DbConfig>("database");
+    for (const connection of options.connections) {
+        // 去掉了migration与name
+        imports.push(TypeOrmModule.forRoot(connection as TypeOrmModuleOptions))
+    };
+    return {
+        global: true,
+        // module: DatabaseModule,
+        imports,
+        providers: [
+            IsExistConstraint,
+            IsUniqueConstraint,
+            IsUniqueUpdateConstraint,
+            IsUniqueTreeConstraint,
+            IsUniqueTreeUpdateConstraint,
+        ],
+    };
+})
+export class DatabaseModule {
     // 注册自定义Repository类
     static forRepository<T extends Type<any>>(repos: T[], dataSourceName?: string): DynamicModule {
         // 自定义的Repo类，进行暴露

@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 
-import { BaseRepository } from "@/modules/core/crud";
+import { BaseRepository } from "@/modules/database/crud";
 import { AvatarEntity } from "../entities";
 import { CustomRepository } from "@/modules/database/decorators";
 

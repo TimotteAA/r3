@@ -6,9 +6,9 @@ import {
     MaxLength,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { toBoolean } from '@/modules/core/helpers/index';
+import { toBoolean } from '@/modules/core/helpers';
 import { OrderField } from '@/modules/content/constants';
-import { CustomDtoValidation } from '@/modules/core/decorators';
+import { CustomDtoValidation } from "@/modules/database/decorators";
 import { IsExist } from '@/modules/database/constraints';
 import { CategoryEntity } from '../entities';
 import { ListQueryDto } from '@/modules/restful/dto';

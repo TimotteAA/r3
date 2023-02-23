@@ -1,6 +1,6 @@
 import { MultipartFile } from "@fastify/multipart";
 
-import { CustomDtoValidation } from "@/modules/core/decorators";
+import { CustomDtoValidation } from "@/modules/database/decorators";
 import { IsDefined, IsOptional } from "class-validator";
 import { IsFileLimit } from "@/modules/core/constraints";
 

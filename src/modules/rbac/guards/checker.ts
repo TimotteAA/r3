@@ -1,4 +1,3 @@
-import { ClassToPlain } from "@/modules/utils";
 import { ExecutionContext } from "@nestjs/common";
 import { ModuleRef, Reflector } from "@nestjs/core";
 import { FastifyRequest as Request } from "fastify";

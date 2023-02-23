@@ -1,10 +1,10 @@
 import { IsNotEmpty, IsOptional, IsUUID, IsEnum, IsBoolean } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { CustomDtoValidation } from '@/modules/core/decorators';
+import { CustomDtoValidation } from '@/modules/database/decorators';
 import { BaseUserDto } from './base-user.dto';
 import { ApiProperty, ApiPropertyOptional, PartialType, PickType } from '@nestjs/swagger';
 import { UserQueryOrder, UserDtoGroups } from '../constants';
-import { toBoolean } from '@/modules/core/helpers/index';
+import { toBoolean } from '@/modules/core/helpers';
 import { IsExist } from '@/modules/database/constraints';
 import { PermissionEntity, RoleEntity } from '@/modules/rbac/entities';
 import { ListQueryDto } from '@/modules/restful/dto';

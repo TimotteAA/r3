@@ -1,5 +1,5 @@
 import { SelectQueryBuilder, ObjectLiteral } from 'typeorm';
-import { PaginateOptions, PaginateReturn } from '@/modules/utils';
+import { PaginateOptions, PaginateReturn } from './types';
 
 /**
  *

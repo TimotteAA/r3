@@ -1,8 +1,8 @@
-import { CustomDtoValidation } from "@/modules/core/decorators";
 import { IsNotEmpty, IsOptional, IsUUID, MaxLength } from "class-validator";
 import { ApiProperty, ApiPropertyOptional, PartialType } from "@nestjs/swagger";
 import { IsExist } from "@/modules/database/constraints";
 import { PermissionEntity } from "../entities";
+import { CustomDtoValidation } from "@/modules/database/decorators";
 import { ListQueryDto } from "@/modules/restful/dto";
 import { UserEntity } from "@/modules/user/entities";
 

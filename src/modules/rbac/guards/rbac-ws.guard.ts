@@ -7,7 +7,6 @@ import { UserRepository } from "@/modules/user/repositorys";
 import { TokenService } from "@/modules/user/services";
 import { isNil } from "lodash";
 import { getCheckers, solveChecker } from "./checker";
-import { ClassToPlain } from "@/modules/utils";
 import { UserEntity } from "@/modules/user/entities";
 
 @Injectable()

@@ -1,9 +1,9 @@
-import { BaseTreeRepository } from '@/modules/core/crud/tree.repository';
+import { BaseTreeRepository } from '@/modules/database/crud/tree.repository';
 import { CommentEntity } from '../entities';
 import { CustomRepository } from '@/modules/database/decorators';
-import { QueryTreeOptions } from '@/modules/core/types';
+import { QueryTreeOptions } from '@/modules/database/types';
 import { SelectQueryBuilder } from 'typeorm';
-import { TreeChildrenResolve } from '@/modules/core/constants';
+import { TreeChildrenResolve } from '@/modules/database/constants';
 
 @CustomRepository(CommentEntity)
 export class CommentRepository extends BaseTreeRepository<CommentEntity> {

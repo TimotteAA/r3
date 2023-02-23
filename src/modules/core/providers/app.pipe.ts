@@ -1,5 +1,5 @@
 import { ArgumentMetadata, Paramtype, ValidationPipe } from '@nestjs/common';
-import { CUSTOM_DTO_VALIDATION_KEY } from '../constants';
+import { CUSTOM_DTO_VALIDATION_KEY } from '@/modules/database/constants';
 import merge from 'deepmerge';
 import { isObject, omit } from 'lodash';
 

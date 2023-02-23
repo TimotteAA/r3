@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { RoleEntity } from "../entities";
 import { RoleRepository, PermissionRepository } from "../repository";
-import { BaseService } from "@/modules/core/crud";
+import { BaseService } from "@/modules/database/crud";
 import { QueryRoleDto, CreateRoleDto, UpdateRoleDto } from "../dtos";
 import { In, SelectQueryBuilder } from "typeorm";
 import { omit, isNil } from "lodash";
-import { QueryHook } from "@/modules/utils";
+import { QueryHook } from "@/modules/database/types";
 import { UserService } from "@/modules/user/services";
 
 /**

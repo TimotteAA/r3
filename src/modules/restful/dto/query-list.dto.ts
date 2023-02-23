@@ -1,10 +1,10 @@
-import { PaginateOptions } from "@/modules/utils";
-import { CustomDtoValidation } from "@/modules/core/decorators";
+import { PaginateOptions } from "@/modules/database/types";
+import { CustomDtoValidation } from "@/modules/database/decorators";
 import { IsOptional, IsNumber, Min, IsEnum } from "class-validator";
 import { Transform } from "class-transformer";
 import { toNumber } from "lodash";
-import { TrashedDto } from "@/modules/core/types";
-import { QueryTrashMode } from "@/modules/core/constants";
+import { TrashedDto } from "@/modules/database/types";
+import { QueryTrashMode } from "@/modules/database/constants";
 import { ApiPropertyOptional } from "@nestjs/swagger";
 
 @CustomDtoValidation({ type: 'query' })

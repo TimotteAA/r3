@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsOptional } from 'class-validator';
-import { toBoolean } from '@/modules/core/helpers/index';
+import { toBoolean } from '@/modules/core/helpers';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 @Injectable()

@@ -13,7 +13,7 @@ import { Transform } from 'class-transformer';
 import { isNil, toNumber } from 'lodash';
 import {  PostBodyType } from '@/modules/content/constants';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { CustomDtoValidation } from '@/modules/core/decorators';
+import { CustomDtoValidation } from "@/modules/database/decorators";
 import { IsExist } from '@/modules/database/constraints';
 import { CategoryEntity } from '../../entities';
 

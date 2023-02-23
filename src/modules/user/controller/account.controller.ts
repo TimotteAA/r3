@@ -11,20 +11,25 @@ import {
     ParseUUIDPipe,
 } from '@nestjs/common';
 import { omit } from 'lodash';
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { GUEST } from '../decorators';
 import { LocalAuthGuard } from '../guards';
 import { AuthService, UserService } from '../services';
 import { User } from '../decorators';
-import { ClassToPlain } from '@/modules/utils';
 import { CaptchaType } from '../constants';
 import { UserEntity } from '../entities';
 import { CredentialDto, PhoneRegisterDto, RegisterDto, EmailRegisterDto, UpdateAccountDto, PhoneLoginDto, EmailLoginDto, PhoneRetrievePasswordDto, EmailRetrievePasswordDto, UpdatePasswordDto, BoundPhoneDto, BoundEmailDto, UploadAvatarDto } from '../dto';
 import { AvatarService } from '@/modules/media/service';
+import { Depends } from '@/modules/restful/decorators';
+import { MediaModule } from '@/modules/media/media.module';
+import { UserModule } from '../user.module';
 
 /**
  * 账户中心控制器
  */
+@ApiTags("前台用户账户API")
+@Depends(UserModule, MediaModule)
 @Controller('account')
 export class AccountController {
     constructor(
@@ -39,6 +44,9 @@ export class AccountController {
      * @param _data 
      */
     @Post('login')
+    @ApiOperation({
+        summary: "用户名、手机号、邮箱与密码登录"
+    })
     @GUEST()
     @UseGuards(LocalAuthGuard)
     async login(@User() user: ClassToPlain<UserEntity>, @Body() _data: CredentialDto) {
@@ -51,6 +59,10 @@ export class AccountController {
      * @param req 
      */
     @Post('logout')
+    @ApiOperation({
+        summary: "退出登录"
+    })
+    @ApiBearerAuth()
     async logout(@Request() req: any) {
         return this.authService.logout(req);
     }
@@ -61,6 +73,9 @@ export class AccountController {
      * @param user 
      */
     @Get('profile/:id')
+    @ApiOperation({
+        summary: "查看用户详情"
+    })
     @SerializeOptions({ groups: ['user-detail'] })
     @GUEST()
     async profile(
@@ -76,6 +91,10 @@ export class AccountController {
      * @param data 
      */
     @Patch()
+    @ApiOperation({
+        summary: "更新用户信息"
+    })
+    @ApiBearerAuth()
     @SerializeOptions({ groups: ['user-detail'] })
     async update(@User() user: ClassToPlain<UserEntity>, @Body() data: UpdateAccountDto) {
         return this.userService.update({ id: user.id, ...data });
@@ -87,6 +106,10 @@ export class AccountController {
      * @param data 
      */
     @Patch("reset-password")
+    @ApiOperation({
+        summary: "更换账户密码"
+    })
+    @ApiBearerAuth()
     @SerializeOptions({groups: ['user-detail']})
     async updatePassword(@User() user: ClassToPlain<UserEntity>, @Body() data: UpdatePasswordDto) {
         return this.userService.updatePassword(user.id, data.oldPassword, data.password)
@@ -97,12 +120,18 @@ export class AccountController {
      * @param data 
      */
     @Post("register")
+    @ApiOperation({
+        summary: "用户名、密码注册"
+    })
     @GUEST()
     async register(@Body() data: RegisterDto) {
         return this.authService.register(data);
     }
 
     @Post("register-sms")
+    @ApiOperation({
+        summary: "手机注册"
+    })
     @GUEST()
     async registerSms(@Body() data: PhoneRegisterDto) {
         return this.authService.registerSms(data);
@@ -113,6 +142,9 @@ export class AccountController {
      * @param data 
      */
     @Post("register-email")
+    @ApiOperation({
+        summary: "邮箱注册"
+    })
     @GUEST()
     async registerEmail(@Body() data: EmailRegisterDto) {
         return this.authService.registerEmail(data);
@@ -123,6 +155,9 @@ export class AccountController {
      * @param data 
      */
     @Post("login-sms")
+    @ApiOperation({
+        summary: "手机验证码登录"
+    })
     @GUEST()
     async loginSms(@Body() data: PhoneLoginDto) {
         return this.authService.loginSms(data)
@@ -132,6 +167,9 @@ export class AccountController {
      * 邮箱验证码登录
      */
     @Post("login-email")
+    @ApiOperation({
+        summary: "邮箱登录"
+    })
     @GUEST()
     async loginEmail(@Body() data: EmailLoginDto) {
         return this.authService.loginEmail(data);
@@ -143,6 +181,9 @@ export class AccountController {
      * 其实就是更新密码...
      * @param */ 
     @Patch("retrieve-password-sms")
+    @ApiOperation({
+        summary: "手机重设密码"
+    })
     @GUEST()
     async retrievePasswordSms(@Body() data: PhoneRetrievePasswordDto) {
         const { password, code, phone } = data;
@@ -155,6 +196,9 @@ export class AccountController {
      * 其实就是更新密码...
      * @param */ 
     @Patch("retrieve-password-email")
+    @ApiOperation({
+        summary: "邮箱重设密码"
+    })
     @GUEST()
     async retrievePasswordEmail(@Body() data: EmailRetrievePasswordDto) {
         const { password, code, email } = data;
@@ -167,6 +211,10 @@ export class AccountController {
      * @param data 
      */
     @Patch("bound-phone")
+    @ApiOperation({
+        summary: "绑定手机"
+    })
+    @ApiBearerAuth()
     async boundPhone(@User() user: ClassToPlain<UserEntity>, @Body() data: BoundPhoneDto) {
         return this.authService.bound(user, data, CaptchaType.SMS);
     }
@@ -177,12 +225,21 @@ export class AccountController {
      * @param data 
      */
     @Patch("bound-email")
+    @ApiOperation({
+        summary: "绑定邮箱"
+    })
+    @ApiBearerAuth()
     async boundEmail(@User() user: ClassToPlain<UserEntity>, @Body() data: BoundEmailDto) {
         return this.authService.bound(user, data, CaptchaType.EMAIL);
     }
 
 
     @Post("avatar")
+    @ApiOperation({
+        summary: "上传头像"
+    })
+    @ApiConsumes("multipart/form-data")
+    @ApiBearerAuth()
     async uploadAvatar(
         @Body() { image }: UploadAvatarDto,
         @User() user: ClassToPlain<UserEntity>

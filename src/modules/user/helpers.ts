@@ -1,14 +1,27 @@
 import bcrypt from 'bcrypt';
-import { userConfigFn } from '../configs';
 import crypto from 'crypto';
+import { OneToMany } from "typeorm"
+import { isNil, toNumber } from 'lodash';
 
+import { Configure } from '../core/configure';
+import { UserConfig } from './types';
+import { PostEntity, CommentEntity } from '../content/entities';
+import { App } from '../core/app';
+import { ConfigureFactory, ConfigureRegister } from '../core/types';
 
+/**
+ * 获取user模块的配置
+ * @param key 
+ */
+export const getUserConfig = async <T> (key?: string) => {
+    return App.configure.get(isNil(key) ? 'user' : `user.${key}`) as T
+}
 
 /**
  * 对密码hash编码
  */
-export const encrypt = (password: string) => {
-    return bcrypt.hashSync(password, userConfigFn().hash);
+export const encrypt = async (password: string) => {
+    return bcrypt.hashSync(password, await getUserConfig("hash"));
 };
 
 /**
@@ -30,3 +43,103 @@ export const generateRandonString = () => crypto.randomBytes(4).toString('hex').
 export function generateCatpchaCode() {
     return Math.random().toFixed(6).slice(-6);
 }
+
+/**
+ * 默认用户配置
+ * @param configure 
+ */
+export const defaultUserConfig = (configure: Configure): UserConfig => {
+    const timeObj = {
+        // 发送间隔
+        limit: configure.env("CAPTCHA_FREQUENCY", toNumber),
+        // 有效期
+        age: configure.env("CAPTCHA_LIMIT", toNumber)
+    }
+
+    return {
+        super: {
+            username: configure.env("ADMIN", "admin"),
+            password: configure.env("ADMIN_PASSWOR", "123456aA!")
+        },
+        hash: 10,
+        jwt: {
+            secret: configure.env("SECRET"),
+            token_expired: configure.env("TOKEN_EXPIRED", toNumber),
+            refresh_secret: configure.env("REFRESH_SECRET"),
+            refresh_token_expired: configure.env("REFRESH_TOKEN_EXPIRED", toNumber),
+        },
+        captcha: {
+            sms: {
+                login: {
+                    templateId: configure.env('SMS_LOGIN_CAPTCHA_QCLOUD'),
+                    ...timeObj
+                },
+                register: {
+                    templateId: configure.env('SMS_REGISTER_CAPTCHA_QCLOUD'),
+                    ...timeObj
+                },
+                'retrieve_password': {
+                    templateId: configure.env('SMS_RETRIEVEPASSWORD_CAPTCHA_QCLOUD'),
+                    ...timeObj
+                },
+                "bound": {
+                    templateId: configure.env('SMS_BOUND_CAPTCHA_QCLOUD'),
+                    ...timeObj
+                },
+                'reset_password': {
+                    templateId: configure.env('SMS_RETRIEVEPASSWORD_CAPTCHA_QCLOUD'),
+                    ...timeObj
+                }
+            },
+            email: {
+                login: {
+                    subject: configure.env("EMAIL_LOGIN"),
+                    ...timeObj,
+                },
+                register: {
+                    subject: configure.env("EMAIL_REGISTER"),
+                    ...timeObj
+                },
+                'retrieve_password': {
+                    subject: configure.env('EMAIL_RETRIEVEPASSWORD'),
+                    ...timeObj
+                },
+                "bound": {
+                    subject: configure.env('EMAIL_BOUND'),
+                    ...timeObj
+                },
+                'reset_password': {
+                    subject: configure.env('EMAIL_RESET'),
+                    ...timeObj
+                }
+            },
+        },
+        // user字段是一
+        relations: [
+            {
+                column: "posts",
+                relation: OneToMany(() => PostEntity, (post: PostEntity) => post.author, {
+                    cascade: true,
+                })
+            },
+            {
+                column: "comments",
+                relation: OneToMany(() => CommentEntity, (comment: CommentEntity) => comment.author, {
+                    cascade: true
+                })
+            }
+        ],
+        avatar: {
+            default: configure.env("DEFAULT_AVATAR")
+        },
+        captchaTime: {
+            ...timeObj
+        }
+    }
+}
+
+export const createUserConfig: (register: ConfigureRegister<RePartial<UserConfig>>) => 
+ConfigureFactory<RePartial<UserConfig>, UserConfig> = (register) => ({
+    register,
+    defaultRegister: defaultUserConfig
+})

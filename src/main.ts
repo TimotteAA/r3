@@ -1,22 +1,35 @@
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
-import { AppModule } from './app.module';
-import { useContainer } from 'class-validator';
-import { WsAdapter } from '@nestjs/platform-ws';
 
-async function bootstrap() {
-    const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
-    // 注入到class-validator中的容器
-    useContainer(app.select(AppModule), {
-        fallbackOnErrors: true,
-    });
-    app.enableCors();
-    app.useWebSocketAdapter(new WsAdapter(app))
-    // 注册fastify multipart插件
-    // eslint-disable-next-line global-require
-    app.register(require('@fastify/multipart'), {
-        attachFieldsToBody: true,
-    });
-    await app.listen(3000, '0.0.0.0');
-}
-bootstrap();
+import { boot, createApp } from '@/modules/utils/app';
+
+import * as configs from "./modules/configs"
+
+import { ContentModule } from './modules/content/content.module';
+import { MediaModule } from './modules/media/media.module';
+
+import { RbacGuard } from './modules/rbac/guards';
+import { RbacModule } from './modules/rbac/rbac.module';
+// import { RestfulFactory } from './modules/restful/factory';
+// import { echoApi } from './modules/restful/helpers';
+import { UserModule } from './modules/user/user.module';
+
+
+// console.log("初始配置集", configs)
+
+// 创建app
+const creator = createApp({
+    configs,
+    configure: { storage: false },
+    modules: [ContentModule, MediaModule, UserModule, RbacModule],
+    globals: { guard: RbacGuard },
+    builder: async ({ configure, BootModule }) => {
+        return NestFactory.create<NestFastifyApplication>(BootModule, new FastifyAdapter(), {
+            cors: true,
+            logger: ['warn'],
+        });
+    },
+});
+
+// 启动创建出的app
+boot(creator);

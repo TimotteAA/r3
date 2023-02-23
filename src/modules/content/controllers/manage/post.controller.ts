@@ -5,7 +5,6 @@ import { ManageCreatePostDto, ManageUpdatePostDto } from '../../dtos/manage/post
 import { Crud } from "@/modules/restful/decorators";
 import { BaseController } from "@/modules/restful/controller";
 import { User } from '@/modules/user/decorators';
-import { ClassToPlain } from '@/modules/utils';
 import { UserEntity } from '@/modules/user/entities';
 import { PermissionChecker } from '@/modules/rbac/types';
 import { PermissionAction } from '@/modules/rbac/constants';
@@ -23,8 +22,23 @@ const permissions: PermissionChecker[] = [
 
 @ApiTags("文章管理")
 @ApiBearerAuth()
-@Depends(ContentModule)
-@Crud(() => ({
+// @Crud(() => ({
+//     id: 'post',
+//     enabled: [
+//         { name: "list", options: simpleCrudOptions(permissions, { summary: "文章分页查询" }) },
+//         { name: "detail", options: simpleCrudOptions(permissions, { summary: "查看文章详情" }) },
+//         { name: "create", options: simpleCrudOptions(permissions, { summary: "创建文章" }) },
+//         { name: "update", options: simpleCrudOptions(permissions, { summary: "更新文章" }) },
+//         { name: "delete", options: simpleCrudOptions(permissions, { summary: "删除文章，支持批量删除" }) },
+//         { name: "restore", options: simpleCrudOptions(permissions, { summary: "恢复软删除文章，支持批量恢复" }) }
+//     ],
+//     dtos: {
+//         query: QueryPostDto,
+//         create: ManageCreatePostDto,
+//         update: ManageUpdatePostDto,
+//     },
+// }))
+@Crud({
     id: 'post',
     enabled: [
         { name: "list", options: simpleCrudOptions(permissions, { summary: "文章分页查询" }) },
@@ -39,8 +53,9 @@ const permissions: PermissionChecker[] = [
         create: ManageCreatePostDto,
         update: ManageUpdatePostDto,
     },
-}))
+})
 @Controller('posts')
+@Depends(ContentModule)
 export class PostController extends BaseController<PostService> {
     public constructor(protected service: PostService) {
         super(service);

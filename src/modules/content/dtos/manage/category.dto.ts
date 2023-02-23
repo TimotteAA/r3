@@ -10,7 +10,7 @@ import {
 } from 'class-validator';
 import { toNumber } from 'lodash';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { CustomDtoValidation } from '@/modules/core/decorators';
+import { CustomDtoValidation } from "@/modules/database/decorators";
 import { IsExist, IsUniqueTree, IsUniqueTreeUpdate } from '@/modules/database/constraints';
 import { CategoryEntity, PostEntity } from '../../entities';
 

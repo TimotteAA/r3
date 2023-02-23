@@ -1,4 +1,4 @@
-import { CosStsOptions } from "@/modules/utils";
+import { CosStsOptions } from "../types";
 import { randomBytes } from 'crypto';
 import { BadRequestException, Injectable } from "@nestjs/common";
 import STS from "qcloud-cos-sts";

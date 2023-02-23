@@ -1,18 +1,20 @@
 import Redis, { Redis as RedisType } from "ioredis";
 import { Injectable } from "@nestjs/common";
-import { RedisOption } from "@/modules/utils";
 import { isNil } from "lodash";
+
+import { RedisConfig } from "../types";
+// import chalk from "chalk";
 
 /**
  * redis连接，支持多个redis实例
  */
 @Injectable()
 export class RedisService {
-  private options: Array<RedisOption>;
+  private options: RedisConfig;
 
   private clients: Map<string, RedisType> = new Map();
 
-  constructor(options: RedisOption[]) {
+  constructor(options: RedisConfig) {
     this.options = options;
   }
 

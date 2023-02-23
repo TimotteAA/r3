@@ -15,15 +15,18 @@ import {
 import { AccessTokenEntity, MessageEntity, MessageReceiveEntity } from '.';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { AddRelations } from '@/modules/database/decorators';
-import { userConfigFn } from '@/modules/configs';
 import { RoleEntity } from '@/modules/rbac/entities/role.entity';
 import { PermissionEntity } from '@/modules/rbac/entities/permission.entity';
 import { AvatarEntity } from '@/modules/media/entities';
+import { getUserConfig } from '../helpers';
+import { DynamicRelation } from '@/modules/database/types';
+
+const relations = () => getUserConfig<DynamicRelation[]>("relations")
 
 /**
  * 给user字段加上动态关联
  */
-@AddRelations(() => userConfigFn().relations)
+@AddRelations(relations)
 @Exclude()
 @Entity('user_users')
 export class UserEntity extends BaseEntity {

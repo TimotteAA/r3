@@ -2,17 +2,17 @@ import { Injectable, Inject, forwardRef, ForbiddenException, BadRequestException
 import { FastifyRequest as Request } from 'fastify';
 import { ExtractJwt } from 'passport-jwt';
 import { isNil, omit } from 'lodash';
-import { userConfigFn , timeObj} from '@/modules/configs';
+// import { timeObj} from '@/modules/configs';
 import { JwtModule } from '@nestjs/jwt';
 import { UserService, TokenService } from '../services';
-import { decrypt, encrypt } from '../helpers';
+import { decrypt, encrypt, getUserConfig } from '../helpers';
 import { CodeEntity, UserEntity } from '../entities';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { getTime } from '@/modules/utils';
 import { PhoneRegisterDto, RegisterDto, EmailRegisterDto, PhoneLoginDto, EmailLoginDto, BoundPhoneDto , BoundEmailDto } from "../dto";
 import { InjectRepository } from '@nestjs/typeorm';
-import {ClassToPlain } from "@/modules/utils"
 import { CaptchaType } from '../constants';
+import { UserConfig } from '../types';
 
 @Injectable()
 export class AuthService {
@@ -29,7 +29,7 @@ export class AuthService {
      * @returns
      */
     async validateUser(credential: string, pass: string): Promise<any> {
-        // console.log(credential)
+
         const user = await this.userService.findOneByCredential(credential, async (qb: SelectQueryBuilder<UserEntity>) => {
             return qb.addSelect('user.password');
         });
@@ -46,6 +46,7 @@ export class AuthService {
      * @returns
      */
     async login(user: UserEntity) {
+        console.log('login in user', user)
         const { accessToken } = await this.tokenService.generateAccessToken(user, getTime());
         // 返回给前端
         return accessToken.value;
@@ -96,7 +97,7 @@ export class AuthService {
         const { username, password, nickname } = data;
         const user = new UserEntity();
         user.username = username;
-        user.password = encrypt(password);
+        user.password = await encrypt(password);
         user.nickname = nickname;
         await user.save();
         return this.userService.findOneByCredential(user.username);
@@ -212,7 +213,8 @@ export class AuthService {
         if (isNil(captcha)) throw new BadRequestException(CodeEntity, '验证码不正确');
         // console.log(getTime({date: captcha.updatedAt}).add(timeObj.limit, "second"))
         // console.log(getTime());
-        const isValid = getTime({date: captcha.updatedAt}).add(timeObj.age, "second").isAfter(getTime());
+        const age = await getUserConfig<number>("captchaTime.age")
+        const isValid = getTime({date: captcha.updatedAt}).add(age, "second").isAfter(getTime());
         return isValid;
     }
 
@@ -222,13 +224,13 @@ export class AuthService {
      */
     static registerJwtModule() {
         return JwtModule.registerAsync({
-            useFactory() {
-                const config = userConfigFn();
+            async useFactory() {
+                const config = await getUserConfig<UserConfig['jwt']>("jwt")
                 return {
-                    secret: config.jwt.secret,
+                    secret: config.secret,
                     ignoreExpiration: process.env.mode === 'development',
                     signOptions: {
-                        expiresIn: `${config.jwt.token_expired}s`,
+                        expiresIn: `${config.token_expired}s`,
                     },
                 };
             },

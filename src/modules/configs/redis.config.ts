@@ -1,10 +1,6 @@
-import { RedisOptions } from "../utils";
+import { createRedisConfig } from "../redis/helpers";
 
-/**
- * 可以创建多个redis链接，从而有多个mq
- */
-export const redisConfigFn: () => RedisOptions = () => ({
-  host: "localhost",
-  port: 6379,
-  name: "default"
-})
+export const redis = createRedisConfig((configure) => ({
+    host: configure.env("REDIS_HOST", "127.0.0.1"),
+    port: configure.env("REDIS_PORT", 6379)
+}))

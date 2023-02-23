@@ -1,12 +1,12 @@
-import { DynamicModule, Module } from "@nestjs/common";
 import { ElasticsearchModule, ElasticsearchModuleOptions } from "@nestjs/elasticsearch";
 
-@Module({})
-export class ElasticSearchModule {
-  static forRoot(options: ElasticsearchModuleOptions): DynamicModule {
+import { ModuleBuilder } from "../core/decorators";
+
+@ModuleBuilder(async (configure) => {
+    const options = await configure.get<ElasticsearchModuleOptions>("elastic")
     return {
       global: true,
-      module: ElasticSearchModule,
+      // module: ElasticSearchModule,
       imports: [
         ElasticsearchModule.register(options)
       ],
@@ -14,5 +14,5 @@ export class ElasticSearchModule {
         ElasticsearchModule
       ]
     }
-  }
-}
+})
+export class ElasticSearchModule {}

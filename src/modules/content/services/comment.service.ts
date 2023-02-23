@@ -6,7 +6,7 @@ import { treePaginate } from '@/modules/database/paginate';
 import { CommentEntity } from '../entities';
 import { isNil } from 'lodash';
 import { SelectQueryBuilder } from 'typeorm';
-import { BaseService } from '@/modules/core/crud';
+import { BaseService } from '@/modules/database/crud';
 import { UserService } from '@/modules/user/services';
 import { ManageCommentQuery } from '../dtos/manage';
 

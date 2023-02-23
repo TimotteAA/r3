@@ -1,5 +1,4 @@
 import { FindTreeOptions, SelectQueryBuilder } from "typeorm";
-import { ClassToPlain } from "../utils";
 import { PostEntity, CommentEntity } from "./entities";
 
 /**

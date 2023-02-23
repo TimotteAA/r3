@@ -1,7 +1,5 @@
-import { ContentConfig } from "../content/types";
+import { createContentConfig } from "../content/helpers";
 
-export const contentConfigFn = (): ContentConfig => {
-  return {
-    searchType: "against"
-  }
-}
+export const content = createContentConfig(register => ({
+  searchType: "elastic"
+}))

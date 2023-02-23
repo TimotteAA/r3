@@ -7,7 +7,7 @@ import {
     SelectQueryBuilder,
 } from 'typeorm';
 import { OrderQueryType } from '../types';
-import {  getQrderByQuery } from '../helpers';
+import { getQrderByQuery } from '../helpers';
 import { isNil } from 'lodash';
 
 /**

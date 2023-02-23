@@ -1,38 +1,27 @@
 import { Module, ModuleMetadata, Type } from "@nestjs/common";
-import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
-import { isNil } from "lodash";
-import { OrderQueryType } from "./types";
+import { isNil,isArray, isObject } from "lodash";
 
-export function getQrderByQuery<E extends ObjectLiteral>(
-  qb: SelectQueryBuilder<E>,
-  alias: string,
-  orderBy?: OrderQueryType,
-): SelectQueryBuilder<E> {
-  if (isNil(orderBy)) return qb;
-  if (typeof orderBy === 'string') {
-      return qb.orderBy(`${alias}.${orderBy}`, 'DESC');
-  }
-  if (Array.isArray(orderBy)) {
-      let i = 0;
+import { deepMerge } from "../utils";
+import { ConfigureRegister, ConnectionOption, ConnectionRst, AppConfig, ConfigureFactory } from "./types";
 
-      for (const item of orderBy) {
-          // 第一个orderBy
-          if (i === 0) {
-              qb =
-                  typeof item === 'string'
-                      ? qb.orderBy(`${alias}.${item}`, 'DESC')
-                      : qb.orderBy(`${alias}.${item.name}`, `${item.order}`);
-              i++;
-          } else {
-              qb =
-                  typeof item === 'string'
-                      ? qb.addOrderBy(`${alias}.${item}`, 'DESC')
-                      : qb.addOrderBy(`${alias}.${item.name}`, `${item.order}`);
-          }
-      }
-      return qb;
-  }
-  return qb.orderBy(`${alias}.${orderBy.name}`, `${orderBy.order}`);
+export function mergeMeta(meta: ModuleMetadata, custom: ModuleMetadata) {
+    const keys = Array.from(new Set([...Object.keys(meta), ...Object.keys(custom)]));
+    const useMerge = <T>(i: T, p: T) => {
+        // 数组合并
+        if (isArray(p)) return [...((i as any[]) ?? []), ...((p as any[]) ?? [])];
+        // 对象深度合并
+        if (isObject(p)) return deepMerge(i, p);
+        return p;
+    };
+    const merged = Object.fromEntries(
+        keys
+            .map((type) => [
+                type,
+                useMerge(meta[type as keyof ModuleMetadata], custom[type as keyof ModuleMetadata]),
+            ])
+            .filter(([_, item]) => (isArray(item) ? item.length > 0 : !!item)),
+    );
+    return { ...meta, ...merged };
 }
 
 /**
@@ -57,6 +46,7 @@ export const CreateModule = (
         ModuleClass = target;
     }
     // 执行模块装饰器
+    console.log(target, moduleMetadataSetter())
     Module(moduleMetadataSetter())(ModuleClass);
     return ModuleClass;
 }
@@ -66,4 +56,53 @@ export function isAsyncFunction<R, A extends any[]>(
 ): callback is (...args: A) => Promise<R> {
     const AsyncFunction = (async () => {}).constructor;
     return callback instanceof AsyncFunction === true;
+}
+
+/**
+ * typeorm、redis的链接配置加工
+ * @param options 
+ */
+export const createConnectionOptions = <T extends Record<string, any>>(
+    options: ConnectionOption<T>,
+): ConnectionRst<T> => {
+    const config: ConnectionRst<T> = Array.isArray(options) 
+        ? options 
+        : [{ ...options, name: "default" }]
+    if (config.length <= 0) return undefined;
+    if (isNil(config.find(({name}) => name === "default"))) {
+        config[0].name = "default"
+    }
+
+    // 根据name去重
+    return config.reduce((o, n) => {
+        if (o.map(({name}) => name).includes(n.name)) return o;
+        return [...o, n]
+    }, [])
+}
+
+/**
+ * 创建app配置
+ * @param register 
+ */
+export const createAppConfig: (configure: ConfigureRegister<Partial<AppConfig>>)
+=> ConfigureFactory<Partial<AppConfig>, AppConfig> = (register) => ({
+    register,
+    defaultRegister: configure => ({
+        websockets: true
+    })
+})
+
+/**
+ * 对请求的入参（可能是字符串或者boolean)进行转换
+ * @param value
+ * @returns
+ */
+export function toBoolean(value?: string | boolean): boolean {
+    if (isNil(value)) return false;
+    if (typeof value === 'boolean') return value;
+    try {
+        return JSON.parse(value.toLowerCase());
+    } catch (e) {
+        return value as unknown as boolean;
+    }
 }

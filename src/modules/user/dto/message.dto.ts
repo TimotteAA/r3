@@ -1,13 +1,12 @@
 import { Injectable } from "@nestjs/common";
-import { IsDefined, IsNotEmpty, IsOptional, IsUUID, Min, IsNumber, IsBoolean } from "class-validator";
+import { IsDefined, IsNotEmpty, IsOptional, IsUUID, IsBoolean } from "class-validator";
 import { Transform } from "class-transformer";
-import { toNumber } from "lodash";
-import { toBoolean } from "@/modules/core/helpers/index";
-import { CustomDtoValidation } from "@/modules/core/decorators";
+import { toBoolean } from "@/modules/core/helpers";
+import { CustomDtoValidation } from "@/modules/database/decorators";
 import { IsExist } from "@/modules/database/constraints";
 import { MessageEntity, UserEntity } from "../entities";
-import { PaginateOptions } from "@/modules/utils";
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional, OmitType } from "@nestjs/swagger";
+import { ListQueryDto } from "@/modules/restful/dto";
 
 /**
  * 连接dto
@@ -81,18 +80,7 @@ export class UpdateReceviesDto {
     type: 'query',
     skipMissingProperties: true,
 })
-export class QueryOwnerMessageDto implements PaginateOptions {
-    @Transform(({ value }) => toNumber(value))
-    @Min(1, { message: '当前页必须大于1' })
-    @IsNumber()
-    @IsOptional()
-    page = 1;
-
-    @Transform(({ value }) => toNumber(value))
-    @Min(1, { message: '每页显示数据必须大于1' })
-    @IsNumber()
-    @IsOptional()
-    limit = 10;
+export class QueryOwnerMessageDto extends OmitType(ListQueryDto, ["trashed"]) {
 }
 
 /**

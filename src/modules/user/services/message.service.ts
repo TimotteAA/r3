@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import { BaseService } from "@/modules/core/crud";
+import { BaseService } from "@/modules/database/crud";
 import { MessageEntity } from "../entities";
 import { MessageRepository, MessageReceiveRepository } from "../repositorys";
 import { isNil, omit } from "lodash";
 import { UpdateReceviesDto, QueryOwnerMessageDto, QueryMessageDto } from "../dto";
 import { In, SelectQueryBuilder } from "typeorm";
-import { QueryHook } from "@/modules/utils";
-import { ServiceListQueryParams } from "@/modules/core/types";
+import { QueryHook } from "@/modules/database/types";
+import { ServiceListQueryParams } from "@/modules/database/types";
 import { RecevierActionType } from "../constants";
 
 @Injectable()

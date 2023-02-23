@@ -4,7 +4,7 @@ import { BaseRepository } from './repository';
 import { BaseTreeRepository } from './tree.repository';
 import { ServiceListQueryParams, QueryParams } from '../types';
 import { QueryTrashMode, TreeChildrenResolve } from '../constants';
-import { PaginateMeta, PaginateOptions, QueryHook } from '@/modules/utils';
+import { PaginateMeta, PaginateOptions, QueryHook } from '../types';
 import { isNil } from 'lodash';
 import { paginate, treePaginate } from '@/modules/database/paginate';
 

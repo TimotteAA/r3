@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { CustomDtoValidation } from "@/modules/core/decorators";
+import { CustomDtoValidation } from "@/modules/database/decorators";
 import { ApiProperty, PickType } from "@nestjs/swagger";
 import { BaseUserDto } from "./base-user.dto";
 import { CaptchaDtoGroups, UserDtoGroups } from "../constants";

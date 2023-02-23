@@ -7,7 +7,7 @@ import {
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { OmitType, PickType } from '@nestjs/swagger';
-import { CustomDtoValidation } from '@/modules/core/decorators';
+import { CustomDtoValidation } from "@/modules/database/decorators";
 import { IsExist } from '@/modules/database/constraints';
 import { CommentEntity, PostEntity } from '../entities';
 import { ManageCommentQuery } from './manage';

@@ -4,8 +4,8 @@ import { isNil } from "lodash";
 
 import { AvatarRepository } from "../repositorys"
 import { AvatarEntity } from "../entities"
-import { BaseService } from "@/modules/core/crud"
-import { CosService } from "@/modules/core/services"
+import { BaseService } from "@/modules/database/crud"
+import { CosService } from "@/modules/tencent-os/services"
 import { CreateFileOptions } from "../types"
 import { DataSource, ObjectLiteral } from "typeorm"
 import { UserService } from "@/modules/user/services";

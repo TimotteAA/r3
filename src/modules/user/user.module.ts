@@ -1,5 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+import { forwardRef } from '@nestjs/common';
 import { AccessTokenEntity, RefreshTokenEntity, UserEntity, CodeEntity, MessageEntity, MessageReceiveEntity } from './entities';
 import { UserSubscriber } from './subscribers';
 import { DatabaseModule } from '../database/database.module';
@@ -7,7 +6,6 @@ import { AuthService } from './services';
 import { PassportModule } from '@nestjs/passport';
 import { BullModule } from '@nestjs/bullmq';
 
-import { RbacGuard } from '../rbac/guards';
 import { RbacModule } from '../rbac/rbac.module';
 import { UserRbac } from './rbac';
 import { LocalAuthGuard, JwtAuthGuard, JwtWsGuard } from './guards';
@@ -22,6 +20,7 @@ import * as gatewayMaps from "./gateways";
 import * as manageMaps from "./controller/manage";
 import { addEntities } from '../database/helpers';
 import { MediaModule } from '../media/media.module';
+import { ModuleBuilder } from '../core/decorators';
 // import { MediaModule } from '../media/media.module';
 
 const services = Object.values(serviceMaps);
@@ -32,10 +31,10 @@ const repos = Object.values(repoMaps)
 const gateways = Object.values(gatewayMaps)
 const entities = [AccessTokenEntity, RefreshTokenEntity, UserEntity, CodeEntity, MessageEntity, MessageReceiveEntity];
 
-@Module({
+@ModuleBuilder(async configure => ({
     controllers: [...controllers, ...Object.values(manageMaps)],
     imports: [
-        addEntities(entities),
+        (await addEntities(configure, entities)),
         DatabaseModule.forRepository([...repos]),
         PassportModule,
         AuthService.registerJwtModule(),
@@ -51,14 +50,10 @@ const entities = [AccessTokenEntity, RefreshTokenEntity, UserEntity, CodeEntity,
         LocalAuthGuard,
         JwtAuthGuard,
         JwtWsGuard,
-        {
-            provide: APP_GUARD,
-            useClass: RbacGuard,
-        },
         ...queues,
         ...gateways,
         UserRbac
     ],
     exports: [...services, ...queues, DatabaseModule.forRepository([...repos])],
-})
+}))
 export class UserModule {}

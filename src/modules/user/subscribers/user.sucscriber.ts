@@ -38,7 +38,7 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
         }
 
         // 插入前对entity的密码加密
-        event.entity.password = encrypt(event.entity.password);
+        event.entity.password = await encrypt(event.entity.password);
     }
 
     /**

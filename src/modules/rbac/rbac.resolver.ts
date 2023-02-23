@@ -8,8 +8,9 @@ import { PermissionType, Role } from "./types";
 import { SystemRoles } from "./constants";
 import { deepMerge } from "../utils";
 import { PermissionEntity, RoleEntity } from "./entities";
-import { userConfigFn } from "../configs";
+import { getUserConfig } from "../user/helpers";
 import { UserEntity } from "../user/entities";
+import { UserConfig } from "../user/types";
 
 /**
  * 获取管理对象的字符串名
@@ -195,7 +196,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
    * @param manager 
    */
   protected async syncPermissions(manager: EntityManager) {
-    const superAdmin = userConfigFn().super;
+    const superAdmin = await getUserConfig<UserConfig['super']>("super");
     // 数据库中所有的权限
     const permissions = await manager.find(PermissionEntity);
     // console.log('permissions1', permissions)

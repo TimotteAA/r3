@@ -1,7 +1,6 @@
 import { MultipartFile } from "@fastify/multipart";
 import { ObjectLiteral, EntityTarget } from "typeorm";
 
-import { ClassToPlain } from "../utils";
 import { UserEntity } from "../user/entities";
 
 /**

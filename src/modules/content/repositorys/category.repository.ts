@@ -1,9 +1,9 @@
-import { BaseTreeRepository } from '@/modules/core/crud/tree.repository';
+import { BaseTreeRepository } from '@/modules/database/crud/tree.repository';
 import { CategoryEntity } from '../entities';
-import { OrderType } from '@/modules/core/constants';
+import { OrderType } from '@/modules/database/constants';
 import { CustomRepository } from '@/modules/database/decorators';
 import { SelectQueryBuilder } from 'typeorm';
-import { TreeChildrenResolve } from "@/modules/core/constants";
+import { TreeChildrenResolve } from "@/modules/database/constants";
 
 @CustomRepository(CategoryEntity)
 export class CategoryRepository extends BaseTreeRepository<CategoryEntity> {

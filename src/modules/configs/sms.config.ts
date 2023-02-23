@@ -1,13 +1,4 @@
-import { SmsSdkOptions } from "../utils";
-import { env } from "../utils";
+import { createSmsConfig } from "../tencent-os/helpers";
 
-export const smsConfigFn: () => SmsSdkOptions = () => {
-  return {
-    secretId: env("secretId"),
-    secretKey: env("secretKey"),
-    region: env("SMS_regioncl"),
-    endpoint: env("endpoint"),
-    sign: env("sign"),
-    appid: env("appid")
-  }
-}
+export const sms = createSmsConfig(configure => ({
+}))

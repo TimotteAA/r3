@@ -1,21 +1,24 @@
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { createDbConfig } from "../database/helpers";
 
-const configFn: () => TypeOrmModuleOptions = () => {
+/**
+ * 只需配置连接项
+ */
+export const database = createDbConfig((register) => {
+    // console.log("asdasda", register);
     return {
-        type: 'mysql',
-        host: 'localhost',
-        port: 3306,
-        username: 'root',
-        password: '64556398aa',
-        database: '3r',
-        // 开发环境自动同步
-        synchronize: true,
-        // 自动加载entities
-        autoLoadEntities: true,
-        // 日志显示logging error之上的
-        logging: ['error'],
-        // 字符集
-        charset: 'utf8mb4',
-    };
-};
-export { configFn };
+        connections: [
+            {
+                type: 'mysql',
+                host: register.env("DB_HOST"),
+                port: register.env("DB_PORT", 3306),
+                username:  register.env("DB_USER"),
+                password: register.env("DB_AUTH"),
+                database: register.env("DB_DATABASE"),
+                // // 开发环境自动同步
+                // synchronize: true,
+                // // 自动加载entities
+                // autoLoadEntities: true,
+            }
+        ]
+    }
+})

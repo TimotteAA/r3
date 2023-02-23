@@ -3,17 +3,16 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Repository } from "typeorm";
 import { CodeEntity, UserEntity } from "../entities"
-import { getTime, UserConfig } from "@/modules/utils";
+import { getTime } from "@/modules/utils";
 import { CaptchaActionType, CaptchaType } from "../constants";
-import { CaptchaOption } from "../types"
+import { CaptchaOption, UserConfig } from "../types"
 import { EMAIL_CAPTCHA_JOB, SMS_CAPTCHA_JOB, SEND_CAPTCHA_QUEUE } from "../constants"
-import { generateCatpchaCode } from "../helpers";
+import { generateCatpchaCode, getUserConfig } from "../helpers";
 import { Queue } from "bullmq";
 import { UserService } from "../services";
 import { CaptchaWorker } from "./captcha.worker";
 import { EmailCaptchaDto, PhoneCaptchaDto, CredentialCaptchaMessageDto } from "../dto/captcha.dto";
 import { isNil, toNumber } from "lodash";
-import { userConfigFn } from "@/modules/configs"
 import { instanceToPlain } from "class-transformer";
 // import chalk from "chalk";
 
@@ -65,7 +64,6 @@ interface TypeSendParams extends BaseSendParams {
 
 @Injectable()
 export class CaptchaJob {
-  private config: UserConfig
 
   constructor(
     @InjectRepository(CodeEntity) private codeRepo: Repository<CodeEntity>,
@@ -73,7 +71,6 @@ export class CaptchaJob {
     private userService: UserService,
     private worker: CaptchaWorker
   ) {
-    this.config = userConfigFn();
     this.worker.addWorker();
   }
 
@@ -164,8 +161,9 @@ export class CaptchaJob {
     const captchaCode = code ?? generateCatpchaCode();
     const error = message ?? `send ${type === CaptchaType.SMS ? 'sms' : 'email'} captcha failed`;
     try {
+      const captchaConfig = await getUserConfig<UserConfig['captcha']>("captcha")
       // 验证码发送配置
-      const config = (this.config.captcha as any)[type][action];
+      const config = (captchaConfig as any)[type][action];
       // console.log(this.config.captcha[type]);
       // console.log(type, action);
       // console.log(config);
@@ -173,7 +171,7 @@ export class CaptchaJob {
       // 创建验证码
       // console.log(this.config.captcha);
       const captcha = await this.createCaptcha(media, action, type, config, captchaCode);
-      const expired: number = toNumber((this.config.captcha as any)[type][action]['age']);
+      const expired: number = toNumber((captchaConfig as any)[type][action]['age']);
       // console.log(chalk.red(expired));
       // 有效期设定
       // const otherVars = action === CaptchaActionType.LOGIN ? { age: Math.floor(expired / 60) } : {}

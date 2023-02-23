@@ -1,5 +1,5 @@
 import { Body, Get, Post, Delete, Patch, Param, ParseUUIDPipe, Query } from '@nestjs/common';
-import { ServiceListQueryParams } from '@/modules/core/types';
+import { ServiceListQueryParams } from '@/modules/database/types';
 import { DeleteDto, ListQueryDto, QueryDetailDto, RestoreDto } from '@/modules/restful/dto';
 
 export abstract class BaseController<S, P extends ServiceListQueryParams<any> = ServiceListQueryParams<any>> {

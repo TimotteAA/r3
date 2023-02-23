@@ -1,19 +1,19 @@
 import jwt from 'jsonwebtoken';
 import { v4 as uuid } from 'uuid';
 import { Injectable } from '@nestjs/common';
-import { JwtConfig, JwtPayload } from '../types';
+import { JwtPayload, UserConfig } from '../types';
 import { JwtService } from '@nestjs/jwt';
-import { userConfigFn } from '@/modules/configs';
 import { AccessTokenEntity, RefreshTokenEntity, UserEntity } from '../entities';
 import dayjs from 'dayjs';
 import { FastifyReply as Response } from 'fastify';
 import { getTime } from '@/modules/utils';
+import { getUserConfig } from '../helpers';
 
 @Injectable()
 export class TokenService {
-    private readonly config: JwtConfig;
+    // private readonly config: JwtConfig;
     constructor(private jwtService: JwtService) {
-        this.config = userConfigFn().jwt;
+        // this.config = userConfigFn().jwt;
     }
 
     /**
@@ -56,7 +56,9 @@ export class TokenService {
         accessToken.value = token;
         accessToken.user = user;
         // 加上有效期
-        accessToken.expired_at = now.add(this.config.token_expired, 'second').toDate();
+        const jwtConfig = await getUserConfig<UserConfig['jwt']>("jwt")
+        console.log("jwtConfig", jwtConfig)
+        accessToken.expired_at = now.add(jwtConfig.token_expired, 'second').toDate();
         // 保存accessToken
         await accessToken.save();
         const refreshToken = await this.generateRefreshToken(accessToken, getTime());
@@ -76,8 +78,9 @@ export class TokenService {
         };
         // 创建refreshToken
         const refreshToken = new RefreshTokenEntity();
-        refreshToken.value = jwt.sign(refreshTokenPayload, this.config.refresh_secret);
-        refreshToken.expired_at = now.add(this.config.refresh_token_expired, 'second').toDate();
+        const jwtConfig = await getUserConfig<UserConfig['jwt']>("jwt")
+        refreshToken.value = jwt.sign(refreshTokenPayload, jwtConfig.refresh_secret);
+        refreshToken.expired_at = now.add(jwtConfig.refresh_token_expired, 'second').toDate();
         refreshToken.accessToken = accessToken;
         // 保存到数据库
         await refreshToken.save();
@@ -89,8 +92,8 @@ export class TokenService {
      * @param token 
      */
     async verifyAccessToken(token: string) {
-        const config = userConfigFn();
-        return jwt.verify(token, config.jwt.secret);
+        const config = await getUserConfig<UserConfig['jwt']>("jwt")
+        return jwt.verify(token, config.secret);
     }
 
 

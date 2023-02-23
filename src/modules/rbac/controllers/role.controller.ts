@@ -1,13 +1,15 @@
-import { Crud } from "@/modules/restful/decorators";
-import { BaseController } from "@/modules/restful/controller";
 import { Controller } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+
+import { Crud, Depends } from "@/modules/restful/decorators";
+import { BaseController } from "@/modules/restful/controller";
 import { PermissionAction } from "../constants";
 import { RoleEntity } from "../entities";
-
 import { RoleService } from "../services";
 import { CreateRoleDto, UpdateRoleDto, QueryRoleDto } from "../dtos";
 import { PermissionChecker } from "../types";
 import { simpleCrudOptions } from "../helpers";
+import { RbacModule } from "../rbac.module";
 
 // 角色管理员
 const permissions: PermissionChecker[] = [
@@ -16,7 +18,26 @@ const permissions: PermissionChecker[] = [
   }
 ]
 
-@Crud(async () => ({
+@ApiTags("角色后台管理")
+@ApiBearerAuth()
+@Depends(RbacModule)
+// @Crud(async () => ({
+//   id: "role",
+//   enabled: [
+//     { name: "create", options: simpleCrudOptions(permissions, { description: "创建角色" }) },
+//     { name: "list", options: simpleCrudOptions(permissions, { description: "分页查询角色" }) },
+//     { name: "update", options: simpleCrudOptions(permissions, { description: "更新指定角色" }) },
+//     { name: "delete", options: simpleCrudOptions(permissions, { description: "删除角色，支持批量删除" }) },
+//     { name: "detail", options: simpleCrudOptions(permissions, { description: "查看角色详情" }) },
+//     { name: "restore", options: simpleCrudOptions(permissions, { description: "恢复软删除角色，支持批量恢复" }) }
+//   ],
+//   dtos: {
+//     query: QueryRoleDto,
+//     create: CreateRoleDto,
+//     update: UpdateRoleDto
+//   }
+// }))
+@Crud({
   id: "role",
   enabled: [
     { name: "create", options: simpleCrudOptions(permissions, { description: "创建角色" }) },
@@ -31,7 +52,7 @@ const permissions: PermissionChecker[] = [
     create: CreateRoleDto,
     update: UpdateRoleDto
   }
-}))
+})
 @Controller("roles")
 export class RoleController extends BaseController<RoleService> {
   constructor(

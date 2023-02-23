@@ -1,11 +1,3 @@
-import { ElasticsearchModuleOptions } from "@nestjs/elasticsearch";
+import { createESConfig } from "../elastic/helpers";
 
-export const elasticConfigFn = (): ElasticsearchModuleOptions => {
-  return {
-    node: 'http://localhost:9200',
-    requestTimeout: 60000,
-    maxRetries: 10,
-    pingTimeout: 60000,
-    sniffOnStart: true,
-  }
-}
+export const elastic = createESConfig(configure => ({}))

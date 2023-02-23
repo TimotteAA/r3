@@ -3,7 +3,7 @@ import {  IsOptional, IsUUID } from "class-validator";
 import { RoleEntity } from "../entities";
 import { IsExist } from "@/modules/database/constraints";
 import { ListQueryDto } from "@/modules/restful/dto";
-import { CustomDtoValidation } from "@/modules/core/decorators";
+import { CustomDtoValidation } from "@/modules/database/decorators";
 import { ApiPropertyOptional, OmitType } from "@nestjs/swagger";
 
 @CustomDtoValidation({type: "query"})

@@ -1,139 +1,49 @@
-/**
- * 所有的controller方法
- */
-export type CrudMethod =
-    | 'list'
-    | 'detail'
-    | 'delete'
-    | 'deleteMulti'
-    | 'restore'
-    | 'restoreMulti'
-    | 'create'
-    | 'update';
-
-/**
- * 路由方法的配置项
- */
-import { ClassTransformOptions } from '@nestjs/common/interfaces/external/class-transform-options.interface';
 import { Type } from '@nestjs/common';
 import { ExternalDocumentationObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
-import { Configure } from '../core/Configure';
+import { ClassTransformOptions } from 'class-transformer';
 
+/**
+ * CURD控制器方法列表
+ */
+export type CrudMethod = 'detail' | 'delete' | 'restore' | 'list' | 'create' | 'update';
+
+/**
+ * CRUD装饰器的方法选项
+ */
 export interface CrudMethodOption {
     /**
-     * 路由是否允许匿名访问
+     * 该方法是否允许匿名访问
      */
     allowGuest?: boolean;
     /**
-     * 路由方法的序列化选项，noGroup不传参，否则根据'id'+方法匹配来传参
+     * 序列化选项,如果为`noGroup`则不传参数，否则根据`id`+方法匹配来传参
      */
     serialize?: ClassTransformOptions | 'noGroup';
-    /**
-     * 装饰器hook
-     */
-    hook?: (target: Type<any>, method: string) => void
+    hook?: (target: Type<any>, method: string) => void;
 }
-
+/**
+ * 每个启用方法的配置
+ */
 export interface CrudItem {
     name: CrudMethod;
     options?: CrudMethodOption;
 }
 
+/**
+ * CRUD装饰器选项
+ */
 export interface CrudOptions {
     id: string;
-    /**
-     * 启用的路由方法
-     */
+    // 需要启用的方法
     enabled: Array<CrudMethod | CrudItem>;
-    /**
-     * 列表查询、创建、更新的Dto
-     */
+    // 一些方法要使用到的自定义DTO
     dtos: {
-        [key in 'query' | 'create' | 'update']?: any;
+        [key in 'query' | 'create' | 'update']?: Type<any>;
     };
 }
 
-// restful要素：api版本、app前缀、module、docs
-
 /**
- * 单个app的路由项配置
- */
-export interface RouteOption {
-    /**
-     * 路由模块名
-     */
-    name: string;
-    /**
-     * 路由前缀
-     */
-    path: string;
-    /**
-     * 加载的控制器
-     */
-    controllers: Type<any>[]
-    /**
-     * 路由表
-     */
-    children?: RouteOption[]
-    /**
-     * 路由对应的说明文档
-     */
-    doc?: ApiDocSource;
-}
-
-/**
- * tag配置对象
- */
-interface TagOption {
-    /**
-     * 标签名
-     */
-    name: string;
-    /**
-     * 标签描述
-     */
-    description?: string;
-    /**
-     * 额外的配置，外链文档
-     */
-    externalDocs?: ExternalDocumentationObject;
-}
-
-/**
- * 每个app对应的文档配置：tag、每个路由的描述
- */
-export interface ApiDocSource {
-    /**
-     * api文档标题
-     */
-    title?: string;
-    /**
-     * api文档描述
-     */
-    description?: string;
-    /**
-     * 是否启用JWT登陆验证
-     */
-    auth?: boolean;
-    /**
-     * api文档标签
-     */
-    tags?: (string | TagOption)[]
-}
-
-
-/**
- * 一个版本配置，可以配置不同的版本app
- */
-export interface VersionOption extends ApiDocSource {
-    /**
-     * 路由配置
-     */
-    routes?: RouteOption[]
-}
-
-/**
- * rest模块配置：前缀、版本管理
+ * Restful模块配置
  */
 export interface ApiConfig extends ApiDocSource {
     /**
@@ -158,7 +68,87 @@ export interface ApiConfig extends ApiDocSource {
     versions: Record<string, VersionOption>;
 }
 
-// 每个app、version、rest模块配置都有title、description、auth
+/**
+ * 版本配置
+ */
+export interface VersionOption extends ApiDocSource {
+    /**
+     * 应用配置
+     */
+    apps?: AppOption[];
+}
+
+/**
+ * 应用API配置
+ */
+export interface AppOption extends RouteOption {
+    /**
+     * Open API配置,用于覆盖总配置
+     */
+    doc?: ApiDocSource;
+}
+
+/**
+ * 路由项目配置
+ */
+export interface RouteOption {
+    /**
+     * 生成的路由模块名称前缀,用于追踪路由模块
+     */
+    name: string;
+    /**
+     * 路由前缀
+     */
+    path: string;
+    /**
+     * 加载的控制器
+     */
+    controllers: Type<any>[];
+    /**
+     * 路由表
+     */
+    children?: RouteOption[];
+}
+
+/**
+ * 总配置,版本,路由中用于swagger的选项
+ */
+export interface ApiDocSource {
+    /**
+     * API文档标题
+     */
+    title?: string;
+    /**
+     * API文档描述
+     */
+    description?: string;
+    /**
+     * 是否启用JWT登录验证
+     */
+    auth?: boolean;
+    /**
+     * API文档标签
+     */
+    tags?: (string | TagOption)[];
+}
+
+/**
+ * API文档标签选项
+ */
+interface TagOption {
+    /**
+     * 标签名称
+     */
+    name: string;
+    /**
+     * 标签描述
+     */
+    description?: string;
+    /**
+     * 额外的配置
+     */
+    externalDocs?: ExternalDocumentationObject;
+}
 
 /**
  * swagger选项
@@ -171,16 +161,8 @@ export interface SwaggerOption extends ApiDocSource {
 
 /**
  * API与swagger整合的选项
- * 默认api的文档与各个版本api的文档
  */
 export interface APIDocOption {
-    // version的配置
     default?: SwaggerOption;
-    // 每个app的配置
-    routes?: { [key: string]: SwaggerOption };
+    apps?: { [key: string]: SwaggerOption };
 }
-
-/**
- * 装饰器配置工厂
- */
-export type CrudOptionsRegister = (configure: Configure) => CrudOptions | Promise<CrudOptions>

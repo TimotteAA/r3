@@ -4,8 +4,11 @@ import { CategoryService } from "../services";
 import { GUEST } from "@/modules/user/decorators";
 import { ApiQueryCategoryDto } from "../dtos";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import { Depends } from "@/modules/restful/decorators";
+import { ContentModule } from "../content.module";
 
 @ApiTags("前台分类查询")
+@Depends(ContentModule)
 @Controller("api/categories") 
 export class CategoryController {
   constructor(protected categoryService: CategoryService) {}

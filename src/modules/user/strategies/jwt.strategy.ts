@@ -1,10 +1,10 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
-import { userConfigFn } from '@/modules/configs';
 import { JwtPayload } from '../types';
 import { UserRepository } from '../repositorys';
 import { instanceToPlain } from 'class-transformer';
+import { env } from '@/modules/utils';
 
 /**
  * 登陆后访问的JWT策略
@@ -15,7 +15,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
-            secretOrKey: userConfigFn().jwt.secret,
+            secretOrKey: env("SECRET"),
         });
     }
 
@@ -26,6 +26,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
      * @returns
      */
     async validate(payload: JwtPayload) {
+        console.log(payload)
         const user = await this.userRepository.findOneOrFail({ where: { id: payload.sub } });
         return instanceToPlain(user);
     }

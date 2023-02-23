@@ -1,12 +1,14 @@
-import { SmsService, SmtpService } from "@/modules/core/services";
-import { Injectable } from "@nestjs/common";
 import { Job, Worker } from "bullmq";
-import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import chalk from "chalk";
 import { omit } from "lodash";
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+
+import { SmsService } from "@/modules/tencent-os/services";
+import { SmtpService } from "@/modules/smtp/services/smtp.service";
 import { CodeEntity } from "../entities";
-import { SmtpSendParams } from "@/modules/utils";
+import { SmtpSendParams } from "@/modules/smtp/types";
 import { EMAIL_CAPTCHA_JOB, SEND_CAPTCHA_QUEUE, SMS_CAPTCHA_JOB, } from "../constants";
 import { SendCaptchaQueueJob, SmsCaptchaOption, EmailCaptchaOption } from "../types";
 
@@ -35,7 +37,7 @@ export class CaptchaWorker {
    */
   protected async sendCode(job: Job<SendCaptchaQueueJob>) {
     const { captcha } = job.data;
-    console.log("captcha", captcha);
+    // console.log("captcha", captcha);
     try {
       if (job.name === EMAIL_CAPTCHA_JOB || job.name === SMS_CAPTCHA_JOB) {
         if (job.name === SMS_CAPTCHA_JOB) {
@@ -64,7 +66,7 @@ export class CaptchaWorker {
     } = data;
     const { code, media } = captcha;
     const { templateId } = option as SmsCaptchaOption;
-    console.log(data);
+    // console.log(data);
     const result = await this.sms.send({
       PhoneNumberSet: [media],
       TemplateId: templateId,
@@ -72,7 +74,7 @@ export class CaptchaWorker {
       // 会被覆盖，随便填即可
       SmsSdkAppId: "1"
     });
-    console.log("Result", result)
+    // console.log("Result", result)
     return result;
   }
 

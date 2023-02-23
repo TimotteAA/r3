@@ -2,7 +2,6 @@ import { Controller, Get, Post, SerializeOptions, Query, Body, Delete} from '@ne
 import { CommentService } from '../services';
 import { ApiQueryCategoryDto, QueryCommentTreeDto, CreateCommentDto } from '../dtos';
 import { GUEST, User } from '@/modules/user/decorators';
-import { ClassToPlain } from '@/modules/utils';
 import { UserEntity } from '@/modules/user/entities';
 import { PermissionChecker } from '@/modules/rbac/types';
 import { PermissionAction } from '@/modules/rbac/constants';
@@ -13,6 +12,8 @@ import { CommentRepository } from '../repositorys';
 import { In } from 'typeorm';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DeleteDto } from '@/modules/restful/dto';
+import { Depends } from '@/modules/restful/decorators';
+import { ContentModule } from '../content.module';
 
 const permission: Record<"create" | "delete", PermissionChecker> = {
     create: async (ab) => ab.can(PermissionAction.CREATE, CommentEntity.name),
@@ -29,6 +30,7 @@ const permission: Record<"create" | "delete", PermissionChecker> = {
 }
 
 @ApiTags("前台评论API")
+@Depends(ContentModule)
 @Controller('api/comments')
 export class CommentController {
     constructor(protected commentService: CommentService) {}

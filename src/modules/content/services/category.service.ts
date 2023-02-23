@@ -6,7 +6,7 @@ import { CategoryRepository } from '../repositorys';
 // import { treePaginate } from '@/modules/database/paginate';
 import { CategoryEntity } from '../entities';
 import { isNil, omit } from 'lodash';
-import { BaseService } from '@/modules/core/crud';
+import { BaseService } from '@/modules/database/crud';
 
 @Injectable()
 export class CategoryService extends BaseService<CategoryEntity, CategoryRepository> {
