@@ -123,7 +123,7 @@ export class ManageCreatePostDto {
         message: '自定义排序值最低为$constraint1',
     })
     @IsOptional({ always: true })
-    customOrder: number = 0;
+    customOrder?: number = 0;
 }
 
 @CustomDtoValidation({ groups: ['update'] })

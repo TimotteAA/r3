@@ -33,7 +33,7 @@ import { Configure } from '@/modules/core/configure';
 /**
  * 账户中心控制器
  */
-@ApiTags("前台用户账户API")
+@ApiTags("Auth操作")
 @Depends(UserModule, MediaModule)
 @Controller('account')
 export class AccountController {

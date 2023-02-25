@@ -1,5 +1,5 @@
 import { Module, ModuleMetadata, Type } from "@nestjs/common";
-import { isNil,isArray, isObject } from "lodash";
+import { isNil, isArray, isObject, toNumber } from "lodash";
 
 import { deepMerge } from "../utils";
 import { ConfigureRegister, ConnectionOption, ConnectionRst, AppConfig, ConfigureFactory } from "./types";
@@ -46,7 +46,7 @@ export const CreateModule = (
         ModuleClass = target;
     }
     // 执行模块装饰器
-    console.log(target, moduleMetadataSetter())
+    // console.log(target, moduleMetadataSetter())
     Module(moduleMetadataSetter())(ModuleClass);
     return ModuleClass;
 }
@@ -88,7 +88,10 @@ export const createAppConfig: (configure: ConfigureRegister<Partial<AppConfig>>)
 => ConfigureFactory<Partial<AppConfig>, AppConfig> = (register) => ({
     register,
     defaultRegister: configure => ({
-        websockets: true
+        websockets: true,
+        port: configure.env("APP_PORT", toNumber, 3100),
+        host: configure.env("APP_HOST", "127.0.0.1"),
+        https: configure.env("APP_HTTPS", toBoolean, false)
     })
 })
 

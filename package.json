@@ -24,6 +24,7 @@
     "@casl/ability": "^6.3.3",
     "@elastic/elasticsearch": "^8.6.0",
     "@fastify/multipart": "^7.4.0",
+    "@fastify/static": "^6.9.0",
     "@nestjs/axios": "^2.0.0",
     "@nestjs/bullmq": "^1.0.0",
     "@nestjs/common": "^9.3.2",

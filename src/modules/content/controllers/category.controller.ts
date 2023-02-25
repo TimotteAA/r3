@@ -7,9 +7,9 @@ import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Depends } from "@/modules/restful/decorators";
 import { ContentModule } from "../content.module";
 
-@ApiTags("前台分类查询")
+@ApiTags("分类查询")
 @Depends(ContentModule)
-@Controller("api/categories") 
+@Controller("categories") 
 export class CategoryController {
   constructor(protected categoryService: CategoryService) {}
 

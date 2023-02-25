@@ -29,9 +29,9 @@ const permission: Record<"create" | "delete", PermissionChecker> = {
     )
 }
 
-@ApiTags("前台评论API")
+@ApiTags("评论操作")
 @Depends(ContentModule)
-@Controller('api/comments')
+@Controller('comments')
 export class CommentController {
     constructor(protected commentService: CommentService) {}
 

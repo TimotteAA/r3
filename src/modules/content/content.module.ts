@@ -9,8 +9,8 @@ import { ContentConfig } from './types';
 import { UserService } from '../user/services';
 import { ContentRbac } from './rbac';
 import { addEntities } from '../database/helpers';
-import * as controllerMaps from './controllers';
-import * as manageMaps from "./controllers/manage";
+// import * as controllerMaps from './controllers';
+// import * as manageMaps from "./controllers/manage";
 import { ModuleBuilder } from '../core/decorators';
 
 
@@ -32,7 +32,7 @@ import { ModuleBuilder } from '../core/decorators';
         CategoryService,
     ];
 
-    const controllers: ModuleMetadata['controllers' ] = [...Object.values(controllerMaps), ...Object.values(manageMaps)]
+    // const controllers: ModuleMetadata['controllers' ] = [...Object.values(controllerMaps), ...Object.values(manageMaps)]
 
     const providers: ModuleMetadata['providers'] = [
         SanitizeService, 
@@ -72,7 +72,7 @@ import { ModuleBuilder } from '../core/decorators';
     return {
         // module: ContentModule,
         imports,
-        controllers,
+        // controllers,
         providers,
         exports
     }

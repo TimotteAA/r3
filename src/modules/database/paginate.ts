@@ -25,7 +25,7 @@ export const paginate = async <E extends ObjectLiteral>(
     // 最后一页剩余项
     const remainder = totalItems % options.limit !== 0 ? totalItems % options.limit : options.limit;
     const itemCount = options.page < totalPages ? options.limit : remainder;
-
+    // console.log("items", items);
     return {
         items,
         meta: {

@@ -56,8 +56,7 @@ export class QueryPostDto extends ListQueryDto {
         maxLength: 100
     })
     @MaxLength(100, {
-        message: '搜索内容的最大长度为$constraint1',
-        always: true,
+        message: '搜索内容的最大长度为$constraint1'
     })
     @IsOptional()
     search?: string;

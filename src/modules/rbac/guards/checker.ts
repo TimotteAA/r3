@@ -20,6 +20,8 @@ type CheckerParams = {
 }
 
 export const getCheckers = (context: ExecutionContext, reflector: Reflector) => {
+  console.log("class", context.getClass().prototype);
+  console.log("name", context.getHandler().name)
   const crudCheckers = Reflect.getMetadata(
     PERMISSION_CHECKERS,
     context.getClass().prototype,

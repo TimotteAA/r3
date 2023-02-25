@@ -15,20 +15,10 @@ const permissions: PermissionChecker[] = [
   async (ab) => ab.can(PermissionAction.MANAGE, MessageEntity.name)
 ]
 
-@ApiTags("消息后台管理")
+@ApiTags("消息管理")
 @ApiBearerAuth()
 @Depends(UserModule)
-// @Crud(async () => ({
-//   id: "message",
-//   enabled: [
-//     { name: "list", options: simpleCrudOptions(permissions, { summary: "消息列表" }) },
-//     { name: "delete", options: simpleCrudOptions(permissions, { summary: "删除消息，支持批量删除" }) }
-//   ],
-//   dtos: {
-//     query: ListQueryDto
-//   }
-// }))
-@Crud({
+@Crud(async () => ({
   id: "message",
   enabled: [
     { name: "list", options: simpleCrudOptions(permissions, { summary: "消息列表" }) },
@@ -37,7 +27,17 @@ const permissions: PermissionChecker[] = [
   dtos: {
     query: ListQueryDto
   }
-})
+}))
+// @Crud({
+//   id: "message",
+//   enabled: [
+//     { name: "list", options: simpleCrudOptions(permissions, { summary: "消息列表" }) },
+//     { name: "delete", options: simpleCrudOptions(permissions, { summary: "删除消息，支持批量删除" }) }
+//   ],
+//   dtos: {
+//     query: ListQueryDto
+//   }
+// })
 @Controller("messages")
 export class MessageController extends BaseController<MessageService> {
   constructor(protected messageService: MessageService) {

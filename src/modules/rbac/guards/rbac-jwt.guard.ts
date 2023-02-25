@@ -34,7 +34,7 @@ export class RbacGuard extends JwtAuthGuard {
     // 从路由context中获得定义的checkers
     const checkers = getCheckers(context, this.reflector);
     // 没有checkers
-    // console.log("checkers", checkers);
+    console.log("checkers", checkers);
     if (isNil(checkers) || checkers.length <= 0) return true;
     // console.log(checkers)
     // 通过jwt校验后会有user

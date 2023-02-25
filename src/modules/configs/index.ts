@@ -8,3 +8,4 @@ export * from "./content.config"
 export * from "./elastic-search.config";
 export * from "./cos.config"
 export * from "./app.config"
+export * from "../routes"

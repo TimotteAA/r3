@@ -1,13 +1,11 @@
-import { Injectable, INestApplication } from '@nestjs/common';
+import { Injectable, INestApplication, Type } from '@nestjs/common';
 import { RouterModule } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { trim } from 'lodash';
-
-import { deepMerge } from '../utils';
+import { trim, omit } from 'lodash';
 
 import { RestfulConfigure } from './configure';
 import { genDocPath } from './helpers';
-import { ApiConfig, APIDocOption, SwaggerOption, VersionOption, AppOption } from './types';
+import { ApiConfig, APIDocOption, RouteOption, SwaggerOption, VersionOption, ApiDocSource } from './types';
 
 @Injectable()
 export class RestfulFactory extends RestfulConfigure {
@@ -18,13 +16,18 @@ export class RestfulFactory extends RestfulConfigure {
         [version: string]: APIDocOption;
     };
 
+    /**
+     * 排除已经添加的模块
+     */
+    protected excludeVersionModules: string[] = [];
+
     get docs() {
         return this._docs;
     }
 
-    create(config: ApiConfig) {
+    async create(config: ApiConfig) {
         this.createConfig(config);
-        this.createRoutes();
+        await this.createRoutes();
         this.createDocs();
     }
 
@@ -34,10 +37,11 @@ export class RestfulFactory extends RestfulConfigure {
      */
     factoryDocs<T extends INestApplication>(app: T) {
         const docs = Object.values(this._docs)
-            .map((vdoc) => [vdoc.default, ...Object.values(vdoc.apps ?? {})])
+            .map((vdoc) => [vdoc.default, ...Object.values(vdoc.routes ?? {})])
             .reduce((o, n) => [...o, ...n], [])
             .filter((i) => !!i);
 
+        // 添加各个版本的文档
         for (const voption of docs) {
             const { title, description, version, auth, include, tags } = voption!;
             const builder = new DocumentBuilder();
@@ -59,6 +63,9 @@ export class RestfulFactory extends RestfulConfigure {
         }
     }
 
+    /**
+     * 路由模块与注册路由
+     */
     getModuleImports() {
         return [...Object.values(this.modules), RouterModule.register(this.routes)];
     }
@@ -67,67 +74,125 @@ export class RestfulFactory extends RestfulConfigure {
      * 创建文档
      */
     protected createDocs() {
+        /**
+         * 各个版本的配置
+         */
         const versionMaps = Object.entries(this.config.versions);
+        /**
+         * 为各个版本创建文档
+         */
         const vDocs = versionMaps.map(([name, version]) => [
             name,
-            this.getVersionDoc(name, version),
+            this.getDocOption(name, version),
         ]);
         this._docs = Object.fromEntries(vDocs);
+        // 为默认版本创建文档
         const defaultVersion = this.config.versions[this._default];
         // 为默认版本再次生成一个文档
-        this._docs.default = this.getVersionDoc(this._default, defaultVersion, true);
+        this._docs.default = this.getDocOption(this._default, defaultVersion, true);
     }
 
     /**
-     * 获取Version的Open API配置
+     * 创建某一版本的文档
      * @param name
      * @param voption
-     * @param isDefault
+     * @para isDefault
      */
-    protected getVersionDoc(name: string, voption: VersionOption, isDefault = false) {
+    protected getDocOption(name: string, voption: VersionOption, isDefault = false) {
+        // 总体的文档
         const docConfig: APIDocOption = {};
-        // 默认文档配置
+        // 默认文档配置（版本设置的文档，最顶层的文档）
         const defaultDoc = {
             title: voption.title!,
             description: voption.description!,
             tags: voption.tags ?? [],
             auth: voption.auth ?? false,
             version: name,
+            // 文档路径
             path: trim(`${this.config.prefix?.doc}${isDefault ? '' : `/${name}`}`, '/'),
         };
-        // 获取路由文档
-        const versionDoc = isDefault
-            ? this.getAppDoc(defaultDoc, voption.apps ?? [], undefined)
-            : this.getAppDoc(defaultDoc, voption.apps ?? [], name);
-        if (Object.keys(versionDoc).length > 0) {
-            docConfig.apps = versionDoc;
+        // 获取路由的文档（更深层次的文档配置）
+        const routesDoc = isDefault
+            ? this.getRouteDocs(defaultDoc, voption.routes ?? [])
+            : this.getRouteDocs(defaultDoc, voption.routes ?? [], name);
+        if (Object.keys(routesDoc).length > 0) {
+            docConfig.routes = routesDoc;
         }
-        if (!docConfig.apps) {
-            docConfig.default = { ...defaultDoc, include: [] };
+        const routeModules = isDefault 
+            ? this.getRouteModules(voption.routes ?? [])
+            : this.getRouteModules(voption.routes ?? [], name);
+        // 文档所依赖的模块
+        const include = this.filterExcludeModules(routeModules);
+        if (include.length > 0 || !docConfig.routes) {
+            docConfig.default = { ...defaultDoc, include };
         }
         return docConfig;
     }
 
     /**
-     * 获取APP的Open API配置
-     * @param option
-     * @param apps
-     * @param parent
+     * 排除已经添加的模块
+     * @param routeModules
      */
-    protected getAppDoc(
-        option: Omit<SwaggerOption, 'include'>,
-        apps: AppOption[],
-        parent?: string,
-    ) {
-        const docs: { [key: string]: SwaggerOption } = {};
-        for (const app of apps) {
-            docs[app.name] = {
-                ...deepMerge(option, app.doc, 'merge'),
-                tags: Array.from(new Set([...(option.tags ?? []), ...(app.doc?.tags ?? [])])),
-                path: genDocPath(app.path, this.config.prefix?.doc, parent),
-                include: this.getRouteModules([{ ...app, children: app.children ?? [] }], parent),
-            };
+    protected filterExcludeModules(routeModules: Type<any>[]) {
+        const excludeModules: Type<any>[] = [];
+        const excludeNames = Array.from(new Set(this.excludeVersionModules));
+        for (const [name, module] of Object.entries(this._modules)) {
+            if (excludeNames.includes(name)) excludeModules.push(module);
         }
-        return docs;
+        return routeModules.filter(
+            (rmodule) => !excludeModules.find((emodule) => emodule === rmodule),
+        );
+    }
+
+    /**
+     * 生成路由文档
+     * @param option 版本文档配置
+     * @param routes 路由书
+     * @param parent 版本名
+     */
+    protected getRouteDocs(
+        option: Omit<SwaggerOption, 'include'>,
+        routes: RouteOption[],
+        parent?: string,
+    ): Record<string, SwaggerOption> {
+        /**
+         * 合并Doc配置
+         *
+         * @param {Omit<SwaggerOption, 'include'>} vDoc 版本文档配置
+         * @param {RouteOption} route
+         */
+        const mergeDoc = (vDoc: Omit<SwaggerOption, 'include'>, route: RouteOption) => ({
+            ...vDoc,
+            ...route.doc,
+            tags: Array.from(new Set([...(vDoc.tags ?? []), ...(route.doc?.tags ?? [])])),
+            path: genDocPath(route.path, this.config.prefix?.doc, parent),
+            // 路由所需的模块
+            include: this.getRouteModules([route], parent),
+        });
+        let routeDocs: { [key: string]: SwaggerOption } = {};
+
+        // 判断路由是否有除tags之外的其它doc属性
+        const hasAdditional = (doc?: ApiDocSource) =>
+            doc && Object.keys(omit(doc, 'tags')).length > 0;
+
+        for (const route of routes) {
+            const { name, doc, children } = route;
+            const moduleName = parent ? `${parent}.${name}` : name;
+
+            // 加入在版本DOC中排除模块列表
+            if (hasAdditional(doc) || parent) this.excludeVersionModules.push(moduleName);
+
+            // 添加到routeDocs中
+            if (hasAdditional(doc)) {
+                routeDocs[moduleName.replace(`${option.version}.`, '')] = mergeDoc(option, route);
+            }
+            if (children) {
+                routeDocs = {
+                    ...routeDocs,
+                    ...this.getRouteDocs(option, children, moduleName),
+                };
+            }
+        }
+        return routeDocs;
     }
 }

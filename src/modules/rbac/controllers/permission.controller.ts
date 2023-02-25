@@ -18,20 +18,10 @@ const permissions: PermissionChecker[] = [async (ablitiy) => {
   return ablitiy.can(PermissionAction.MANAGE, PermissionEntity.name)
 }]
 
-@ApiTags("权限后台管理")
+@ApiTags("权限管理")
 @ApiBearerAuth()
 @Depends(RbacModule)
-// @Crud(async () => ({
-//   id: "permission",
-//   enabled: [
-//     { name: "list", options: simpleCrudOptions(permissions, { description: "分页查询权限" })},
-//     { name: "detail", options: simpleCrudOptions(permissions, { description: "查看权限详情" }) }
-//   ],
-//   dtos: {
-//     query: QueryPermissionDto
-//   }
-// }))
-@Crud({
+@Crud(async () => ({
   id: "permission",
   enabled: [
     { name: "list", options: simpleCrudOptions(permissions, { description: "分页查询权限" })},
@@ -40,7 +30,17 @@ const permissions: PermissionChecker[] = [async (ablitiy) => {
   dtos: {
     query: QueryPermissionDto
   }
-})
+}))
+// @Crud({
+//   id: "permission",
+//   enabled: [
+//     { name: "list", options: simpleCrudOptions(permissions, { description: "分页查询权限" })},
+//     { name: "detail", options: simpleCrudOptions(permissions, { description: "查看权限详情" }) }
+//   ],
+//   dtos: {
+//     query: QueryPermissionDto
+//   }
+// })
 @Controller("permissions")
 export class PermissionController extends BaseController<PermissionService> { 
   constructor(

@@ -33,7 +33,7 @@ export class AvatarService extends BaseService<AvatarEntity, AvatarRepository> {
     mediaEntity.key = ossKey;
     mediaEntity.ext = extname(ossKey);
     mediaEntity.description = description;
-    console.log("user before")
+    // console.log("user before")
     if (!isNil(user)) {
       mediaEntity.user = await this.userService.detail(user.id)
     };

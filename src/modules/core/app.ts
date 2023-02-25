@@ -4,6 +4,8 @@ import { useContainer } from "class-validator";
 import { Configure } from "./configure";
 import { ConfigStorageOption, CreateOptions } from "./types";
 import { createBootModule } from "../utils/app";
+import { isNil } from "lodash";
+import { RestfulFactory } from "../restful/factory";
 
 export class App {
     /**
@@ -39,6 +41,24 @@ export class App {
         };
         // 执行各个模块的工厂添加到this.config中
         await configure.sync();
+
+        // 创建app中的两个url配置：
+        let appUrl = await configure.get("app.url", undefined);
+        if (isNil(appUrl)) {
+            const host = await configure.get<string>("app.host");
+            const port = await configure.get<number>("app.port");
+            const https = await configure.get<boolean>("app.https");
+            appUrl = (await configure.get<boolean>("app.url", undefined))
+                    ?? `${https ? 'https' : 'http'}://${host!}:${port}`;
+            configure.set("app.url", appUrl);
+        }
+
+        const routePrefix = await configure.get("api.prefix.route", undefined);
+        const apiUrl = isNil(routePrefix) 
+            ? appUrl 
+            : `${appUrl}${routePrefix.length > 0 ? `/${routePrefix}` : routePrefix}`
+        configure.set("app.api", apiUrl);
+
         return configure;
     }
 
@@ -94,6 +114,13 @@ export class App {
             useContainer(this._app.select(BootModule), {
                 fallbackOnErrors: true
             })
+
+            // 如果传入了api，启用open api
+            if (!isNil(await this.configure.get("api"))) {
+                const restful = await this._app.get(RestfulFactory);
+                restful.factoryDocs(this._app)
+            }
+
             // 初始化应用
             if (this._app.getHttpAdapter() instanceof FastifyAdapter) {
                 await this._app.init()

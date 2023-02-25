@@ -53,6 +53,7 @@ export const simpleCrudOptions = (
   return {
     hook: (target, method) => {
       // 手动执行装饰器与装饰器工厂
+      console.log("manual target", target)
       if (permissions) ManualPermission(target, method, permissions);
       if (options) {
         // console.log("options", options);

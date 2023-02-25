@@ -187,11 +187,11 @@ export class Configure {
             // 'replace'数组好像会积极 
             value = deepMerge(value, defaultValue, 'merge')
         }
-        if (key === "database") {
-            console.log("defaultValue", defaultValue);
-            console.log("register", register);
-            console.log("value", value)
-        }
+        // if (key === "database") {
+        //     console.log("defaultValue", defaultValue);
+        //     console.log("register", register);
+        //     console.log("value", value)
+        // }
         if (!isNil(hook)) {
             value = isAsyncFunction(hook) ? await hook(this, value) : hook(this, value);
         }
@@ -236,7 +236,7 @@ export class Configure {
         if (!isNil(name)) await this.syncFactory(name);
         else {
             for (const key in this.factories) {
-                console.log("key", key);
+                // console.log("key", key);
                 await this.syncFactory(key);
             }
         }

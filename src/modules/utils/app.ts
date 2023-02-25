@@ -9,7 +9,7 @@ import { DatabaseModule } from "../database/database.module";
 import { ElasticSearchModule } from "../elastic/elastic-search.module";
 import { QueueModule } from "../queue/queue.module";
 import { RedisModule } from "../redis/redis.module";
-// import { RestfulModule } from "../restful/restful.module";
+import { RestfulModule } from "../restful/restful.module";
 import { mergeMeta, CreateModule, isAsyncFunction } from "../core/helpers";
 import { Configure } from "../core/configure";
 import { MODULE_BUILDER_REGISTER } from "../core/constants";
@@ -17,6 +17,8 @@ import { App } from "../core/app";
 import { Creator, CreatorData } from "../core/types";
 import { TecendOsModule } from "../tencent-os/tecent-os.module";
 import { SmtpModule } from "../smtp/smtp.module";
+import { echoApi } from "../restful/helpers";
+import { RestfulFactory } from "../restful/factory";
 
 /**
  * 构建应用启动模块
@@ -31,7 +33,7 @@ export async function createBootModule(
     const { configure } = params;
     const importModules = [...modules, CoreModule];
     if (configure.has("database")) importModules.push(DatabaseModule);
-    // if (configure.has("api")) importModules.push(RestfulModule);
+    if (configure.has("api")) importModules.push(RestfulModule);
     if (configure.has("redis")) {
         importModules.push(RedisModule);
         if (configure.has("queue")) {
@@ -138,9 +140,13 @@ export async function boot(
     creator: () => Promise<CreatorData>,
 ) {
     const { app } = await creator();
-    // console.log(chalk.red(1234));
-    await app.listen(3100, '127.0.0.1', (err, address) => {
-        console.error("err", err);
-        console.log("address", address)
+    const configure = app.get(Configure);
+    const host = await configure.get<string>("app.host");
+    const port = await configure.get<number>("app.port");
+    await app.listen(port, host, (err, address) => {
+        // 输出文档
+        const configure = app.get(Configure);
+        const rest = app.get(RestfulFactory)
+        echoApi(configure, rest)
     });
 }

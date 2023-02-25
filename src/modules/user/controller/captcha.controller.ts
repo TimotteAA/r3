@@ -8,7 +8,7 @@ import { RegisterPhoneCaptchaDto, RegisterEmailCaptchaDto, LoginPhoneCaptchaDto,
 import { CaptchaJob } from "../queues";
 import { UserModule } from "../user.module";
 
-@ApiTags("用户验证码API")
+@ApiTags("验证码操作")
 @Depends(UserModule)
 @Controller("captcha")
 export class CaptchaController {

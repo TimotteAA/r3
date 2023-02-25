@@ -14,12 +14,12 @@ import { SEND_CAPTCHA_QUEUE, SAVE_MESSAGE_QUEUE } from './constants';
 import { CoreModule } from '../core/core.module';
 
 import * as repoMaps from "./repositorys";
-import * as controllerMaps from './controller';
+// import * as controllerMaps from './controller';
 import * as strategiesMap from './strategies';
 import * as serviceMaps from './services';
 import * as queueMaps from "./queues";
 import * as gatewayMaps from "./gateways";
-import * as manageMaps from "./controller/manage";
+// import * as manageMaps from "./controller/manage";
 import { addEntities } from '../database/helpers';
 import { MediaModule } from '../media/media.module';
 import { ModuleBuilder } from '../core/decorators';
@@ -27,14 +27,14 @@ import { ModuleBuilder } from '../core/decorators';
 
 const services = Object.values(serviceMaps);
 const strategies = Object.values(strategiesMap);
-const controllers = Object.values(controllerMaps);
+// const controllers = Object.values(controllerMaps);
 const queues = Object.values(queueMaps);
 const repos = Object.values(repoMaps)
 const gateways = Object.values(gatewayMaps)
 const entities = [AccessTokenEntity, RefreshTokenEntity, UserEntity, CodeEntity, MessageEntity, MessageReceiveEntity];
 
 @ModuleBuilder(async configure => ({
-    controllers: [...controllers, ...Object.values(manageMaps)],
+    // controllers: [...controllers, ...Object.values(manageMaps)],
     imports: [
         (await addEntities(configure, entities)),
         DatabaseModule.forRepository([...repos]),

@@ -1,7 +1,6 @@
 import { AbilityOptions, AbilityTuple, MongoQuery, SubjectType } from "@casl/ability";
 import { Injectable, OnApplicationBootstrap } from "@nestjs/common";
 import { DataSource, EntityManager, Not, In } from "typeorm";
-import chalk from "chalk";
 import { isNil, omit } from "lodash";
 
 import { PermissionType, Role } from "./types";
@@ -123,7 +122,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
       // 同步模块权限
       await this.syncPermissions(queryRunner.manager);
     } catch (err) {
-      console.log(chalk.red(err), 2222);
+      // console.log(chalk.red(err), 2222);
       await queryRunner.rollbackTransaction();
     } finally {
       await queryRunner.release();

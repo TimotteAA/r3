@@ -38,10 +38,10 @@ const recevierChecker: PermissionChecker = async (ab, ref, request) =>
     "recevied-message"
   )
 
-@ApiTags("前端消息API")
+@ApiTags("消息操作")
 @ApiBearerAuth()
 @Depends(UserModule)
-@Controller("api/messages")
+@Controller("messages")
 export class MessageController {
   constructor(protected messageService: MessageService) {}
 

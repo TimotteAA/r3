@@ -20,26 +20,10 @@ const permissions: PermissionChecker[] = [
 /**
  * 用户后台管理的CRUD
  */
-@ApiTags("用户后台管理")
+@ApiTags("用户管理")
 @ApiBearerAuth()
 @Depends(UserModule)
-// @Crud(async () => ({
-//     id: 'user',
-//     enabled: [
-//         { name: "create", options: simpleCrudOptions(permissions, { summary: "创建用户" }) },
-//         { name: "delete", options: simpleCrudOptions(permissions, { summary: "删除用户，支持批量删除" }) },
-//         { name: "update", options: simpleCrudOptions(permissions, { summary: "更新用户" }) },
-//         { name: "list", options: simpleCrudOptions(permissions, { summary: "分页查询用户" }) },
-//         { name: "detail", options: simpleCrudOptions(permissions, { summary: "用户详情" }) },
-//         { name: "restore", options: simpleCrudOptions(permissions, { summary: "恢复回收站用户" }) }
-//     ],
-//     dtos: {
-//         query: QueryUserDto,
-//         create: CreateUserDto,
-//         update: UpdateUserDto,
-//     },
-// }))
-@Crud({
+@Crud(async () => ({
     id: 'user',
     enabled: [
         { name: "create", options: simpleCrudOptions(permissions, { summary: "创建用户" }) },
@@ -54,7 +38,7 @@ const permissions: PermissionChecker[] = [
         create: CreateUserDto,
         update: UpdateUserDto,
     },
-})
+}))
 @Controller('users')
 export class UserController extends BaseController<UserService> {
     constructor(protected service: UserService) {

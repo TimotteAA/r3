@@ -1,11 +1,11 @@
 import { Param, Body, Controller, Post, Patch, Delete, Get, Query, SerializeOptions, ParseUUIDPipe } from '@nestjs/common';
 import { omit, isNil } from 'lodash';
 import { In, Not, IsNull } from 'typeorm';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 import { PostService } from '../services/post.service';
 import { CreatePostDto, QueryPostDto, UpdatePostDto} from '../dtos';
-import { User } from '@/modules/user/decorators';
+import { GUEST, User } from '@/modules/user/decorators';
 import { UserEntity } from '@/modules/user/entities';
 import { PermissionChecker } from '@/modules/rbac/types';
 import { PermissionAction } from '@/modules/rbac/constants';
@@ -33,15 +33,16 @@ const checkers: Record<"create" | "owner", PermissionChecker> = {
     )
 }
 
-@ApiTags("前台文章api")
+@ApiTags("文章操作")
 @Depends(ContentModule)
-@Controller('api/posts')
+@Controller('posts')
 export class PostController {
     public constructor(protected service: PostService) {}
 
     @ApiOperation({
         summary: "查询文章列表"
     })
+    @GUEST()
     @Get()
     @SerializeOptions({groups: ['post-list']})
     async list(
@@ -59,6 +60,7 @@ export class PostController {
         summary: "查询文章详情"
     })
     @Get(':id')
+    @GUEST()
     @SerializeOptions({ groups: ['post-detail'] })
     async detail(
         @Param('id', new ParseUUIDPipe())
@@ -72,6 +74,7 @@ export class PostController {
     @ApiOperation({
         summary: "发表文章"
     })
+    @ApiBearerAuth()
     @Post()
     @SerializeOptions({groups: ['post-detail']})
     @Permission(checkers.create)
@@ -83,6 +86,7 @@ export class PostController {
         summary: "更新文章"
     })
     @Patch()
+    @ApiBearerAuth()
     @SerializeOptions({groups: ['post-detail']})
     @Permission(checkers.owner)
     async update(@Body() data: UpdatePostDto) {
@@ -93,6 +97,7 @@ export class PostController {
         summary: "删除文章，支持批量删除"
     })
     @Delete()
+    @ApiBearerAuth()
     @SerializeOptions({ groups: ['post-detail'] })
     @Permission(checkers.owner)
     async delete(

@@ -1,28 +1,22 @@
-import { DynamicModule } from "@nestjs/common";
-// import { Configure } from "../core/Configure";
-
+import { ModuleBuilder } from "../core/decorators";
 import { RestfulFactory } from "./factory";
 import { ApiConfig } from "./types";
 
-export class RestfulModule {
-  static async forRoot(config: ApiConfig): Promise<DynamicModule> {
-    const restful = new RestfulFactory();
-    restful.create(config)
-    
-    console.log(restful.getModuleImports())
-    console.log(restful.modules)
-    
+@ModuleBuilder(async (configure) => {
+    const api = await configure.get<ApiConfig>("api");
+    const restful = new RestfulFactory(configure);
+    // 创建路由，创建文档，但是没有输出
+    await restful.create(api);
     return {
-      global: true,
-      imports: restful.getModuleImports(),
-      providers: [
-        {
-          provide: RestfulFactory,
-          useValue: restful
-        }
-      ],
-      module: RestfulModule,
-      exports: [RestfulFactory]
+        global: true,
+        imports: restful.getModuleImports(),
+        providers: [
+            {
+                provide: RestfulFactory,
+                useValue: restful
+            }
+        ],
+        exports: [RestfulFactory]
     }
-  }
-}
+})
+export class RestfulModule {}

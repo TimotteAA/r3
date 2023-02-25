@@ -16,22 +16,10 @@ const permissions: PermissionChecker[] = [
     async ab => ab.can(PermissionAction.MANAGE, CommentEntity.name)
 ]
 
-@ApiTags("文章管理")
+@ApiTags("评论管理")
 @ApiBearerAuth()
 @Depends(ContentModule)
-// @Crud(() => ({
-//     id: "comment",
-//     enabled: [
-//         { name: "list", options: simpleCrudOptions(permissions, { summary: "评论分类列表查询，支持查询某个作者、某篇文章的评论" }) },
-//         { name: "delete", options: simpleCrudOptions(permissions, {
-//             summary: "删除评论，支持批量删除"
-//         }) }
-//     ],
-//     dtos: {
-//         query: ManageCommentQuery
-//     }
-// }))
-@Crud({
+@Crud(() => ({
     id: "comment",
     enabled: [
         { name: "list", options: simpleCrudOptions(permissions, { summary: "评论分类列表查询，支持查询某个作者、某篇文章的评论" }) },
@@ -42,7 +30,19 @@ const permissions: PermissionChecker[] = [
     dtos: {
         query: ManageCommentQuery
     }
-})
+}))
+// @Crud({
+//     id: "comment",
+//     enabled: [
+//         { name: "list", options: simpleCrudOptions(permissions, { summary: "评论分类列表查询，支持查询某个作者、某篇文章的评论" }) },
+//         { name: "delete", options: simpleCrudOptions(permissions, {
+//             summary: "删除评论，支持批量删除"
+//         }) }
+//     ],
+//     dtos: {
+//         query: ManageCommentQuery
+//     }
+// })
 @Controller('comments')
 export class CommentController extends BaseController<CommentService> {
     constructor(protected commentService: CommentService) {

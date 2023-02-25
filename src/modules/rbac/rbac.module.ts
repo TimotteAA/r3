@@ -8,7 +8,7 @@ import * as entityMaps from "./entities";
 import * as repoMaps from "./repository";
 import * as subscriberMaps from "./subscribers";
 import * as serviceMaps from "./services";
-import * as controllerMaps from "./controllers";
+// import * as controllerMaps from "./controllers";
 import { RbacResolver } from "./rbac.resolver";
 import { UserModule } from "../user/user.module";
 import { RbacGuard, RbacWsGuard } from "./guards";
@@ -18,10 +18,10 @@ const entities = Object.values(entityMaps);
 const repos = Object.values(repoMaps);
 const subscribers = Object.values(subscriberMaps);
 const services = Object.values(serviceMaps);
-const controllers = Object.values(controllerMaps);
+// const controllers = Object.values(controllerMaps);
 
 @ModuleBuilder(async configure => ({
-  controllers,
+  // controllers,
   imports: [(await addEntities(configure, entities)), DatabaseModule.forRepository(repos), forwardRef(() => UserModule)],
   providers: [...subscribers, ...services,         
     {

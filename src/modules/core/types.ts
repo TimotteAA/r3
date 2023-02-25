@@ -36,7 +36,8 @@ export interface AppConfig {
      */
     server: boolean;
     /**
-     * 控制台打印的url,默认自动生成
+     * 服务运行的协议+host+port
+     * buildConfigure中生成
      */
     url?: string;
     /**

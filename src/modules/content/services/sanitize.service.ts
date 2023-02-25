@@ -13,6 +13,6 @@ export class SanitizeService {
     };
 
     sanitize(body: string, options?: sanitizeHtml.IOptions) {
-        return sanitizeHtml(body, merge(this.config, options, { arrayMerge: (_d, _s, _o) => _s }));
+        return sanitizeHtml(body, merge(this.config, options ?? {}, { arrayMerge: (_d, _s, _o) => _s }));
     }
 }

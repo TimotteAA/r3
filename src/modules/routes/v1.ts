@@ -1,3 +1,4 @@
+import { Configure } from "../core/configure";
 import { VersionOption } from "../restful/types";
 import * as contentMaps from "@/modules/content/controllers";
 import * as userMaps from "@/modules/user/controller";
@@ -6,32 +7,36 @@ import * as manageContentMaps from "@/modules/content/controllers/manage"
 import * as manageUserMaps from "@/modules/user/controller/manage";
 import * as manageRbacMaps from "@/modules/rbac/controllers";
 
-export const v1: VersionOption = {
-  apps: [
+/**
+ * 文档放在route第一层
+ * controller放在children里
+ */
+export const v1 = async (configure: Configure): Promise<VersionOption> => ({
+  routes: [
       {
           name: 'app',
           path: '/',
           controllers: [],
           doc: {
               title: '应用接口',
-              description: '前端APP应用接口',
+              description: '前端API接口',
               tags: [
                   { name: '文章操作', description: '用户对文章进行的增删查改及搜索等操作' },
                   { name: '分类查询', description: '文章分类列表及详情查询' },
                   { name: '评论操作', description: '用户对评论的增删查操作' },
                   {
-                      name: '账户操作',
-                      description: '用户登录后对账户进行的更改密码,换绑手机号等一系列操作',
+                      name: '验证码操作',
+                      description: '用户发送登录、注册等一系列验证码操作',
                   },
                   { name: 'Auth操作', description: '用户登录,登出,注册,发送找回密码等操作' },
                   {
-                      name: '用户消息操作',
+                      name: '消息操作',
                       description: '用户作为消息发送者和接收者对消息进行增删查改及已读标注等操作',
                   },
-                  {
-                      name: '文件操作',
-                      description: '浏览及下载文件等',
-                  },
+                //   {
+                //       name: '文件操作',
+                //       description: '浏览及下载文件等',
+                //   },
               ],
           },
           children: [
@@ -69,10 +74,10 @@ export const v1: VersionOption = {
                       name: '权限管理',
                       description: '权限为系统硬编码后自动同步到数据库,只能查看',
                   },
-                  {
-                      name: '文件管理',
-                      description: '上传的动态文件管理',
-                  },
+                //   {
+                //       name: '文件管理',
+                //       description: '上传的动态文件管理',
+                //   },
               ],
           },
           children: [
@@ -94,4 +99,4 @@ export const v1: VersionOption = {
           ],
       },
   ],
-};
+});
