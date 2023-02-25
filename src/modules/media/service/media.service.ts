@@ -64,16 +64,17 @@ export class AvatarService extends BaseService<AvatarEntity, AvatarRepository> {
       // console.log("oldMedia", oldMedia)
       // 更新新的entity关系
       // user.avatar = new avatar
-      console.log("relationEntity", relationEntity)
+      // console.log("relationEntity", relationEntity)
       await relationRepo.update(relationEntity.id, {
         [field]: mediaEntity
       } as any)
-      // 删除老的entity
-      await oldMedia.remove()
+
 
       // 到oss中删除
       if (!isNil(oldMedia)) {
         await this.cosService.delete(oldMedia.key);
+        // 删除老的entity
+        await oldMedia.remove()
       }
     } else {
       await AvatarEntity.save(mediaEntity);

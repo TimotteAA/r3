@@ -5,9 +5,9 @@ export type CrudMethod =
     | 'list'
     | 'detail'
     | 'delete'
-    | 'deleteMulti'
+    // | 'deleteMulti'
     | 'restore'
-    | 'restoreMulti'
+    // | 'restoreMulti'
     | 'create'
     | 'update';
 
@@ -34,11 +34,23 @@ export interface CrudMethodOption {
 }
 
 export interface CrudItem {
+    /**
+     * 启用的方法名
+     */
     name: CrudMethod;
+    /**
+     * 方法选项
+     */
     options?: CrudMethodOption;
 }
 
+/**
+ * CRUD装饰器入参
+ */
 export interface CrudOptions {
+    /**
+     * 用于序列化groups的前缀
+     */
     id: string;
     /**
      * 启用的路由方法
@@ -55,7 +67,7 @@ export interface CrudOptions {
 // restful要素：api版本、app前缀、module、docs
 
 /**
- * 单个app的路由项配置
+ * 路由表单独一项配置
  */
 export interface RouteOption {
     /**
@@ -67,11 +79,11 @@ export interface RouteOption {
      */
     path: string;
     /**
-     * 加载的控制器
+     * 加载的路由
      */
     controllers: Type<any>[]
     /**
-     * 路由表
+     * 子路由
      */
     children?: RouteOption[]
     /**
@@ -81,7 +93,7 @@ export interface RouteOption {
 }
 
 /**
- * tag配置对象
+ * 文档tag配置对象
  */
 interface TagOption {
     /**
@@ -99,7 +111,7 @@ interface TagOption {
 }
 
 /**
- * 每个app对应的文档配置：tag、每个路由的描述
+ * 每个route对应的文档配置
  */
 export interface ApiDocSource {
     /**
@@ -122,7 +134,7 @@ export interface ApiDocSource {
 
 
 /**
- * 一个版本配置，可以配置不同的版本app
+ * 一个版本配置，可以配置不同版本的API
  */
 export interface VersionOption extends ApiDocSource {
     /**
