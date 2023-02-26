@@ -24,8 +24,8 @@ const permissions: PermissionChecker[] = [async (ablitiy) => {
 @Crud(async () => ({
   id: "permission",
   enabled: [
-    { name: "list", options: simpleCrudOptions(permissions, { description: "分页查询权限" })},
-    { name: "detail", options: simpleCrudOptions(permissions, { description: "查看权限详情" }) }
+    { name: "list", options: simpleCrudOptions(permissions, "分页查询权限")},
+    { name: "detail", options: simpleCrudOptions(permissions, "查看权限详情") }
   ],
   dtos: {
     query: QueryPermissionDto

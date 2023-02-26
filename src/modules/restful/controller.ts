@@ -16,7 +16,7 @@ export abstract class BaseController<S, P extends ServiceListQueryParams<any> = 
 
     @Get(':id')
     async detail(@Param('id', ParseUUIDPipe) id: string, @Query() options: QueryDetailDto) {
-        console.log("id", id)
+        // console.log("id", id)
         return (this.service as any).detail(id, options.trashed);
     }
 
@@ -34,43 +34,6 @@ export abstract class BaseController<S, P extends ServiceListQueryParams<any> = 
     async delete(@Body() options: DeleteDto) {
         return (this.service as any).delete(options.ids, options.trashed);
     }
-
-    // /**
-    //  * 批量删除
-    //  * @param options 
-    //  * @param param1 
-    //  * @param args 
-    //  */
-    // @Delete()
-    // async deleteMulti(
-    //     @Query()
-    //     options: PaginateOptions & TrashedDto & P,
-    //     @Body()
-    //     { trashed, ids }: DeleteDto,
-    //     ...args: any[]
-    // ) {
-    //     return (this.service as any).deletePaginate(ids, options, trashed);
-    // }
-
-    // @Patch('restore/:item')
-    // async restore(
-    //     @Param('item', new ParseUUIDPipe())
-    //     item: string,
-    //     ...args: any[]
-    // ) {
-    //     return (this.service as any).restore(item);
-    // }
-
-    // @Patch('restore')
-    // async restore(
-    //     @Query()
-    //     options: PaginateOptions & TrashedDto & P,
-    //     @Body()
-    //     { ids }: RestoreDto,
-    //     ...args: any[]
-    // ) {
-    //     return (this.service as any).restore(ids, options);
-    // }
 
     @Patch('restore')
     async restore(

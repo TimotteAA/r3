@@ -21,8 +21,8 @@ const permissions: PermissionChecker[] = [
 @Crud(async () => ({
   id: "message",
   enabled: [
-    { name: "list", options: simpleCrudOptions(permissions, { summary: "消息列表" }) },
-    { name: "delete", options: simpleCrudOptions(permissions, { summary: "删除消息，支持批量删除" }) }
+    { name: "list", options: simpleCrudOptions(permissions, "消息列表") },
+    { name: "delete", options: simpleCrudOptions(permissions, "删除消息，支持批量删除") }
   ],
   dtos: {
     query: ListQueryDto

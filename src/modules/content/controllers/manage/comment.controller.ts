@@ -22,10 +22,8 @@ const permissions: PermissionChecker[] = [
 @Crud(() => ({
     id: "comment",
     enabled: [
-        { name: "list", options: simpleCrudOptions(permissions, { summary: "评论分类列表查询，支持查询某个作者、某篇文章的评论" }) },
-        { name: "delete", options: simpleCrudOptions(permissions, {
-            summary: "删除评论，支持批量删除"
-        }) }
+        { name: "list", options: simpleCrudOptions(permissions, "评论分类列表查询，支持查询某个作者、某篇文章的评论" ) },
+        { name: "delete", options: simpleCrudOptions(permissions, "删除评论，支持批量删除") }
     ],
     dtos: {
         query: ManageCommentQuery

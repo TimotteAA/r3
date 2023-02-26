@@ -108,7 +108,12 @@ export const createRouteModuleTree = (
                         ? await crudRegister(configure)
                         : crudRegister(configure);
                     // 执行路由装饰器 
-                    registerCrud(controller, crudOptions);
+
+                    await registerCrud(controller, crudOptions);
+                    // if (controller.name === "UserController") {
+
+                    //     console.log("hook", crudOptions.hook, controller, name)
+                    // }
                 }
           }
           // 为每个没有自己添加`ApiTags`装饰器的控制器添加Tag

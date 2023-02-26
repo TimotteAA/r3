@@ -18,4 +18,4 @@ export enum PermissionAction {
   MANAGE = "manage"
 }
 
-export const PERMISSION_CHECKERS = "permission_checkers";
+export const PERMISSION_CHECKERS = Symbol("permission_checkers");

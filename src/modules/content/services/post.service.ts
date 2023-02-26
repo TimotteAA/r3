@@ -126,6 +126,7 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
                 throw new InternalServerErrorException(err)
             }
         }
+        console.log("trashed")
         const post = await super.delete(ids, trashed);
 
         return post;

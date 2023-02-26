@@ -24,12 +24,12 @@ const permissions: PermissionChecker[] = [
 @Crud(async () => ({
   id: "role",
   enabled: [
-    { name: "create", options: simpleCrudOptions(permissions, { description: "创建角色" }) },
-    { name: "list", options: simpleCrudOptions(permissions, { description: "分页查询角色" }) },
-    { name: "update", options: simpleCrudOptions(permissions, { description: "更新指定角色" }) },
-    { name: "delete", options: simpleCrudOptions(permissions, { description: "删除角色，支持批量删除" }) },
-    { name: "detail", options: simpleCrudOptions(permissions, { description: "查看角色详情" }) },
-    { name: "restore", options: simpleCrudOptions(permissions, { description: "恢复软删除角色，支持批量恢复" }) }
+    { name: "create", options: simpleCrudOptions(permissions, "创建角色") },
+    { name: "list", options: simpleCrudOptions(permissions, "分页查询角色") },
+    { name: "update", options: simpleCrudOptions(permissions, "更新指定角色") },
+    { name: "delete", options: simpleCrudOptions(permissions, "删除角色，支持批量删除") },
+    { name: "detail", options: simpleCrudOptions(permissions, "查看角色详情") },
+    { name: "restore", options: simpleCrudOptions(permissions, "恢复软删除角色，支持批量恢复") }
   ],
   dtos: {
     query: QueryRoleDto,

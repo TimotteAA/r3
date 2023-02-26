@@ -7,6 +7,6 @@ import { CrudOptionsRegister } from '../types';
 
 export const Crud =
     (factory: CrudOptionsRegister) =>
-    <T extends BaseController<any>>(Target: Type<T>) => {
+    <T extends BaseController<any>>(Target: Type<T>) => 
         Reflect.defineMetadata(CRUD_OPTIONS_REGISTER, factory, Target);
-    };
+    

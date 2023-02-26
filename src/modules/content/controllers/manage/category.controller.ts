@@ -22,12 +22,12 @@ const permissions: PermissionChecker[] = [
 @Crud(async () => ({
     id: 'category',
     enabled: [
-        { name: "create", options: simpleCrudOptions(permissions, {summary: "创建分类"}) },
-        { name: "delete", options: simpleCrudOptions(permissions, {summary: "删除分类，支持批量删除与软删除"}) },
-        { name: "update", options: simpleCrudOptions(permissions, {summary: "更新分类"}) },
-        { name: "list", options: simpleCrudOptions(permissions, {summary: "查询分类分页列表"}) },
-        { name: "detail", options: simpleCrudOptions(permissions, {summary: "查询分类详情"}) },
-        { name: "restore", options: simpleCrudOptions(permissions, {summary: "恢复软删除分类"}) },
+        { name: "create", options: simpleCrudOptions(permissions, "创建分类") },
+        { name: "delete", options: simpleCrudOptions(permissions, "删除分类，支持批量删除与软删除") },
+        { name: "update", options: simpleCrudOptions(permissions, "更新分类") },
+        { name: "list", options: simpleCrudOptions(permissions, "查询分类分页列表") },
+        { name: "detail", options: simpleCrudOptions(permissions, "查询分类详情") },
+        { name: "restore", options: simpleCrudOptions(permissions, "恢复软删除分类") },
     ],
     dtos: {
         create: CreateCategoryDto,

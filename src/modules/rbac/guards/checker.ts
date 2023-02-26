@@ -20,23 +20,20 @@ type CheckerParams = {
 }
 
 export const getCheckers = (context: ExecutionContext, reflector: Reflector) => {
-  console.log("class", context.getClass().prototype);
-  console.log("name", context.getHandler().name)
-  const crudCheckers = Reflect.getMetadata(
-    PERMISSION_CHECKERS,
-    context.getClass().prototype,
-    context.getHandler().name
-  );
-  // 定义在类上的默认值
-  const defaultCheckers = reflector.getAllAndOverride<PermissionChecker[]>(
-    PERMISSION_CHECKERS,
-    [
-      context.getClass(),
-      context.getHandler()
-    ]
-  );
-  // console.log(crudCheckers, defaultCheckers)
-  return crudCheckers ?? defaultCheckers;
+    console.log("class", context.getClass());
+    console.log("name", context.getHandler().name)
+    const crudCheckers = Reflect.getMetadata(
+        PERMISSION_CHECKERS,
+        context.getClass().prototype,
+        context.getHandler().name,
+        // "list"
+    ) as PermissionChecker[];
+    const defaultCheckers = reflector.getAllAndOverride<PermissionChecker[]>(PERMISSION_CHECKERS, [
+        context.getHandler(),
+        context.getClass(),
+    ]);
+    console.log(crudCheckers, defaultCheckers)
+    return crudCheckers ?? defaultCheckers;
 }
 
 /**

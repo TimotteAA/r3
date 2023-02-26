@@ -1,4 +1,4 @@
-import { ListQueryDto } from '@/modules/restful/dto';
+import { DeleteDto, ListQueryDto, RestoreDto } from '@/modules/restful/dto';
 import { NotFoundException, SerializeOptions, Type } from '@nestjs/common';
 import { Get, Post, Delete, Patch } from '@nestjs/common';
 import { isNil } from 'lodash';
@@ -28,16 +28,17 @@ export const registerCrud = async <T extends BaseController<any>>(
   
     // 添加参数、路径装饰器、序列化选项、是否允许匿名访问等
     for (const { name, options = {} } of methods) {
-        if (isNil(Object.getOwnPropertyDescriptor(Target.prototype, name))) {
-            // 没实现的方法，默认继承的方法，descriptor为null，需要从父类获得并继承
-            const descriptor = Object.getOwnPropertyDescriptor(BaseController.prototype, name);
-  
+        // 自己的描述符
+        const baseDescriptor = Object.getOwnPropertyDescriptor(BaseController.prototype, name);
+        if (!isNil(baseDescriptor)) {
+            let descriptor = Object.getOwnPropertyDescriptor(Target.prototype, name);
+            descriptor = isNil(descriptor) ? baseDescriptor : descriptor;
             Object.defineProperty(Target.prototype, name, {
                 ...descriptor,
-                async value(...args: any[]) {
-                    return descriptor.value.apply(this, args)
-                }
-            })
+                [name]: async function(...args: any[]) {
+                    return descriptor.value.apply(this, args);
+                },
+            });
         }
   
         const descriptor = Object.getOwnPropertyDescriptor(Target.prototype, name);
@@ -74,6 +75,10 @@ export const registerCrud = async <T extends BaseController<any>>(
                 name
             )
             ApiQuery({ type: dtos.query })(Target, name, descriptor)
+        } else if (name === "delete") {
+            ApiBody({type: DeleteDto })(Target, name, descriptor)
+        } else if (name === "restore") {
+            ApiBody({type: RestoreDto})(Target, name, descriptor)
         }
   
         if (options.allowGuest) {
@@ -93,6 +98,9 @@ export const registerCrud = async <T extends BaseController<any>>(
         }
         SerializeOptions(serialize)(Target, name, descriptor);
         // 添加路由装饰器
+        if (Target.name === "UserController") {
+            // console.log(name)
+        }
         switch (name) {
             case 'list':
                 Get()(Target, name, descriptor);
@@ -109,11 +117,17 @@ export const registerCrud = async <T extends BaseController<any>>(
             case 'delete':
                 Delete()(Target, name, descriptor);
                 break;
+            case "restore":
+                Patch("restore")(Target, name, descriptor);
+                break;
             default:
                 break;
         }
         
         if (!isNil(options.hook)) {
+            // if (Target.name === "UserController") {
+            //     console.log(123154, name, options.hook.toString())
+            // }
             options.hook(Target, name);
         }
     } 
