@@ -2,6 +2,7 @@ import { Configure } from "../core/configure";
 import { VersionOption } from "../restful/types";
 import * as contentMaps from "@/modules/content/controllers";
 import * as userMaps from "@/modules/user/controller";
+import * as actionMaps from '@/modules/actions/controllers'
 
 import * as manageContentMaps from "@/modules/content/controllers/manage"
 import * as manageUserMaps from "@/modules/user/controller/manage";
@@ -21,35 +22,39 @@ export const v1 = async (configure: Configure): Promise<VersionOption> => ({
               title: '应用接口',
               description: '前端API接口',
               tags: [
-                  { name: '文章操作', description: '用户对文章进行的增删查改及搜索等操作' },
-                  { name: '分类查询', description: '文章分类列表及详情查询' },
-                  { name: '评论操作', description: '用户对评论的增删查操作' },
-                  {
-                      name: '验证码操作',
-                      description: '用户发送登录、注册等一系列验证码操作',
-                  },
-                  { name: 'Auth操作', description: '用户登录,登出,注册,发送找回密码等操作' },
-                  {
-                      name: '消息操作',
-                      description: '用户作为消息发送者和接收者对消息进行增删查改及已读标注等操作',
-                  },
-                //   {
-                //       name: '文件操作',
-                //       description: '浏览及下载文件等',
-                //   },
+                    { name: '文章操作', description: '用户对文章进行的增删查改及搜索等操作' },
+                    { name: '分类查询', description: '文章分类列表及详情查询' },
+                    { name: '评论操作', description: '用户对评论的增删查操作' },
+                    {
+                        name: '验证码操作',
+                        description: '用户发送登录、注册等一系列验证码操作',
+                    },
+                    { name: 'Auth操作', description: '用户登录,登出,注册,发送找回密码等操作' },
+                    {
+                        name: '消息操作',
+                        description: '用户作为消息发送者和接收者对消息进行增删查改及已读标注等操作',
+                    },
+                    {
+                        name: "action操作", description: "对文章、评论点赞或不喜欢"
+                    }
               ],
           },
           children: [
-              {
-                  name: 'content',
-                  path: 'content',
-                  controllers: Object.values(contentMaps),
-              },
-              {
-                  name: 'user',
-                  path: '',
-                  controllers: Object.values(userMaps),
-              }
+                {
+                    name: 'content',
+                    path: 'content',
+                    controllers: Object.values(contentMaps),
+                },
+                {
+                    name: 'user',
+                    path: '',
+                    controllers: Object.values(userMaps),
+                },
+                {
+                    name: "action",
+                    path: "",
+                    controllers: Object.values(actionMaps)
+                }
           ],
       },
       {

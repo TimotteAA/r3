@@ -2,15 +2,13 @@ import { ModuleMetadata } from '@nestjs/common';
 import { PostService, SanitizeService, CommentService, CategoryService, ElasticSearchService } from './services';
 import { DatabaseModule } from '../database/database.module';
 import { PostRepository, CategoryRepository, CommentRepository } from './repositorys';
-import { PostSubscriber } from './subscribers';
+import { PostSubscriber, CommentSubscriber } from './subscribers';
 import { PostEntity, CategoryEntity, CommentEntity } from './entities';
 import { UserModule } from '../user/user.module';
 import { ContentConfig } from './types';
 import { UserService } from '../user/services';
 import { ContentRbac } from './rbac';
 import { addEntities } from '../database/helpers';
-// import * as controllerMaps from './controllers';
-// import * as manageMaps from "./controllers/manage";
 import { ModuleBuilder } from '../core/decorators';
 
 
@@ -30,6 +28,7 @@ import { ModuleBuilder } from '../core/decorators';
         ElasticSearchService,
         CommentService,
         CategoryService,
+        CommentSubscriber
     ];
 
     // const controllers: ModuleMetadata['controllers' ] = [...Object.values(controllerMaps), ...Object.values(manageMaps)]
@@ -37,6 +36,7 @@ import { ModuleBuilder } from '../core/decorators';
     const providers: ModuleMetadata['providers'] = [
         SanitizeService, 
         PostSubscriber, 
+        CommentSubscriber,
         CommentService, 
         CategoryService,
         ElasticSearchService, 

@@ -21,7 +21,9 @@ export const getUserConfig = async <T> (key?: string) => {
  * 对密码hash编码
  */
 export const encrypt = async (password: string) => {
-    return bcrypt.hashSync(password, await getUserConfig("hash"));
+    const hash = await getUserConfig<number>("hash");
+    console.log("hash", hash)
+    return bcrypt.hashSync(password, hash);
 };
 
 /**
@@ -29,6 +31,8 @@ export const encrypt = async (password: string) => {
  * @param password hash后的密码
  */
 export const decrypt = (plainPassword: string, password: string) => {
+    console.log(plainPassword, password);
+    console.log(bcrypt.compareSync(plainPassword, password))
     return bcrypt.compareSync(plainPassword, password);
 };
 

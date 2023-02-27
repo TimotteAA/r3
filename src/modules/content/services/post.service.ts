@@ -52,6 +52,11 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
         // 普通的分页搜索
         const queryOptions = options ?? {};
         const qb = (await this.list(queryOptions, callback)) as SelectQueryBuilder<PostEntity>;
+        
+        // const res = await qb.getMany();
+        // console.log("res", res)
+        // console.log("sql", qb.getSql())
+
         return paginate(qb, options);
     }
 
@@ -218,6 +223,10 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
         if (!isNil(category)) {
             qb = await this.filterPostsByCategories(qb, category);
         }
+        // console.log(customOrder, isPublished, category, search, trashed, author);
+
+
+
         return qb;
     }
 

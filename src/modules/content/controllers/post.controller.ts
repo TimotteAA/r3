@@ -108,33 +108,35 @@ export class PostController {
     }
 }
 
-const queryPublished = (isPublished?: boolean) => {
-    if (typeof isPublished === 'boolean') {
-        return isPublished ? { publishedAt: Not(IsNull()) } : { publishedAt: IsNull() };
-    }
-    return {};
-};
+// const queryPublished = (isPublished?: boolean) => {
+//     if (typeof isPublished === 'boolean') {
+//         return isPublished ? { publishedAt: Not(IsNull()) } : { publishedAt: IsNull() };
+//     }
+//     return {};
+// };
 
 const queryListCallback: (
     options: QueryPostDto,
-    author: ClassToPlain<UserEntity>,
+    author: ClassToPlain<UserEntity>
 ) => QueryHook<PostEntity> = (options, author) => async (qb) => {
     // console.log("author", author)
     if (!isNil(author)) {
         if (isNil(options.author)) {
             // 没有指定查询的用户：自己的所有文章与别人发布的文章
             return qb
-                .where({ author: author.id, ...queryPublished(options.isPublished) })
-                .orWhere({ publishedAt: Not(IsNull()) });
+                // .where({ author: author.id, ...queryPublished(options.isPublished) })
+                .where({ author: author.id })
+                // .orWhere({ publishedAt: Not(IsNull()) });
         }
         // 指定了文章的作者id
         return qb.where({
             author: options.author,
-            ...queryPublished(options.isPublished)
+            // ...queryPublished(options.isPublished)
         })
     }
     // 未登录
-    return qb.where({ publishedAt: Not(IsNull()) });
+    // return qb.where({ publishedAt: Not(IsNull()) });
+    return qb
 };
 
 /**

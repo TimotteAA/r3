@@ -67,4 +67,22 @@ export class CommentEntity extends BaseEntity {
         nullable: false
     })
     author!: UserEntity;
+
+    /**
+     * 点赞数
+     */
+    @Expose()
+    likeCounts: number = 0;
+
+    /**
+     * 点赞者
+     */
+    @Expose()
+    likers: UserEntity[] = [];
+
+    /**
+     * 讨厌数
+     */
+    @Expose()
+    hateCounts: number = 0;
 }

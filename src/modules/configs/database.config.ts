@@ -10,12 +10,12 @@ export const database = createDbConfig((register) => {
             {
                 type: 'mysql',
                 host: register.env("DB_HOST"),
-                port: register.env("DB_PORT", 3306),
+                port: register.env("DB_PORT", 3307),
                 username:  register.env("DB_USER"),
                 password: register.env("DB_AUTH"),
                 database: register.env("DB_DATABASE"),
                 // // 开发环境自动同步
-                // synchronize: true,
+                synchronize: true,
                 // // 自动加载entities
                 // autoLoadEntities: true,
             }

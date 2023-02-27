@@ -102,4 +102,22 @@ export class PostEntity extends BaseEntity {
     @Type(() => Date)
     @DeleteDateColumn()
     deletedAt!: Date;
+
+    /**
+     * 点赞数
+     */
+    @Expose()
+    likeCounts: number = 0;
+
+    /**
+     * 点赞者
+     */
+    @Expose()
+    likers: UserEntity[] = [];
+
+    /**
+     * 讨厌数
+     */
+    @Expose()
+    hateCounts: number = 0;
 }

@@ -14,7 +14,7 @@ import { CoreModule } from './modules/core/core.module';
 // import { RestfulFactory } from './modules/restful/factory';
 // import { echoApi } from './modules/restful/helpers';
 import { UserModule } from './modules/user/user.module';
-
+import { ActionModule } from './modules/actions/action.module';
 
 // console.log("初始配置集", configs)
 
@@ -23,7 +23,7 @@ const creator = createApp({
     configs,
     configure: { storage: false },
     // 非核心模块的导入模块
-    modules: [ContentModule, MediaModule, UserModule, RbacModule, CoreModule],
+    modules: [ContentModule, MediaModule, UserModule, RbacModule, CoreModule, ActionModule],
     // 全局的管道、filter、guard等
     globals: { guard: RbacGuard },
     builder: async ({ configure, BootModule }) => {

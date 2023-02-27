@@ -20,6 +20,7 @@ import { PermissionEntity } from '@/modules/rbac/entities/permission.entity';
 import { AvatarEntity } from '@/modules/media/entities';
 import { getUserConfig } from '../helpers';
 import { DynamicRelation } from '@/modules/database/types';
+import { ActionEntity } from '@/modules/actions/entities/action.entity';
 
 const relations = () => getUserConfig<DynamicRelation[]>("relations")
 
@@ -130,4 +131,9 @@ export class UserEntity extends BaseEntity {
     //     cascade: true
     // })
     // medias: MediaEntity[]
+
+    @OneToMany(() => ActionEntity, (action: ActionEntity) => action.user, {
+        cascade: true
+    })
+    actions: ActionEntity[]
 }

@@ -36,9 +36,12 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
         if (!event.entity.password) {
             event.entity.password = crypto.randomBytes(11).toString('hex').slice(0, 22);
         }
-
+        
+        const pass = event.entity.password
+        console.log("老子的密码是", event.entity.password)
         // 插入前对entity的密码加密
         event.entity.password = await encrypt(event.entity.password);
+        console.log(await encrypt(pass))
     }
 
     /**
@@ -51,7 +54,7 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
     async beforeUpdate(event: UpdateEvent<UserEntity>) {
         
         if (!isNil(event.entity) &&  !isNil(event.entity.password)) {
-            event.entity.password = encrypt(event.entity.password)
+            event.entity.password = await encrypt(event.entity.password)
         }
     }
 

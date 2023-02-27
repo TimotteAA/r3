@@ -1,14 +1,12 @@
-import { EventSubscriber, EntitySubscriberInterface, InsertEvent, DataSource, LoadEvent } from 'typeorm';
+import { EventSubscriber, EntitySubscriberInterface, DataSource, LoadEvent } from 'typeorm';
 
 import { TypeAction, TypeStuff } from '@/modules/actions/constants';
 import { ActionEntity } from '@/modules/actions/entities';
-import { PostEntity } from '../entities/post.entity';
-import { SanitizeService } from '../services/sanitize.service';
+import { CommentEntity } from '../entities';
 
 @EventSubscriber()
-export class PostSubscriber implements EntitySubscriberInterface<PostEntity> {
+export class CommentSubscriber implements EntitySubscriberInterface<CommentEntity> {
     constructor(
-        private sanitizeService: SanitizeService, 
         private dataSource: DataSource,
     ) {
         this.dataSource.subscribers.push(this);
@@ -18,17 +16,7 @@ export class PostSubscriber implements EntitySubscriberInterface<PostEntity> {
      * Indicates that this subscriber only listen to Post events.
      */
     listenTo() {
-        return PostEntity;
-    }
-
-    /**
-     * Called before post insertion.
-     */
-    beforeInsert(event: InsertEvent<PostEntity>) {
-        // 对htmk放xss攻击
-        if (event.entity.type === 'html') {
-            event.entity.body = this.sanitizeService.sanitize(event.entity.body);
-        }
+        return CommentEntity;
     }
 
     /**
@@ -36,18 +24,19 @@ export class PostSubscriber implements EntitySubscriberInterface<PostEntity> {
      * @param entity 
      * @param event 
      */
-    async afterLoad(_: PostEntity, event?: LoadEvent<PostEntity>) {
+    async afterLoad(_: CommentEntity, event?: LoadEvent<CommentEntity>) {
         const actionRepo = this.dataSource.getRepository(ActionEntity);
         // 点赞者
         const likers = (await actionRepo.find({
             where: {
                 stuffId: event.entity.id,
-                stuffType: TypeStuff.POST,
+                stuffType: TypeStuff.COMMENT,
                 actionType: TypeAction.UP,
             },
             relations: ['user']
         })).map(item => item.user)
         
+
         event.entity.likers = likers;
         event.entity.likeCounts = likers.length;
 
@@ -55,7 +44,7 @@ export class PostSubscriber implements EntitySubscriberInterface<PostEntity> {
         const [__, disLikers] = await actionRepo.findAndCount({
             where: {
                 stuffId: event.entity.id,
-                stuffType: TypeStuff.POST,
+                stuffType: TypeStuff.COMMENT,
                 actionType: TypeAction.DOWN,
             }
         });
