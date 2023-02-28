@@ -1,6 +1,7 @@
 import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type"
 import { TypeOrmModule } from "@nestjs/typeorm"
+import { Type } from "@nestjs/common";
 import { isNil } from "lodash"
 
 import { Configure } from "../core/configure";
@@ -60,19 +61,19 @@ export const createDbOptions = (configure: Configure, options: DbConfigOptions) 
  * @param register 
  */
 export const createDbConfig: (
-  register: ConfigureRegister<RePartial<DbConfigOptions>>
+    register: ConfigureRegister<RePartial<DbConfigOptions>>
 ) => ConfigureFactory<RePartial<DbConfigOptions>, DbConfig> = (register) => {
-  return {
-    register,
-    defaultRegister: (configure) => ({
-      common: {
-        charset: "utf8mb4",
-        logging: ['error']
-      },
-      connections: []
-    }),
-    hook: (_, value) => createDbOptions(_, value as DbConfigOptions)
-  }
+    return {
+        register,
+        defaultRegister: (configure) => ({
+            common: {
+              charset: "utf8mb4",
+              logging: ['error']
+            },
+            connections: []
+        }),
+        hook: (_, value) => createDbOptions(_, value as DbConfigOptions)
+    }
 }
 
 /**
@@ -81,61 +82,51 @@ export const createDbConfig: (
  * @param dataSource 数据库连接名称
  */
 export const addEntities = async (
-  configure: Configure,
-  entities: EntityClassOrSchema[] = [], 
-  dataSource = "default"
+    configure: Configure,
+    entities: EntityClassOrSchema[] = [], 
+    dataSource = "default"
 ) => {
-  const database = await configure.get<DbConfig>("database");
-  if (isNil(database)) throw new Error("Typeorm没有配置！");
-  // 对应的数据库连接为空
-  // console.log(chalk.red("database"), database);
-  // console.log("entities", entities)
-  const dbConfig = database.connections.find(({name}) => name === dataSource);
-  if (isNil(dbConfig)) throw new Error(`数据库连接${dataSource}不存在`);
+    const database = await configure.get<DbConfig>("database");
+    if (isNil(database)) throw new Error("Typeorm没有配置！");
+    // 对应的数据库连接为空
+    // console.log(chalk.red("database"), database);
+    // console.log("entities", entities)
+    const dbConfig = database.connections.find(({name}) => name === dataSource);
+    if (isNil(dbConfig)) throw new Error(`数据库连接${dataSource}不存在`);
 
-  // 数据库中配置的entities
-  const oldEntities = (dbConfig.entities ?? []) as ObjectLiteral[];
+    // 数据库中配置的entities
+    const oldEntities = (dbConfig.entities ?? []) as ObjectLiteral[];
 
-  const es = await Promise.all(
-    entities.map(async entity => {
-      // 装饰器的动态关联
-      const registerRelation = Reflect.getMetadata(DYNAMIC_RELATIONS, entity);
-      // 判断传入的entity是不是类
-      if ('prototype' in entity && !isNil(registerRelation) && typeof registerRelation === "function") {
-        // 取出relations
-        const relations: DynamicRelation[] = await registerRelation();
-        relations.forEach(({ column, relation, others }) => {
-          // 先加上字段
-          const property = Object.getOwnPropertyDescriptor(entity.prototype, column);
-          if (isNil(property)) {
-            // 字段不存在，加上这个字段
-            Object.defineProperty(entity.prototype, column, {
-              writable: true
-            });
-            // 执行关联关系的属性装饰器
-            relation(entity.prototype, column);
-            // 其余的装饰器
-            if (!isNil(others)) {
-              for (const other of others) {
-                other(entity.prototype, column)
+    const es = await Promise.all(
+      entities.map(async entity => {
+        // 装饰器的动态关联
+        const registerRelation = Reflect.getMetadata(DYNAMIC_RELATIONS, entity);
+        // 判断传入的entity是不是类
+        if ('prototype' in entity && !isNil(registerRelation) && typeof registerRelation === "function") {
+          // 取出relations
+          const relations: DynamicRelation[] = await registerRelation();
+          relations.forEach(({ column, relation, others }) => {
+            // 先加上字段
+            const property = Object.getOwnPropertyDescriptor(entity.prototype, column);
+            if (isNil(property)) {
+              // 字段不存在，加上这个字段
+              Object.defineProperty(entity.prototype, column, {
+                writable: true
+              });
+              // 执行关联关系的属性装饰器
+              relation(entity.prototype, column);
+              // 其余的装饰器
+              if (!isNil(others)) {
+                for (const other of others) {
+                  other(entity.prototype, column)
+                }
               }
             }
-          }
-        })
-      }
-      return entity;
-    })
+          })
+        }
+        return entity;
+      })
   )
-
-  // const res = database.connections.map(c => 
-  //   c.name === dataSource ? {
-  //     ...c,
-  //     entities: [...oldEntities, ...es]
-  //   } :
-  //   c
-  // );
-  // console.log("res", res);
-  // console.log(set(database, "connections", res))
 
   /**
    * 更新数据库配置，添加上entities
@@ -152,6 +143,41 @@ export const addEntities = async (
 
   return TypeOrmModule.forFeature(es, dataSource);
 }
+
+/**
+ * 在模块上注册订阅者
+ * @param configure 配置类实例
+ * @param subscribers 订阅者列表
+ * @param dataSource 数据库连接名称
+ */
+export const addSubscribers = async (
+  configure: Configure,
+  subscribers: Type<any>[] = [],
+  dataSource = 'default',
+) => {
+  const database = await configure.get<DbConfig>('database');
+  if (isNil(database)) throw new Error(`Typeorm have not any config!`);
+  const dbConfig = database.connections.find(({ name }) => name === dataSource);
+  // eslint-disable-next-line prettier/prettier, prefer-template
+  if (isNil(dbConfig)) throw new Error('Database connection named' + dataSource + 'not exists!');
+  const oldSubscribers = (dbConfig.subscribers ?? []) as any[];
+
+  /**
+   * 更新数据库配置,添加上新的订阅者
+   */
+  configure.set(
+      'database.connections',
+      database.connections.map((connection) =>
+          connection.name === dataSource
+              ? {
+                    ...connection,
+                    subscribers: [...oldSubscribers, ...subscribers],
+                }
+              : connection,
+      ),
+  );
+  return subscribers;
+};
 
 /**
  * 处理entity的排序

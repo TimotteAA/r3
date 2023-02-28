@@ -15,4 +15,6 @@ export enum OrderField {
     PUBLISHED = 'publishedAt',
     CUSTOM = 'custom',
     COMMENTCOUNT = 'commentCount',
+    // LIKE = 'likeCounts',
+    // HATE = 'hateCounts'
 }

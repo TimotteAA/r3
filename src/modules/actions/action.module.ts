@@ -4,6 +4,7 @@ import { addEntities } from "../database/helpers";
 import { UserModule } from "../user/user.module";
 import { ActionEntity } from "./entities";
 import { DatabaseModule } from "../database/database.module";
+import { ActionRbac } from "./rbac";
 
 import * as repoMaps from "./repositorys";
 import * as serviceMaps from "./services";
@@ -16,7 +17,8 @@ import * as serviceMaps from "./services";
         DatabaseModule.forRepository(Object.values(repoMaps))
     ],
     providers: [
-        ...Object.values(serviceMaps)
+        ...Object.values(serviceMaps),
+        ActionRbac
     ],
     exports: [
         DatabaseModule.forRepository([...Object.values(repoMaps)]),

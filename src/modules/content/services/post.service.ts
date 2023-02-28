@@ -274,6 +274,14 @@ export class PostService extends BaseService<PostEntity, PostRepository, FindPar
                 qb = qb.orderBy('commentCount', 'ASC');
                 return qb;
             }
+            // case OrderField.LIKE: {
+            //     qb = qb.orderBy("likeCounts", 'ASC');
+            //     return qb;
+            // }
+            // case OrderField.HATE: {
+            //     qb = qb.orderBy("hateCounts", "ASC");
+            //     return qb
+            // }
             default: {
                 qb = qb
                     .orderBy('post.createdAt')

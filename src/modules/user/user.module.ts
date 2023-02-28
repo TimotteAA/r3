@@ -14,16 +14,14 @@ import { SEND_CAPTCHA_QUEUE, SAVE_MESSAGE_QUEUE } from './constants';
 import { CoreModule } from '../core/core.module';
 
 import * as repoMaps from "./repositorys";
-// import * as controllerMaps from './controller';
 import * as strategiesMap from './strategies';
 import * as serviceMaps from './services';
 import * as queueMaps from "./queues";
 import * as gatewayMaps from "./gateways";
-// import * as manageMaps from "./controller/manage";
+
 import { addEntities } from '../database/helpers';
 import { MediaModule } from '../media/media.module';
 import { ModuleBuilder } from '../core/decorators';
-// import { MediaModule } from '../media/media.module';
 
 const services = Object.values(serviceMaps);
 const strategies = Object.values(strategiesMap);

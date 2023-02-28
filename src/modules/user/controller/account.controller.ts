@@ -67,9 +67,11 @@ export class AccountController {
     @GUEST()
     @UseGuards(AuthGuard("github"))
     async googleLogin(@Res() res: FastifyReply) {
+        const apiUrl = await this.configure.get<string>("app.api")
+
         return res.status(302).redirect(`https://github.com/login/oauth/authorize?${stringify({
             client_id: this.configure.env('GITHUB_CLIENT_ID'),
-            redirect_uri: this.configure.env("GITHUB_CALLBACK_URL"),
+            redirect_uri: apiUrl + "/account/github/callback",
             scope: ['user'],
             state: new Date().toString()
         })}`,)
@@ -83,7 +85,7 @@ export class AccountController {
     async googleLoginCallback(@Request() req: FastifyRequest) {
         // console.log("request", req)
         const user = await this.authService.loginGithub(req);
-        return user
+        return { token: await this.authService.createToken(user.id) }
     }
 
     /**

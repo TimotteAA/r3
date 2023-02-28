@@ -161,5 +161,6 @@ export abstract class RestfulConfigure {
                 path: genRoutePath(route.path, this.config.prefix?.route)
             }))
         ];
+
     }
 }

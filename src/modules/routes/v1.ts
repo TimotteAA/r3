@@ -7,6 +7,7 @@ import * as actionMaps from '@/modules/actions/controllers'
 import * as manageContentMaps from "@/modules/content/controllers/manage"
 import * as manageUserMaps from "@/modules/user/controller/manage";
 import * as manageRbacMaps from "@/modules/rbac/controllers";
+import * as manageActionMaps from "@/modules/actions/controllers/manage"
 
 /**
  * 文档放在route第一层
@@ -65,20 +66,24 @@ export const v1 = async (configure: Configure): Promise<VersionOption> => ({
               title: '管理接口',
               description: '后台管理面板接口',
               tags: [
-                  { name: '分类管理', description: '内容模块-文章分类管理' },
-                  { name: '文章管理', description: '内容模块-文章管理' },
-                  { name: '评论管理', description: '内容模块-文章评论管理' },
-                  { name: '用户管理', description: '管理应用的所有用户' },
-                  { name: '消息管理', description: '全局消息管理' },
-                  {
-                      name: '角色管理',
-                      description:
-                          '默认包含super-admin等系统角色角色,但是可以增删查改(系统角色不可操作)',
-                  },
-                  {
-                      name: '权限管理',
-                      description: '权限为系统硬编码后自动同步到数据库,只能查看',
-                  },
+                    { name: '分类管理', description: '内容模块-文章分类管理' },
+                    { name: '文章管理', description: '内容模块-文章管理' },
+                    { name: '评论管理', description: '内容模块-文章评论管理' },
+                    { name: '用户管理', description: '管理应用的所有用户' },
+                    { name: '消息管理', description: '全局消息管理' },
+                    {
+                        name: '角色管理',
+                        description:
+                            '默认包含super-admin等系统角色角色,但是可以增删查改(系统角色不可操作)',
+                    },
+                    {
+                        name: '权限管理',
+                        description: '权限为系统硬编码后自动同步到数据库,只能查看',
+                    },
+                    {
+                        name: "action管理",
+                        description: "对action的管理"
+                    }
                 //   {
                 //       name: '文件管理',
                 //       description: '上传的动态文件管理',
@@ -86,21 +91,26 @@ export const v1 = async (configure: Configure): Promise<VersionOption> => ({
               ],
           },
           children: [
-              {
-                  name: 'content',
-                  path: 'content',
-                  controllers: Object.values(manageContentMaps),
-              },
-              {
-                  name: 'user',
-                  path: '',
-                  controllers: Object.values(manageUserMaps),
-              },
-              {
-                  name: 'rbac',
-                  path: 'rbac',
-                  controllers: Object.values(manageRbacMaps),
-              }
+                {
+                    name: 'content',
+                    path: 'content',
+                    controllers: Object.values(manageContentMaps),
+                },
+                {
+                    name: 'user',
+                    path: '',
+                    controllers: Object.values(manageUserMaps),
+                },
+                {
+                    name: 'rbac',
+                    path: 'rbac',
+                    controllers: Object.values(manageRbacMaps),
+                },
+                {
+                    name: "action",
+                    path: "",
+                    controllers: Object.values(manageActionMaps)
+                }
           ],
       },
   ],

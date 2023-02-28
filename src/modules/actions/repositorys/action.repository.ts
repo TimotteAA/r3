@@ -7,6 +7,6 @@ export class ActionRepository extends BaseRepository<ActionEntity> {
     protected alias = "action";
 
     buildBaseQuery() {
-        return this.createQueryBuilder(this.alias)
+        return this.createQueryBuilder(this.alias).leftJoinAndSelect(`${this.alias}.user`, 'user')
     }
 }

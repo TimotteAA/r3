@@ -9,6 +9,13 @@ import { ActionService } from "../services";
 import { User } from "@/modules/user/decorators";
 import { UserEntity } from "@/modules/user/entities";
 import { ActionModule } from "../action.module";
+import { PermissionChecker } from "@/modules/rbac/types";
+import { PermissionAction } from "@/modules/rbac/constants";
+import { ActionEntity } from "../entities";
+import { Permission } from "@/modules/rbac/decorators";
+
+const permission: PermissionChecker = async (ab) =>
+    ab.can(PermissionAction.CREATE, ActionEntity.name)
 
 @ApiTags("action操作")
 @Depends(ContentModule, UserModule, ActionModule)
@@ -18,11 +25,12 @@ export class ActionController {
     }
     
     @ApiOperation({
-        summary: "对某篇文章的操作"
+        summary: "对某篇文章的action"
     })
     @ApiBearerAuth()
     @Post("posts")
     @SerializeOptions({groups: ['post-detail']})
+    @Permission(permission)
     async actionPost(
         @Body()
         data: CreatePostActionDto,
@@ -33,10 +41,11 @@ export class ActionController {
     }
 
     @ApiOperation({
-        summary: "对某条评论的操作"
+        summary: "对某条评论的action"
     })
     @ApiBearerAuth()
     @Post("comments")
+    @Permission(permission)
     async actionComment(
         @Body()
         data: CreateCommentActionDto,

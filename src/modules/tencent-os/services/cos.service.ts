@@ -18,6 +18,12 @@ export class CosService {
   constructor(config: CosStsOptions) {
     this.config = config;
   }
+
+  // 获得cos实例
+  async getCos() {
+    const cos = await this.setCOS();
+    return cos;
+  }
   
   /**
    * 简单上传文件到cos中

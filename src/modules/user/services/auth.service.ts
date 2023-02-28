@@ -1,22 +1,28 @@
-import { Injectable, Inject, forwardRef, ForbiddenException, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, ForbiddenException, BadRequestException, UnauthorizedException, RequestTimeoutException } from '@nestjs/common';
 import { FastifyRequest, FastifyRequest as Request } from 'fastify';
 import { ExtractJwt } from 'passport-jwt';
 import { isNil, omit } from 'lodash';
 import { JwtModule } from '@nestjs/jwt';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, catchError } from "rxjs";
-import { AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
+import { Repository, SelectQueryBuilder } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import mime from "mime-types";
 
 import { UserService, TokenService } from '../services';
-import { decrypt, encrypt, getUserConfig } from '../helpers';
+import { decrypt, getUserConfig } from '../helpers';
 import { CodeEntity, UserEntity } from '../entities';
-import { Repository, SelectQueryBuilder } from 'typeorm';
 import { getTime } from '@/modules/utils';
 import { PhoneRegisterDto, RegisterDto, EmailRegisterDto, PhoneLoginDto, EmailLoginDto, BoundPhoneDto , BoundEmailDto } from "../dto";
-import { InjectRepository } from '@nestjs/typeorm';
 import { CaptchaType } from '../constants';
 import { UserConfig } from '../types';
 import { Configure } from '@/modules/core/configure';
+import { UserRepository } from '../repositorys';
+import { CosService } from '@/modules/tencent-os/services';
+import { AvatarEntity } from '@/modules/media/entities';
+import { CosStsOptions } from '@/modules/tencent-os/types';
+import { extname } from 'path';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +32,9 @@ export class AuthService {
         @Inject(forwardRef(() => TokenService)) private tokenService: TokenService,
         @InjectRepository(CodeEntity) private codeRepo: Repository<CodeEntity>,
         protected httpService: HttpService,
-        protected configure: Configure
+        protected configure: Configure,
+        protected userRepo: UserRepository,
+        protected cosService: CosService,
     ) {}
     /**
      * localStrategy的用户名验证
@@ -52,7 +60,6 @@ export class AuthService {
      * @returns
      */
     async login(user: UserEntity) {
-        console.log('login in user', user)
         const { accessToken } = await this.tokenService.generateAccessToken(user, getTime());
         // 返回给前端
         return accessToken.value;
@@ -60,13 +67,60 @@ export class AuthService {
 
     async loginGithub(req: FastifyRequest) {
         const { code, error } = (req.query) as any;
-        console.log("code", code);
-        console.log('error', error)
         if (!isNil(error)) throw new UnauthorizedException()
-        const user = await this.getGithubUser(code);
-        console.log("user", user);
+        const { data: gitUser } = await this.getGithubUser(code);
 
-        return {}
+        const username = gitUser.login;
+        const avatarUrl = gitUser.avatar_url;
+        const email = gitUser.email;
+        const nickname = gitUser.name;
+        console.log(gitUser)
+
+        const conditions: Record<string, any> = {};
+        conditions.username = username;
+        if (!isNil(email)) conditions.email = email;
+        if (!isNil(nickname)) conditions.nickname = nickname;
+
+        const exists = await this.userRepo.findOneBy(conditions);
+        const user = isNil(exists) ?
+            await this.userService.create(conditions as any)
+            : exists;
+        
+
+        // 处理用户头像
+        // 用户首次用git登录
+        if (isNil(exists)) {
+            const avatar = new AvatarEntity;
+            const key =  this.cosService.generateKey(avatarUrl);
+            
+            avatar.user = user;
+            avatar.key = key;
+            avatar.description = user.username + "的头像";
+
+            // 获取Buffer
+            const imgFile = await axios.get(avatarUrl, { responseType: 'arraybuffer' });
+            const buffer = Buffer.from(imgFile.data, "utf-8");
+            console.log(avatarUrl);
+            const ext = extname(avatarUrl);
+            console.log("ext", ext)
+            const mimeType = mime.lookup(ext) as string;
+            // const { ext, mime } = await fileTypeFromBuffer(buffer);
+            avatar.ext = ext;
+
+            const cosConfig = await this.configure.get<CosStsOptions>("cos");
+            const cos = await this.cosService.getCos();
+            await cos.putObject({
+                Bucket: cosConfig.bucket, 
+                Region: cosConfig.region,   
+                Key: cosConfig.bucketPrefix + key,             
+                StorageClass: 'MAZ_STANDARD',
+                Body: buffer,
+                ContentEncoding: mimeType,
+              });
+
+            await avatar.save();
+        }
+        return user;
     }
 
     protected async getGithubUser(code: string): Promise<any> {
@@ -82,8 +136,7 @@ export class AuthService {
             })
             .pipe(
                 catchError((error: AxiosError) => {
-                    console.log("error1", error.message)
-                    throw new UnauthorizedException();
+                    throw new RequestTimeoutException("Github连接超时..>.<..，请联系服务器管理员");
                 }),
             ),
           )
@@ -100,12 +153,11 @@ export class AuthService {
             })
             .pipe(
                 catchError((error: AxiosError) => {
-                    console.log("error2", error.message)
-                    throw new UnauthorizedException();
+                    throw new RequestTimeoutException("Github连接超时..>.<..，请联系服务器管理员");
                 }),
             ),
           )
-
+        
         return user;
     }
 
@@ -152,11 +204,11 @@ export class AuthService {
      */
     async register(data: RegisterDto) {
         const { username, password, nickname } = data;
-        const user = new UserEntity();
-        user.username = username;
-        user.password = await encrypt(password);
-        user.nickname = nickname;
-        await user.save();
+        const user = await this.userService.create({
+            username,
+            password,
+            nickname
+        });
         return this.userService.findOneByCredential(user.username);
     }
 

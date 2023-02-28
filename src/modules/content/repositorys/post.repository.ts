@@ -2,6 +2,9 @@ import { PostEntity } from '@/modules/content/entities/post.entity';
 import { CustomRepository } from '@/modules/database/decorators/custom.repository';
 import { CommentEntity } from '../entities';
 import { BaseRepository } from '@/modules/database/crud/repository';
+import { ActionEntity } from '@/modules/actions/entities';
+// import { SelectQueryBuilder } from 'typeorm';
+// import { TypeAction, TypeStuff } from '@/modules/actions/constants';
 
 @CustomRepository(PostEntity)
 export class PostRepository extends BaseRepository<PostEntity> {
@@ -17,6 +20,7 @@ export class PostRepository extends BaseRepository<PostEntity> {
                     .from(CommentEntity, 'c')
                     .where('c.post.id = post.id');
             }, 'commentCount')
-            .loadRelationCountAndMap('post.commentCount', 'post.comments');
+            .loadRelationCountAndMap('post.commentCount', 'post.comments')
+            .leftJoinAndSelect(ActionEntity, "actions", "actions.actionType");
     }
 }
