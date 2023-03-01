@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <input
+            type="text"
+            id="req"
+            name="req"
+            required
+            maxlength="500"
+            size="100"
+            placeholder="请输入图片说明"
+        />
+        <select name="number" id="number" aria-placeholder="请输入图片数量">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+        <select name="size" id="size" aria-placeholder="请输入图片大小">
+            <option value="256x256">256x256</option>
+            <option value="512x512">512x512</option>
+            <option value="1024x1024">1024x1024</option>
+        </select>
+        <button onclick="message()">生成</button>
+        <button onclick="reset()">重置</button>
+        <!-- <div id="message"></div> -->
+        <div id="image-container" style="display: flex;"></div>
+        <script>
+            let es = {
+                close: function(){}
+            }
+            // const el = document.getElementById('message');
+            const imageContainer = document.getElementById("image-container")
+            function message() {
+                const value = document.getElementById("req").value
+                const n = document.getElementById("number").value;
+                const size = document.getElementById("size").value;
+
+                // console.log(value, n, size);
+                // Anime Screenshot of L-chan on Pixiv
+                // Anime Screenshot of メスガキ on Pixiv
+                // anime key visual of Hatsune Miku queen inside a castle trending on Pixiv
+                if(!value || value.length <= 0) return;
+                // el.innerHTML = ""
+                fetch("http://127.0.0.1:3100/api/content/ai/image", {
+                    method: "post",
+                    body: JSON.stringify({
+                        text: value,
+                        n: Number(n),
+                        size,
+                        format: "url"
+                    }),
+                    headers: {
+                        "Content-Type": "application/json",
+                        // 'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                }).then((res) => 
+                    res.json()
+                ).then(res => {
+                    imageContainer.innerHTML = "";
+                    const data = res.data;
+                    for (const url of data) {
+                        // console.log("url", url.url)
+                        const img = new Image;
+                        img.setAttribute("src", url.url);
+                        imageContainer.appendChild(img)
+                    }
+                })
+            }
+            function reset(){
+                document.getElementById("req").value = ""
+                el.innerHTML = ""
+                es.close()
+            }
+        </script>
+    </body>
+</html>

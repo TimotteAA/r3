@@ -5,10 +5,9 @@ import { isNil, omit } from 'lodash';
 import { JwtModule } from '@nestjs/jwt';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, catchError } from "rxjs";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import mime from "mime-types";
 
 import { UserService, TokenService } from '../services';
 import { decrypt, getUserConfig } from '../helpers';
@@ -21,8 +20,6 @@ import { Configure } from '@/modules/core/configure';
 import { UserRepository } from '../repositorys';
 import { CosService } from '@/modules/tencent-os/services';
 import { AvatarEntity } from '@/modules/media/entities';
-import { CosStsOptions } from '@/modules/tencent-os/types';
-import { extname } from 'path';
 
 @Injectable()
 export class AuthService {
@@ -74,7 +71,7 @@ export class AuthService {
         const avatarUrl = gitUser.avatar_url;
         const email = gitUser.email;
         const nickname = gitUser.name;
-        console.log(gitUser)
+        // console.log(gitUser)
 
         const conditions: Record<string, any> = {};
         conditions.username = username;
@@ -97,27 +94,8 @@ export class AuthService {
             avatar.key = key;
             avatar.description = user.username + "的头像";
 
-            // 获取Buffer
-            const imgFile = await axios.get(avatarUrl, { responseType: 'arraybuffer' });
-            const buffer = Buffer.from(imgFile.data, "utf-8");
-            console.log(avatarUrl);
-            const ext = extname(avatarUrl);
-            console.log("ext", ext)
-            const mimeType = mime.lookup(ext) as string;
-            // const { ext, mime } = await fileTypeFromBuffer(buffer);
-            avatar.ext = ext;
-
-            const cosConfig = await this.configure.get<CosStsOptions>("cos");
-            const cos = await this.cosService.getCos();
-            await cos.putObject({
-                Bucket: cosConfig.bucket, 
-                Region: cosConfig.region,   
-                Key: cosConfig.bucketPrefix + key,             
-                StorageClass: 'MAZ_STANDARD',
-                Body: buffer,
-                ContentEncoding: mimeType,
-              });
-
+            avatar.isThird = true;
+            avatar.thirdSrc = avatarUrl;
             await avatar.save();
         }
         return user;
@@ -157,6 +135,8 @@ export class AuthService {
                 }),
             ),
           )
+        
+        // console.log("user", user)
         
         return user;
     }

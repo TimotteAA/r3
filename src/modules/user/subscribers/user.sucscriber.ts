@@ -49,7 +49,6 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
      * @memberof UserSubscriber
      */
     async beforeUpdate(event: UpdateEvent<UserEntity>) {
-        console.log(12312412414)
         if (!isNil(event.entity) &&  !isNil(event.entity.password)) {
             event.entity.password = await encrypt(event.entity.password)
         }
@@ -85,7 +84,11 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
         entity.permissions = permissions;
         entity.avatarSrc = env("DEFAULT_AVATAR");
         if (!isNil(entity.avatar)) {
-            entity.avatarSrc = this.genAvatarSrc(entity.avatar.key);
+            if (entity.avatar.isThird) {
+                entity.avatarSrc = entity.avatar.thirdSrc
+            } else {
+                entity.avatarSrc = this.genAvatarSrc(entity.avatar.key);
+            }
         }
         
     }

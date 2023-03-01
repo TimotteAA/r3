@@ -19,7 +19,7 @@ export class CosService {
     this.config = config;
   }
 
-  // 获得cos实例
+  // 获得cos实例，直接上传
   async getCos() {
     const cos = await this.setCOS();
     return cos;

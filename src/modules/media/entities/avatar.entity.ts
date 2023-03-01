@@ -19,9 +19,9 @@ export class AvatarEntity extends BaseFileEntity {
   @Column({comment: "文件描述"})
   description!: string;
 
-  // @Column({ comment: "是否是第三方授权的头像" })
-  // third?: boolean;
+  @Column({ comment: "是否是第三方授权的头像" })
+  isThird?: boolean;
 
-  // @Column({comment: "第三方授权登录头像地址"})
-  // thirdSrc?: string;
+  @Column({comment: "第三方授权登录头像地址"})
+  thirdSrc?: string;
 }
