@@ -4,7 +4,7 @@ import { FastifyRequest as Request } from "fastify";
 import { UserEntity } from "../user/entities";
 
 import { CrudMethodOption, CrudMethod, CrudOptions } from "@/modules/restful/types";
-import { RoleEntity, PermissionEntity } from "./entities";
+import { RoleEntity, PermissionEntity, MenuEntity } from "./entities";
 
 /**
  * 角色类型：角色名、别名、描述、权限
@@ -13,27 +13,10 @@ export type Role = Pick<ClassToPlain<RoleEntity>, "name" | "label" | "descriptio
   permissions: string[]
 }
 
-type PermissionMenu = {
-  // 权限上两层对应的目录
-  directory: {
-    path: string,
-    name: string,
-    icon?: string,
-    component?: string
-  },
-  // 权限上一层的菜单
-  menu: {
-    path: string,
-    name: string,
-    icon?: string,
-    external?: boolean,
-    component?: string
-  },
-  // 权限第三层本层
-  permission: {
-    name: string,
+export type Menu = Pick<ClassToPlain<MenuEntity>, "name" | "path" | "external"
+  | "component" | "type"> & {
+    children?: Menu[];
   }
-}
 
 /**
  * 权限类型：名称、别名、描述、具体的rule，去掉了casl中的conditions，自定义了conditions
@@ -45,8 +28,6 @@ export type PermissionType<A extends AbilityTuple, C extends MongoQuery> = Pick<
   rule: Omit<RawRuleFrom<A, C>, 'conditions'> & {
     conditions?: (user: ClassToPlain<UserEntity>) => Record<string, any>;
   } 
-} & {
-  menu?: PermissionMenu
 }
 
 /**

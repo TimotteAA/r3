@@ -6,6 +6,7 @@ import { PermissionAction, SystemRoles } from "../rbac/constants";
 import { MessageEntity, UserEntity } from "./entities";
 
 
+
 /**
  * 模块启动时，添加权限与角色
  */

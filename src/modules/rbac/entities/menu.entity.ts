@@ -44,7 +44,8 @@ export class MenuEntity extends BaseEntity {
     component?: string;
 
     @Column({
-        comment: "菜单项的path是否是外链"
+        comment: "菜单项的path是否是外链",
+        default: false
     })
     external?: boolean;
 

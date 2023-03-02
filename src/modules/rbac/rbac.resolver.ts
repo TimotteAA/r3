@@ -3,10 +3,10 @@ import { Injectable, OnApplicationBootstrap } from "@nestjs/common";
 import { DataSource, EntityManager, Not, In } from "typeorm";
 import { isNil, omit } from "lodash";
 
-import { PermissionType, Role } from "./types";
-import { SystemRoles } from "./constants";
+import { PermissionType, Role, Menu } from "./types";
+import { MenuType, SystemRoles } from "./constants";
 import { deepMerge } from "../utils";
-import { PermissionEntity, RoleEntity } from "./entities";
+import { PermissionEntity, RoleEntity, MenuEntity } from "./entities";
 import { getUserConfig } from "../user/helpers";
 import { UserEntity } from "../user/entities";
 import { UserConfig } from "../user/types";
@@ -65,6 +65,43 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
     }
   ]
   
+  /**
+   * 默认菜单
+   */
+  protected _menus: Menu[] = [
+    {
+      name: "首页",
+      path: "/dashboard",
+      component: "/views/dashboard/index.vue",
+      type: MenuType.DIRECTORY
+    },
+    {
+      name: "文档",
+      path: "/document",
+      type: MenuType.DIRECTORY,
+      children: [
+        {
+          name: "nestjs文档",
+          path: "https://nestjs.com/",
+          type: MenuType.MENU,
+          external: true,
+        },
+        {
+          name: "vue文档",
+          path: "https://vuejs.org/",
+          type: MenuType.MENU,
+          external: true,
+        },
+        {
+          name: "react文档",
+          path: "https://reactjs.org/",
+          type: MenuType.MENU,
+          external: true,
+        }
+      ]
+    }
+  ]
+
   constructor(protected dataSource: DataSource) {}
 
   setOptions(options: AbilityOptions<A, C>) {
@@ -81,6 +118,10 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
 
   get permissions() {
     return this._permissions;
+  }
+
+  get menus() {
+    return this._menus;
   }
 
   /**
@@ -107,6 +148,10 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
     })
   }
 
+  addMenus(data: Menu[]) {
+    
+  }
+
   async onApplicationBootstrap() {
     const queryRunner = this.dataSource.createQueryRunner();
     // 连接到数据库
@@ -120,6 +165,8 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
       await this.syncRoles(queryRunner.manager);
       // 同步模块权限
       await this.syncPermissions(queryRunner.manager);
+
+      await this.syncMenus(queryRunner.manager)
 
       await queryRunner.commitTransaction()
 
@@ -234,9 +281,9 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
         }
       });
       if (isNil(old)) {
-        await manager.save(manager.create(PermissionEntity, permission))
+        await manager.save(manager.create(PermissionEntity, omit(permission, ['menu'])))
       } else {
-        await manager.update(PermissionEntity, old.id, permission);
+        await manager.update(PermissionEntity, old.id, omit(permission, ['menu']));
       }
     }
 
@@ -332,6 +379,39 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
           [superRole.id],
           (superUser.roles ?? []).map(({id}) => id) 
         )
+    }
+  }
+
+  protected async syncMenus(manager: EntityManager) {
+    await this.saveMenus(manager, this.menus, null)
+  }
+
+  protected async saveMenus(manager: EntityManager, 
+    menus: Menu[], 
+    parent: MenuEntity | null  
+  ) {
+    for (const menu of menus) {
+      const { children, ...rest } = menu;
+      const old = await manager.findOneBy(MenuEntity, {
+        name: rest.name
+      })
+      if (!isNil(old)) {
+        await manager.update(MenuEntity, old.id, {
+          ...rest,
+          parent
+        })
+      } else {
+        await manager.save(MenuEntity, {
+          ...rest,
+          parent
+        })
+      }
+      const m = await manager.findOneBy(MenuEntity, {
+        name: menu.name
+      });
+      if (!isNil(children) && children.length > 0) {
+        await this.saveMenus(manager, children, m)
+      }
     }
   }
 }
