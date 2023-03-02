@@ -18,12 +18,56 @@ export class UserRbac implements OnModuleInit {
     const resolver = this.moduleRef.get(RbacResolver, { strict: false });
     // 添加权限
     resolver.addPermissions([
-      // 后台权限
+      // 后台权限，主要是利用casl的rule对象
+      // // 直接一个manage管死
+      // {
+      //   name: "system.user.manage",
+      //   rule: {
+      //     action: PermissionAction.MANAGE,
+      //     subject: UserEntity,
+      //   },
+      // },
+      // CRUD按钮权限
       {
-        name: "user.manage",
+        name: "system.user.create",
         rule: {
-          action: PermissionAction.MANAGE,
-          subject: UserEntity,
+          action: PermissionAction.CREATE,
+          subject: UserEntity
+        }
+      },
+      {
+        name: "system.user.update",
+        rule: {
+          action: PermissionAction.UPDATE,
+          subject: UserEntity
+        }
+      },
+      {
+        name: "system.user.delete",
+        rule: {
+          action: PermissionAction.DELETE,
+          subject: UserEntity
+        }
+      },
+      {
+        name: "system.user.restore",
+        rule: {
+          action: PermissionAction.RESTORE,
+          subject: UserEntity
+        }
+      },
+      {
+        name: "system.user.read_detail",
+        rule: {
+          action: PermissionAction.READ_DETAIL,
+          subject: UserEntity
+        }
+      },
+      {
+        name: "system.user.read_list",
+        rule: {
+          action: PermissionAction.READ_LIST,
+          subject: UserEntity
         }
       },
       // 前台权限

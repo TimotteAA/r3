@@ -54,7 +54,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
    */
   protected _permissions: PermissionType<A, C>[] = [
     {
-      name: "system-manage",
+      name: "system.manage",
       label: "系统管理",
       description: "管理整个系统",
       // casl中的两个关键词
@@ -114,15 +114,17 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
     // 开启事务
     await queryRunner.startTransaction();
     // console.log(chalk.red(1231231))
-    await queryRunner.commitTransaction()
 
     try {
       // 同步模块角色
       await this.syncRoles(queryRunner.manager);
       // 同步模块权限
       await this.syncPermissions(queryRunner.manager);
+
+      await queryRunner.commitTransaction()
+
     } catch (err) {
-      // console.log(chalk.red(err), 2222);
+      console.error(err);
       await queryRunner.rollbackTransaction();
     } finally {
       await queryRunner.release();
@@ -238,12 +240,19 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
       }
     }
 
+    // console.log("所有的权限", await manager.find(PermissionEntity))
+
     // 删除冗余权限
     // 去除硬编码的代码中不存在的角色，不可删除系统管理权限
     const toDels: string[] = [];
     for (const item of permissions) {
-      if (!names.includes(item.name) && item.name !== "system-manage") toDels.push(item.name);
+      
+      if (!names.includes(item.name) && item.name !== "system.manage") {
+        toDels.push(item.id);
+        console.log("del", item.name)
+      }
     }
+    console.log("toDels", toDels);
     if (toDels.length > 0) await manager.delete(PermissionEntity, toDels);
 
     // 建立角色到权限的关系
@@ -289,7 +298,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
     // 前面同步过系统权限
     const systemManage = await manager.findOneOrFail(PermissionEntity, {
       where: {
-        name: "system-manage"
+        name: "system.manage"
       }
     });
     await roleRepo
