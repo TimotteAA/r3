@@ -70,7 +70,7 @@ export const v1 = async (configure: Configure): Promise<VersionOption> => ({
                     { name: '文章管理', description: '内容模块-文章管理' },
                     { name: '评论管理', description: '内容模块-文章评论管理' },
                     { name: '用户管理', description: '管理应用的所有用户' },
-                    { name: '消息管理', description: '全局消息管理' },
+                    { name: '消息管理', description: '站内信消息管理' },
                     {
                         name: '角色管理',
                         description:

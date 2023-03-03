@@ -42,7 +42,6 @@ export class RoleService extends BaseService<RoleEntity, RoleRepository>{
   }
 
   async update(data: UpdateRoleDto) {
-    await this.repo.save(omit(data, ['id', 'permissions']))
     // 老的role
     // 删除新的permissions，加入新的
     const role = await this.detail(data.id);
@@ -54,7 +53,7 @@ export class RoleService extends BaseService<RoleEntity, RoleRepository>{
         .of(role)
         .addAndRemove(permissions, role.permissions ?? []);
     }
-    await this.repo.save(role);
+    await this.repo.update(role.id, omit(data, ['permissions']));
     return this.detail(role.id);
   }
 

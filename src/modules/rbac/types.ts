@@ -14,8 +14,9 @@ export type Role = Pick<ClassToPlain<RoleEntity>, "name" | "label" | "descriptio
 }
 
 export type Menu = Pick<ClassToPlain<MenuEntity>, "name" | "path" | "external"
-  | "component" | "type"> & {
+  | "component" | "type" | 'static'> & {
     children?: Menu[];
+    permission?: string;
   }
 
 /**
@@ -24,7 +25,7 @@ export type Menu = Pick<ClassToPlain<MenuEntity>, "name" | "path" | "external"
 export type PermissionType<A extends AbilityTuple, C extends MongoQuery> = Pick<
   ClassToPlain<PermissionEntity<A, C>>,
   'name'
-> & Partial<Pick<ClassToPlain<PermissionEntity<A, C>>, "label" | "description">> & {
+> & Partial<Pick<ClassToPlain<PermissionEntity<A, C>>, "label" | "description" | "customOrder">> & {
   rule: Omit<RawRuleFrom<A, C>, 'conditions'> & {
     conditions?: (user: ClassToPlain<UserEntity>) => Record<string, any>;
   } 

@@ -21,6 +21,7 @@ import { AvatarEntity } from '@/modules/media/entities';
 import { getUserConfig } from '../helpers';
 import { DynamicRelation } from '@/modules/database/types';
 import { ActionEntity } from '@/modules/actions/entities/action.entity';
+import { MenuEntity } from '@/modules/rbac/entities';
 
 const relations = () => getUserConfig<DynamicRelation[]>("relations")
 
@@ -119,7 +120,7 @@ export class UserEntity extends BaseEntity {
     @JoinTable()
     roles!: RoleEntity[]
 
-    @Expose()
+    // @Expose()
     @ManyToMany(() => PermissionEntity, (p: PermissionEntity) => p.users, {
         cascade: true
     })
@@ -136,4 +137,8 @@ export class UserEntity extends BaseEntity {
         cascade: true
     })
     actions: ActionEntity[]
+
+    @Type(() => MenuEntity)
+    @Expose()
+    menus: MenuEntity[];
 }

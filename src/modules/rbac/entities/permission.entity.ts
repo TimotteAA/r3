@@ -36,10 +36,14 @@ export class PermissionEntity<
   @JoinTable()
   roles!: RoleEntity[]
 
-  @OneToOne(() => MenuEntity, (menu) => menu.permission)
+  @Expose()
+  @OneToOne(() => MenuEntity, (menu) => menu.p)
   menu!: MenuEntity
 
   @ManyToMany(() => UserEntity, (user: UserEntity) => user.permissions)
   @JoinTable()
   users!: UserEntity[]
+
+  @Expose()
+  customOrder: number = 0;
 }

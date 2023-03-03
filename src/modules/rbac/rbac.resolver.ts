@@ -61,23 +61,27 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
       rule: {
         action: "manage",
         subject: "all"
-      } as any
+      } as any,
+      customOrder: -1
     }
   ]
   
   /**
-   * 默认菜单
+   * 默认菜单（每个用户都有的菜单）
    */
   protected _menus: Menu[] = [
     {
       name: "首页",
       path: "/dashboard",
-      component: "/views/dashboard/index.vue",
-      type: MenuType.DIRECTORY
+      component: "Layout",
+      type: MenuType.DIRECTORY,
+      static: true,
     },
     {
       name: "文档",
       path: "/document",
+      component: "Layout",
+      static: true,
       type: MenuType.DIRECTORY,
       children: [
         {
@@ -149,7 +153,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
   }
 
   addMenus(data: Menu[]) {
-    
+    this._menus.push(...data);
   }
 
   async onApplicationBootstrap() {
@@ -391,19 +395,39 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
     parent: MenuEntity | null  
   ) {
     for (const menu of menus) {
-      const { children, ...rest } = menu;
+      const { children, permission, ...rest } = menu;
       const old = await manager.findOneBy(MenuEntity, {
         name: rest.name
       })
+
+      // // 权限
+      // const p = await manager.findOneBy(PermissionEntity, {
+      //   name: permission
+      // })
+      // if (isNil(p)) {
+      //   throw new Error(`permission-menu with ${permission} does not exists`)
+      // }
+      // // console.log(menu.name, p);
+
       if (!isNil(old)) {
         await manager.update(MenuEntity, old.id, {
           ...rest,
-          parent
+          parent,
+          p: !isNil(permission) 
+            ? await manager.findOneByOrFail(PermissionEntity, {
+              name: permission
+            }) 
+            : null
         })
       } else {
         await manager.save(MenuEntity, {
           ...rest,
-          parent
+          parent,
+          p: !isNil(permission) 
+          ? await manager.findOneByOrFail(PermissionEntity, {
+            name: permission
+          }) 
+          : null
         })
       }
       const m = await manager.findOneBy(MenuEntity, {

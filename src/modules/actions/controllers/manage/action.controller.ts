@@ -1,6 +1,6 @@
 import { simpleCrudOptions } from "@/modules/rbac/helpers";
 import { BaseController } from "@/modules/restful/controller";
-import { ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { Crud } from "@/modules/restful/decorators";
 import { QueryActionDto } from "../../dtos/manage";
@@ -19,6 +19,7 @@ const permission: PermissionChecker = async (ab) =>
     ab.can(PermissionAction.MANAGE, ActionEntity.name)
 
 @ApiTags("action管理")
+@ApiBearerAuth()
 @Depends(ActionModule, ContentModule, UserModule)
 @Crud(async () => ({
     id: "action",

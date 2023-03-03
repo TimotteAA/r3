@@ -11,9 +11,15 @@ import { MessageEntity } from "../../entities";
 import { MessageService } from "../../services";
 import { UserModule } from "../../user.module";
 
-const permissions: PermissionChecker[] = [
-  async (ab) => ab.can(PermissionAction.MANAGE, MessageEntity.name)
-]
+// const permissions: PermissionChecker[] = [
+//   async (ab) => ab.can(PermissionAction.MANAGE, MessageEntity.name)
+// ]
+
+const permissions: Record<'delete' | 'read_list', PermissionChecker[]> = {
+  delete: [async (ab) => ab.can(PermissionAction.DELETE, MessageEntity.name)],
+  read_list: [async(ab) => ab.can(PermissionAction.READ_LIST, MessageEntity.name)],
+}
+
 
 @ApiTags("消息管理")
 @ApiBearerAuth()
@@ -21,8 +27,8 @@ const permissions: PermissionChecker[] = [
 @Crud(async () => ({
   id: "message",
   enabled: [
-    { name: "list", options: simpleCrudOptions(permissions, "消息列表") },
-    { name: "delete", options: simpleCrudOptions(permissions, "删除消息，支持批量删除") }
+    { name: "list", options: simpleCrudOptions(permissions['read_list'], "消息列表") },
+    { name: "delete", options: simpleCrudOptions(permissions['delete'], "删除消息，支持批量删除") }
   ],
   dtos: {
     query: ListQueryDto

@@ -30,8 +30,8 @@ export class CreateRoleDto {
     message: "角色名称的长度不能超过$constraint1",
     always: true
   })
-  @IsNotEmpty({groups: ['create'], message: "角色名称必须填写"})
   @IsOptional({groups: ['update']})
+  @IsNotEmpty({groups: ['create'], message: "角色名称必须填写"})
   name!: string;
 
   @ApiPropertyOptional({

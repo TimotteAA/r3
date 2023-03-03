@@ -23,7 +23,7 @@ const creator = createApp({
     configs,
     configure: { storage: false },
     // 非核心模块的导入模块
-    modules: [ContentModule, MediaModule, UserModule, RbacModule, CoreModule, ActionModule],
+    modules: [MediaModule, UserModule, RbacModule, CoreModule, ActionModule, ContentModule],
     // 全局的管道、filter、guard等
     globals: { guard: RbacGuard },
     builder: async ({ configure, BootModule }) => {

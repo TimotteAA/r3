@@ -8,6 +8,8 @@ import { UserConfig } from './types';
 import { PostEntity, CommentEntity } from '../content/entities';
 import { App } from '../core/app';
 import { ConfigureFactory, ConfigureRegister } from '../core/types';
+import { UserEntity, MessageEntity } from './entities';
+import { PermissionAction } from '../rbac/constants';
 
 /**
  * 获取user模块的配置
@@ -147,3 +149,62 @@ ConfigureFactory<RePartial<UserConfig>, UserConfig> = (register) => ({
     register,
     defaultRegister: defaultUserConfig
 })
+
+export const addUserPermissions = () => ([
+    {
+        name: "system.user.create",
+        rule: {
+            action: PermissionAction.CREATE,
+            subject: UserEntity
+        }
+    },
+    {
+        name: "system.user.update",
+        rule: {
+            action: PermissionAction.UPDATE,
+            subject: UserEntity
+    }   
+    },
+    {
+        name: "system.user.delete",
+        rule: {
+            action: PermissionAction.DELETE,
+            subject: UserEntity
+        }
+    },
+    {
+        name: "system.user.restore",
+        rule: {
+            action: PermissionAction.RESTORE,
+            subject: UserEntity
+        }
+    },
+    {
+        name: "system.user.read_detail",
+        rule: {
+            action: PermissionAction.READ_DETAIL,
+            subject: UserEntity
+        }
+    },
+    {
+        name: "system.user.read_list",
+        rule: {
+            action: PermissionAction.READ_LIST,
+            subject: UserEntity
+        }
+    },
+    {
+        name: "system.message.read_list",
+        rule: {
+            action: PermissionAction.READ_LIST,
+            subject: MessageEntity
+        }
+    },
+    {
+        name: "system.message.delete",
+        rule: {
+            action: PermissionAction.READ_LIST,
+            subject: MessageEntity
+        }
+    },
+])

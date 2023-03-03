@@ -41,28 +41,6 @@ export class CategoryService extends BaseService<CategoryEntity, CategoryReposit
         return item;
     }
 
-    // /**
-    //  * 删除
-    //  * @param id 
-    //  * @param trashed 
-    //  */
-    // async delete(id: string[], trashed?: boolean) {
-    //     const item = await this.repo.findOneOrFail({
-    //         where: { id },
-    //         relations: ['parent', 'children'],
-    //     });
-    //     // 把子分类提升一级
-    //     if (!isNil(item.children) && item.children.length > 0) {
-    //         const nchildren = [...item.children].map((c) => {
-    //             c.parent = item.parent;
-    //             return item;
-    //         });
-
-    //         await this.repo.save(nchildren);
-    //     }
-    //     return super.delete([id], trashed);
-    // }
-
     async update(data: UpdateCategoryDto) {
         // 新的父分类的entity
         const parent = await this.getParent(data.id, data.parent);

@@ -7,6 +7,7 @@ import { CrudMethodOption } from "@/modules/restful/types";
 import { PermissionAction } from "./constants";
 import { ManualPermission } from "./decorators";
 import { PermissionChecker } from "./types";
+import { PermissionEntity, RoleEntity } from "./entities";
 
 /**
  * 从request中的params或body中得到id或ids字段
@@ -53,6 +54,7 @@ export const simpleCrudOptions = (
   hook: (target, method) => {
       if (permissions) ManualPermission(target, method, permissions);
       if (apiSummary) {
+        // console.log("apiSummary", apiSummary, target.name, method)
         ApiOperation({ summary: apiSummary })(
             target,
             method,
@@ -61,3 +63,70 @@ export const simpleCrudOptions = (
     }
   },
 });
+
+export const addRolePermissions = () => ([
+  {
+      name: "system.role.create",
+      rule: {
+          action: PermissionAction.CREATE,
+          subject: RoleEntity
+      },
+      customOrder: 2
+  },
+  {
+      name: "system.role.update",
+      rule: {
+          action: PermissionAction.UPDATE,
+          subject: RoleEntity,
+          customOrder: 2
+      }   
+  },
+  {
+      name: "system.role.delete",
+      rule: {
+          action: PermissionAction.DELETE,
+          subject: RoleEntity,
+          customOrder: 2
+      }
+  },
+  {
+      name: "system.role.restore",
+      rule: {
+          action: PermissionAction.RESTORE,
+          subject: RoleEntity,
+          customOrder: 2
+      }
+  },
+  {
+      name: "system.role.read_detail",
+      rule: {
+          action: PermissionAction.READ_DETAIL,
+          subject: RoleEntity,
+          customOrder: 2
+      }
+  },
+  {
+      name: "system.role.read_list",
+      rule: {
+          action: PermissionAction.READ_LIST,
+          subject: RoleEntity,
+          customOrder: 2
+      }
+  },
+  {
+      name: "system.permission.read_list",
+      rule: {
+          action: PermissionAction.READ_LIST,
+          subject: PermissionEntity,
+          customOrder: 1
+      }
+  },
+  {
+      name: "system.permission.read_detail",
+      rule: {
+          action: PermissionAction.READ_DETAIL,
+          subject: PermissionEntity,
+          customOrder: 1
+      }
+  }
+]) 
