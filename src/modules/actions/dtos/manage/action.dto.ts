@@ -3,7 +3,9 @@ import { ApiPropertyOptional, OmitType } from "@nestjs/swagger";
 import { CustomDtoValidation } from "@/modules/database/decorators";
 import { ListQueryDto } from "@/modules/restful/dto";
 import { TypeStuff, TypeAction } from "../../constants";
-import { IsEnum, IsOptional } from "class-validator";
+import { IsEnum, IsOptional, IsUUID } from "class-validator";
+import { IsExist } from "@/modules/database/constraints";
+import { CommentEntity, PostEntity } from "@/modules/content/entities";
 
 @CustomDtoValidation({type: "query"})
 export class QueryActionDto extends OmitType(ListQueryDto, ['trashed']) {
@@ -25,5 +27,23 @@ export class QueryActionDto extends OmitType(ListQueryDto, ['trashed']) {
         message: `action必须是${Object.values(TypeAction).join(",")}中的一个`
     })
     @IsOptional()
-    action?: TypeAction
+    action?: TypeAction;
+
+    @IsExist(PostEntity, {
+        message: '文章不存在'
+    })
+    @IsUUID(undefined, {
+        message: "文章ID格式错误"
+    })
+    @IsOptional()
+    post?: string;
+
+    @IsExist(CommentEntity, {
+        message: '评论不存在'
+    })
+    @IsUUID(undefined, {
+        message: "评论ID格式错误"
+    })
+    @IsOptional()
+    comment?: string;
 }

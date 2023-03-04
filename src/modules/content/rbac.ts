@@ -2,7 +2,8 @@ import { Injectable, OnModuleInit } from "@nestjs/common";
 import { ModuleRef } from "@nestjs/core";
 import { RbacResolver } from "../rbac/rbac.resolver";
 import { PermissionAction, SystemRoles } from "../rbac/constants";
-import { CategoryEntity, CommentEntity, PostEntity } from "./entities";
+import { CommentEntity, PostEntity } from "./entities";
+import { addContentMenus, addContentPermissions } from "./helpers";
 
 /**
  * 模块启动时，添加权限与角色
@@ -15,12 +16,14 @@ export class ContentRbac implements OnModuleInit {
     const resolver = this.moduleRef.get(RbacResolver, { strict: false });
     // 添加权限
     resolver.addPermissions([
+      // 前台权限
       {
         name: "post.create",
         rule: {
           action: PermissionAction.CREATE,
           subject: PostEntity,
-        }
+        },
+        customOrder: 55
       },
       {
         name: "post.owner",
@@ -30,14 +33,16 @@ export class ContentRbac implements OnModuleInit {
           conditions: (user) => ({
             "author.id": user.id
           })
-        }
+        },
+        customOrder: 55,
       },
       {
         name: "comment.create",
         rule: {
           action: PermissionAction.CREATE,
           subject: CommentEntity
-        }
+        },
+        customOrder: 55
       },
       {
         name: "comment.owner",
@@ -47,49 +52,29 @@ export class ContentRbac implements OnModuleInit {
           conditions: (user) => ({
             "author.id": user.id
           })
-        }
+        },
+        customOrder: 55,
       },
       // 后台权限：三个Entity的管理
-      {
-        name: "post.manage",
-        rule: {
-          action: PermissionAction.MANAGE,
-          subject: PostEntity
-        }
-      },
-      {
-        name: "comment.manage",
-        rule: {
-          action: PermissionAction.MANAGE,
-          subject: CommentEntity
-        }
-      },
-      {
-        name: "category.manage",
-        rule: {
-          action: PermissionAction.MANAGE,
-          subject: CategoryEntity
-        }
-      }
+      ...addContentPermissions()
     ]);
 
     resolver.addRoles([
+      // 普通用户角色
       {
           name: SystemRoles.USER,
           permissions: [
-              'post.read',
+              // 'post.read',
               'post.create',
               'post.owner',
               'comment.create',
               'comment.owner',
           ],
-      },
-      {
-          name: 'content-manage',
-          label: '内容管理员',
-          description: '管理内容模块',
-          permissions: ['post.manage', 'category.manage', 'comment.manage'],
-      },
-  ]);
+      }
+    ]);
+
+    resolver.addMenus(
+      addContentMenus()
+    )
   }
 }

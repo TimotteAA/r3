@@ -78,55 +78,55 @@ export const addRolePermissions = () => ([
       rule: {
           action: PermissionAction.UPDATE,
           subject: RoleEntity,
-          customOrder: 2
-      }   
+      },
+      customOrder: 2   
   },
   {
       name: "system.role.delete",
       rule: {
           action: PermissionAction.DELETE,
           subject: RoleEntity,
-          customOrder: 2
-      }
+      },
+      customOrder: 2
   },
   {
       name: "system.role.restore",
       rule: {
           action: PermissionAction.RESTORE,
           subject: RoleEntity,
-          customOrder: 2
-      }
+      },
+      customOrder: 2
   },
   {
       name: "system.role.read_detail",
       rule: {
           action: PermissionAction.READ_DETAIL,
           subject: RoleEntity,
-          customOrder: 2
-      }
+      },
+      customOrder: 2
   },
   {
       name: "system.role.read_list",
       rule: {
           action: PermissionAction.READ_LIST,
           subject: RoleEntity,
-          customOrder: 2
-      }
+      },
+      customOrder: 2
   },
   {
       name: "system.permission.read_list",
       rule: {
           action: PermissionAction.READ_LIST,
           subject: PermissionEntity,
-          customOrder: 1
-      }
-  },
+      },
+      customOrder: 1
+    },
   {
       name: "system.permission.read_detail",
       rule: {
           action: PermissionAction.READ_DETAIL,
           subject: PermissionEntity,
-          customOrder: 1
-      }
+      },
+      customOrder: 1
   }
 ]) 

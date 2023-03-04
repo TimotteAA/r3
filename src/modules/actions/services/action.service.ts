@@ -147,7 +147,7 @@ export class ActionService extends BaseService<ActionEntity, ActionRepository, F
     }
 
     protected buildListQuery(qb: SelectQueryBuilder<ActionEntity>, options: FindParams, callback?: QueryHook<ActionEntity>) {
-        const { action, stuffType } = options;
+        const { action, stuffType, post, comment } = options;
         if (!isNil(action)) {
             qb = qb.andWhere(`${this.repo.getAlias()}.actionType = :action`, {
                 action
@@ -158,6 +158,16 @@ export class ActionService extends BaseService<ActionEntity, ActionRepository, F
                 stuffType
             })
         }};
+        if (!isNil(post)) {
+            qb = qb.andWhere(`${this.repo.getAlias()}.stuffId = :post`, {
+                post
+            })
+        }
+        if (!isNil(comment)) {
+            qb = qb.andWhere(`${this.repo.getAlias()}.stuffId = :comment`, {
+                comment
+            })
+        }
         return super.buildListQuery(qb, options, callback)
     }
 }

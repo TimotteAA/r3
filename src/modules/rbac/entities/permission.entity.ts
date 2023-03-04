@@ -45,5 +45,8 @@ export class PermissionEntity<
   users!: UserEntity[]
 
   @Expose()
+  @Column({
+    comment: "权限排列字段"
+  })
   customOrder: number = 0;
 }

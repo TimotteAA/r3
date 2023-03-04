@@ -4,6 +4,7 @@ import { ModuleRef } from "@nestjs/core";
 import { PermissionAction, SystemRoles } from "../rbac/constants";
 import { RbacResolver } from "../rbac/rbac.resolver";
 import { ActionEntity } from "./entities";
+import { addActionMenus, addActionPermissions } from "./helpers";
 
 @Injectable()
 export class ActionRbac implements OnModuleInit {
@@ -20,23 +21,19 @@ export class ActionRbac implements OnModuleInit {
                 rule: {
                     action: PermissionAction.CREATE,
                     subject: ActionEntity.name
-                }
+                },
+                customOrder: 100,
             },
             {
                 name: "comment.action",
                 rule: {
                     action: PermissionAction.CREATE,
                     subject: ActionEntity.name
-                }
+                },
+                customOrder: 100,
             },
             // 后台权限
-            {
-                name: "action.manage",
-                rule: {
-                    action: PermissionAction.MANAGE,
-                    subject: ActionEntity.name
-                }
-            }
+            ...addActionPermissions()
         ])
 
         // 添加角色
@@ -48,12 +45,8 @@ export class ActionRbac implements OnModuleInit {
                 description: "系统默认角色",
                 permissions: ["post.action", "comment.action"]
             },
-            {
-                name: "action-manage",
-                label: "action模块管理",
-                description: "后台管理action",
-                permissions: ['action.manage']
-            }
         ])
+
+        resolver.addMenus(addActionMenus())
     }
 }

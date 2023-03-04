@@ -1,4 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+
 import { PostService } from '../../services/post.service';
 import { QueryPostDto } from '../../dtos';
 import { ManageCreatePostDto, ManageUpdatePostDto } from '../../dtos/manage/post.dto';
@@ -7,18 +9,23 @@ import { BaseController } from "@/modules/restful/controller";
 import { User } from '@/modules/user/decorators';
 import { UserEntity } from '@/modules/user/entities';
 import { PermissionChecker } from '@/modules/rbac/types';
-import { PermissionAction } from '@/modules/rbac/constants';
+import { PermissionAction, ApiActionType } from '@/modules/rbac/constants';
 import { PostEntity } from '../../entities';
 import { simpleCrudOptions } from '@/modules/rbac/helpers';
 import { Permission } from '@/modules/rbac/decorators';
 import { Depends } from '@/modules/restful/decorators';
 import { ContentModule } from '../../content.module';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+
 
 // 文章的后台管理权限
-const permissions: PermissionChecker[] = [
-    async ab => ab.can(PermissionAction.MANAGE, PostEntity.name)
-]
+const permissions: Record<ApiActionType, PermissionChecker[]> = {
+    create: [async (ab) => ab.can(PermissionAction.CREATE, PostEntity.name)],
+    update: [async (ab) => ab.can(PermissionAction.UPDATE, PostEntity.name)],
+    delete: [async (ab) => ab.can(PermissionAction.DELETE, PostEntity.name)],
+    read_list: [async(ab) => ab.can(PermissionAction.READ_LIST, PostEntity.name)],
+    read_detail: [async (ab) => ab.can(PermissionAction.READ_DETAIL, PostEntity.name)],
+    restore: [async (ab) => ab.can(PermissionAction.RESTORE, PostEntity.name)]
+}
 
 @ApiTags("文章管理")
 @ApiBearerAuth()
@@ -26,12 +33,12 @@ const permissions: PermissionChecker[] = [
 @Crud(() => ({
     id: 'post',
     enabled: [
-        { name: "list", options: simpleCrudOptions(permissions, "文章分页查询") },
-        { name: "detail", options: simpleCrudOptions(permissions, "查看文章详情") },
-        { name: "create", options: simpleCrudOptions(permissions, "创建文章") },
-        { name: "update", options: simpleCrudOptions(permissions, "更新文章") },
-        { name: "delete", options: simpleCrudOptions(permissions, "删除文章，支持批量删除") },
-        { name: "restore", options: simpleCrudOptions(permissions, "恢复软删除文章，支持批量恢复")}
+        { name: "list", options: simpleCrudOptions(permissions['read_list'], "文章分页查询") },
+        { name: "detail", options: simpleCrudOptions(permissions['read_detail'], "查看文章详情") },
+        { name: "create", options: simpleCrudOptions(permissions['create'], "创建文章") },
+        { name: "update", options: simpleCrudOptions(permissions['update'], "更新文章") },
+        { name: "delete", options: simpleCrudOptions(permissions['delete'], "删除文章，支持批量删除") },
+        { name: "restore", options: simpleCrudOptions(permissions['restore'], "恢复软删除文章，支持批量恢复")}
     ],
     dtos: {
         query: QueryPostDto,
@@ -49,7 +56,7 @@ export class PostController extends BaseController<PostService> {
     @ApiOperation({
         summary: "发表文章"
     })
-    @Permission(...permissions)
+    @Permission(...permissions['create'])
     @Post()
     async create(@Body() data: ManageCreatePostDto, @User() user: ClassToPlain<UserEntity>) {
         return this.service.create(data, user.id)

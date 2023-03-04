@@ -4,9 +4,11 @@ import { BaseRepository } from "@/modules/database/crud";
 
 @CustomRepository(PermissionEntity)
 export class PermissionRepository extends BaseRepository<PermissionEntity> {
-  protected alias = "permission";
+    protected alias = "permission";
 
-  buildBaseQuery() {
-    return this.createQueryBuilder(this.alias).leftJoinAndSelect(`${this.alias}.roles`, 'roles')
-  }
+    buildBaseQuery() {
+        return this.createQueryBuilder(this.alias)
+            .leftJoinAndSelect(`${this.alias}.roles`, 'roles')
+            .orderBy(`${this.alias}.customOrder`, 'ASC')
+    }
 }

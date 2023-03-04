@@ -31,7 +31,8 @@ export class UserRbac implements OnModuleInit {
         rule: {
           action: PermissionAction.CREATE,
           subject: MessageEntity
-        }
+        },
+        customOrder: 44,
       },
       {
         name: "message.sended-message",
@@ -41,7 +42,8 @@ export class UserRbac implements OnModuleInit {
           conditions: (user) => ({
             "sender.id": user.id
           })
-        }
+        },
+        customOrder: 44,
       },
       {
         name: "message.recevied-message",
@@ -51,17 +53,12 @@ export class UserRbac implements OnModuleInit {
           conditions: (user) => ({
             "receives.receiver.id": user.id
           })
-        }
+        },
+        customOrder: 44,
       }
     ]);
 
     resolver.addRoles([
-      {
-        name: 'user-manage',
-        label: '用户管理员',
-        description: '管理用户',
-        permissions: ['user.manage'],
-      },
       {
         name: SystemRoles.USER,
         label: "系统默认角色",

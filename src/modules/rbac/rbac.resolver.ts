@@ -215,6 +215,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
           description: item.description,
           systemd: true,
         });
+
         await manager.save(role, {
           reload: true
         })
@@ -237,7 +238,7 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
         toDels.push(role.id);
       }
     } 
-    // console.log("toDels", toDels)
+    console.log("toDels role", toDels)
     if (toDels.length > 0) await manager.delete(RoleEntity, toDels);
 
   }
@@ -272,6 +273,8 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
     // 当前所有的权限名
     const names = this.permissions.map(p => p.name);
     // console.log("3", this.permissions)
+
+    
 
     // 同步权限
     for (const item of this.permissions) {
@@ -399,15 +402,6 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
       const old = await manager.findOneBy(MenuEntity, {
         name: rest.name
       })
-
-      // // 权限
-      // const p = await manager.findOneBy(PermissionEntity, {
-      //   name: permission
-      // })
-      // if (isNil(p)) {
-      //   throw new Error(`permission-menu with ${permission} does not exists`)
-      // }
-      // // console.log(menu.name, p);
 
       if (!isNil(old)) {
         await manager.update(MenuEntity, old.id, {

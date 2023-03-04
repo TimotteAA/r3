@@ -33,8 +33,7 @@ export const encrypt = async (password: string) => {
  * @param password hash后的密码
  */
 export const decrypt = (plainPassword: string, password: string) => {
-    console.log(plainPassword, password);
-    console.log(bcrypt.compareSync(plainPassword, password))
+
     return bcrypt.compareSync(plainPassword, password);
 };
 
@@ -156,55 +155,64 @@ export const addUserPermissions = () => ([
         rule: {
             action: PermissionAction.CREATE,
             subject: UserEntity
-        }
+        },
+        customOrder: 3,
     },
     {
         name: "system.user.update",
         rule: {
             action: PermissionAction.UPDATE,
             subject: UserEntity
-    }   
+        },
+        customOrder: 3,   
     },
     {
         name: "system.user.delete",
         rule: {
             action: PermissionAction.DELETE,
             subject: UserEntity
-        }
+        },
+        customOrder: 3,
     },
     {
         name: "system.user.restore",
         rule: {
             action: PermissionAction.RESTORE,
             subject: UserEntity
-        }
+        },
+        customOrder: 3,
     },
     {
         name: "system.user.read_detail",
         rule: {
             action: PermissionAction.READ_DETAIL,
             subject: UserEntity
-        }
+        },
+        customOrder: 3,
     },
     {
         name: "system.user.read_list",
         rule: {
             action: PermissionAction.READ_LIST,
             subject: UserEntity
-        }
+        },
+        customOrder: 3,
     },
+    // 站内信管理
     {
         name: "system.message.read_list",
         rule: {
             action: PermissionAction.READ_LIST,
             subject: MessageEntity
-        }
+        },
+        customOrder: 5,
     },
     {
         name: "system.message.delete",
         rule: {
             action: PermissionAction.READ_LIST,
             subject: MessageEntity
-        }
+        },
+        customOrder: 5,
     },
 ])
