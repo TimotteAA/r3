@@ -7,9 +7,11 @@ import { CustomRepository } from "@/modules/database/decorators";
 @Injectable()
 @CustomRepository(AvatarEntity)
 export class AvatarRepository extends BaseRepository<AvatarEntity> {
-  protected alias = "avatar";
+    protected alias = "avatar";
 
-  buildBaseQuery() {
-    return this.createQueryBuilder(this.alias).orderBy(`${this.alias}.createdAt`, "DESC");
-  }
+    buildBaseQuery() {
+        return this.createQueryBuilder(this.alias)
+              .leftJoinAndSelect(`${this.alias}.user`, "user")
+              .orderBy(`${this.alias}.createdAt`, "ASC");
+    }
 }

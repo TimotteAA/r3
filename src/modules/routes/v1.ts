@@ -3,11 +3,13 @@ import { VersionOption } from "../restful/types";
 import * as contentMaps from "@/modules/content/controllers";
 import * as userMaps from "@/modules/user/controller";
 import * as actionMaps from '@/modules/actions/controllers'
+import * as bannerMaps from "@/modules/media/controllers";
 
 import * as manageContentMaps from "@/modules/content/controllers/manage"
 import * as manageUserMaps from "@/modules/user/controller/manage";
 import * as manageRbacMaps from "@/modules/rbac/controllers";
-import * as manageActionMaps from "@/modules/actions/controllers/manage"
+import * as manageActionMaps from "@/modules/actions/controllers/manage";
+import * as manageMediaMaps from "@/modules/media/controllers/manage";
 
 /**
  * 文档放在route第一层
@@ -37,6 +39,9 @@ export const v1 = async (configure: Configure): Promise<VersionOption> => ({
                     },
                     {
                         name: "action操作", description: "对文章、评论点赞或不喜欢"
+                    },
+                    {
+                        name: "Banner查询", description: "分页查询轮播图"
                     }
               ],
           },
@@ -55,6 +60,11 @@ export const v1 = async (configure: Configure): Promise<VersionOption> => ({
                     name: "action",
                     path: "",
                     controllers: Object.values(actionMaps)
+                },
+                {
+                    name: "banner",
+                    path: "banner",
+                    controllers: Object.values(bannerMaps)
                 }
           ],
       },
@@ -83,11 +93,15 @@ export const v1 = async (configure: Configure): Promise<VersionOption> => ({
                     {
                         name: "action管理",
                         description: "对action的管理"
+                    },
+                    {
+                        name: '文件管理-轮播图管理',
+                        description: '博客首页轮播图管理',
+                    },
+                    {
+                        name: "文件管理-用户头像管理",
+                        description: '用户头像管理'
                     }
-                //   {
-                //       name: '文件管理',
-                //       description: '上传的动态文件管理',
-                //   },
               ],
           },
           children: [
@@ -110,6 +124,11 @@ export const v1 = async (configure: Configure): Promise<VersionOption> => ({
                     name: "action",
                     path: "",
                     controllers: Object.values(manageActionMaps)
+                },
+                {
+                    name: "media",
+                    path: "media",
+                    controllers: Object.values(manageMediaMaps)
                 }
           ],
       },

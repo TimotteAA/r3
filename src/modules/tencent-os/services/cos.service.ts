@@ -30,7 +30,7 @@ export class CosService {
    * @param body 
    * @param mimetype 
    */
-  async upload(file: MultipartFile, key: string, options?: SimpleUploadParams) {
+  async upload(file: MultipartFile, prefix: string, key: string, options?: SimpleUploadParams) {
     const uploadOptions = (options ?? {}) as SimpleUploadParams
     this.cos = await this.setCOS();
     const body = await file.toBuffer();
@@ -40,7 +40,7 @@ export class CosService {
       res = await this.cos.putObject({
         Bucket: this.config.bucket, 
         Region: this.config.region,   
-        Key: this.config.bucketPrefix + key,             
+        Key: prefix + key,             
         StorageClass: 'MAZ_STANDARD',
         Body: body,
         ContentEncoding: mimetype,
@@ -61,13 +61,13 @@ export class CosService {
    * 删除指定key的记录
    * @param key 
    */
-  async delete(key: string) {
+  async delete(prefix: string, key: string) {
     this.cos = await this.setCOS();
     try {
       await this.cos.deleteObject({
         Bucket: this.config.bucket, 
         Region: this.config.region,   
-        Key: this.config.bucketPrefix + key,    
+        Key: prefix + key,    
       })
     } catch (err) {
       console.log(chalk.red(err));

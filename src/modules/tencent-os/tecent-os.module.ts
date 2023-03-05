@@ -25,4 +25,4 @@ import { CosStsOptions, SmsSdkOptions } from "./types";
         CosService
     ]
 }))
-export class TecendOsModule {}
+export class TecentOsModule {}

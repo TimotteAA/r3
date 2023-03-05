@@ -1,4 +1,5 @@
 import { Column, Entity, OneToOne } from "typeorm";
+import { Expose } from "class-transformer";
 
 import { BaseFileEntity } from "./base-file.entity";
 import { UserEntity } from "@/modules/user/entities";
@@ -16,12 +17,15 @@ export class AvatarEntity extends BaseFileEntity {
   })
   user?: UserEntity;
 
+  @Expose()
   @Column({comment: "文件描述"})
   description!: string;
 
-  @Column({ comment: "是否是第三方授权的头像" })
+  @Expose()
+  @Column({ comment: "是否是第三方授权的头像", default: false })
   isThird?: boolean;
 
-  @Column({comment: "第三方授权登录头像地址"})
+  @Expose()
+  @Column({comment: "第三方授权登录头像地址", nullable: true})
   thirdSrc?: string;
 }

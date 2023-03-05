@@ -68,8 +68,9 @@ export const createCosConfig: (
               },
             region: configure.env("COS_REGION"),
             bucket: configure.env("COS_BUCKET", "timotte-1316630864"),
-            // bucker文件路径
-            bucketPrefix: configure.env("COS_KEY_PREFIX")
+            // bucket文件路径
+            avatarPrefix: configure.env("COS_AVATAR_PREFIX"),
+            bannerPrefix: configure.env("COS_BANNER_PREFIX")
         }
     }
 })

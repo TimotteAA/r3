@@ -1,86 +1,74 @@
-import { Injectable } from "@nestjs/common"
+import { Injectable } from "@nestjs/common";
 import { extname } from "path";
 import { isNil } from "lodash";
+import { DataSource, ObjectLiteral } from "typeorm";
 
-import { AvatarRepository } from "../repositorys"
-import { AvatarEntity } from "../entities"
-import { BaseService } from "@/modules/database/crud"
-import { CosService } from "@/modules/tencent-os/services"
-import { CreateFileOptions } from "../types"
-import { DataSource, ObjectLiteral } from "typeorm"
-import { UserService } from "@/modules/user/services";
+import { MediaRepository } from "../repositorys";
+import { BaseFileEntity } from "../entities";
+import { BaseService } from "@/modules/database/crud";
+import { CreateFileOptions } from "../types";
+import { CosService } from "@/modules/tencent-os/services";
 
 @Injectable()
-export class AvatarService extends BaseService<AvatarEntity, AvatarRepository> {
-  constructor(protected repo: AvatarRepository,
-    protected userService: UserService,
-    protected cosService: CosService,
-    protected dataSource: DataSource
-  ) {
-    super(repo)
-  }
-
-  /**
-   * 上传单一文件
-   * @param data 
-   */
-  async upload<E extends ObjectLiteral>(data: CreateFileOptions<E>) {
-    const { file, user, relation, description } = data;
-    const mediaEntity = new AvatarEntity();
-    // oss存储key
-    const ossKey = this.cosService.generateKey(file.filename);
-
-    mediaEntity.key = ossKey;
-    mediaEntity.ext = extname(ossKey);
-    mediaEntity.description = description;
-    // console.log("user before")
-    if (!isNil(user)) {
-      mediaEntity.user = await this.userService.detail(user.id)
-    };
-    // 上传到阿里云oss中
-    const res = await this.cosService.upload(file, ossKey);
-    // console.log(1235661241412);
-    // 处理关联关系: user的avatar
-    if (!isNil(relation)) {
-      const { entity, id } = relation;
-      // 默认别的表，关联到media表的是image字段
-      let field = "image"
-      if (!isNil(relation.field)) field = relation.field;
-      // userRepo
-      const relationRepo = this.dataSource.getRepository(entity)
-      // user entity
-      const relationEntity = await relationRepo.findOneOrFail({
-        where: {
-          id
-        } as any,
-        relations: [field]
-      });
-      // 之前保存的oldMedia
-      const oldMedia = !isNil(relationEntity[field]) ? await this.repo.findOneByOrFail({
-        id: (relationEntity[field] as any).id
-      }) : null;
-      // 先拿到老的再保存新的
-      await AvatarEntity.save(mediaEntity);
-      // console.log("oldMedia", oldMedia)
-      // 更新新的entity关系
-      // user.avatar = new avatar
-      // console.log("relationEntity", relationEntity)
-      await relationRepo.update(relationEntity.id, {
-        [field]: mediaEntity
-      } as any)
-
-
-      // 到oss中删除
-      if (!isNil(oldMedia)) {
-        await this.cosService.delete(oldMedia.key);
-        // 删除老的entity
-        await oldMedia.remove()
-      }
-    } else {
-      await AvatarEntity.save(mediaEntity);
+export class MediaService extends BaseService<BaseFileEntity, MediaRepository> {
+    constructor(
+        protected repo: MediaRepository,
+        protected cosService: CosService,
+        protected dataSource: DataSource
+    ) {
+        super(repo)
     }
     
-    // 返回结果
-    return res;
-  }
+    /**
+     * 上传单张文件
+     * @param data 
+     */
+    async upload<E extends ObjectLiteral>(data: CreateFileOptions<E>, bucketPrefix: string) {
+        const { file, relation } = data;
+        const item = new BaseFileEntity();
+
+        const ossKey = this.cosService.generateKey(file.filename);
+        item.key = ossKey;
+        item.ext = extname(ossKey);
+        item.bucketPrefix = bucketPrefix;
+
+        await BaseFileEntity.save(item);
+        // 上传图片到oss中
+        await this.cosService.upload(file, bucketPrefix, ossKey);
+
+        // 处理关联关系
+        if (!isNil(relation)) {
+            const { entity, id } = relation;
+            // 默认别的表，关联到media表的是image字段
+            let field = "image"
+            if (!isNil(relation.field)) field = relation.field;
+            // userRepo
+            const relationRepo = this.dataSource.getRepository(entity)
+            // user entity
+            const relationEntity = await relationRepo.findOneOrFail({
+              where: {
+                id
+              } as any,
+              relations: [field]
+            });
+            // 老的关联的media
+            const oldMedia = !isNil(relationEntity[field]) ? await this.repo.findOneByOrFail({
+                id: (relationEntity[field] as any).id
+              }) : null;
+
+            // 保存新的
+            await relationRepo 
+                    .createQueryBuilder()
+                    .relation(entity, field)
+                    .of(relationEntity)
+                    .set(item)
+
+            // 处理老的
+            if (!isNil(oldMedia)) {
+                await this.cosService.delete(bucketPrefix, oldMedia.key);
+            }
+        }
+
+        return this.repo.findOneByOrFail({ id: item.id });
+    }   
 }

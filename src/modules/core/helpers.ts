@@ -91,7 +91,9 @@ export const createAppConfig: (configure: ConfigureRegister<Partial<AppConfig>>)
         websockets: true,
         port: configure.env("APP_PORT", toNumber, 3100),
         host: configure.env("APP_HOST", "127.0.0.1"),
-        https: configure.env("APP_HTTPS", toBoolean, false)
+        https: configure.env("APP_HTTPS", toBoolean, false),
+        timezone: configure.env("APP_TIMEZONE", "Asis/Shanghai"),
+        locale: configure.env("APP_LOCALE", 'zh-cn')
     })
 })
 

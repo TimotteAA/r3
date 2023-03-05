@@ -191,7 +191,7 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
      * @param key 
      */
     protected genAvatarSrc(key: string) {
-        const prefix = env("COS_URL_PREFIX");
+        const prefix = env("COS_URL_AVATAR_PREFIX");
         return (prefix + "/" + key).replace("//", '/')
     }
 

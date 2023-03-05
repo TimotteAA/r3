@@ -82,7 +82,7 @@ export class AccountController {
         summary: "github登录回调接口"
     })
     @GUEST()
-    async googleLoginCallback(@Request() req: FastifyRequest) {
+    async githubLoginCallback(@Request() req: FastifyRequest) {
         // console.log("request", req)
         const user = await this.authService.loginGithub(req);
         return { token: await this.authService.createToken(user.id) }

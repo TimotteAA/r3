@@ -15,7 +15,7 @@ import { Configure } from "../core/configure";
 import { MODULE_BUILDER_REGISTER } from "../core/constants";
 import { App } from "../core/app";
 import { Creator, CreatorData } from "../core/types";
-import { TecendOsModule } from "../tencent-os/tecent-os.module";
+import { TecentOsModule } from "../tencent-os/tecent-os.module";
 import { SmtpModule } from "../smtp/smtp.module";
 import { echoApi } from "../restful/helpers";
 import { RestfulFactory } from "../restful/factory";
@@ -40,7 +40,7 @@ export async function createBootModule(
             importModules.push(QueueModule)
         }
     }
-    if (configure.has("sms") || configure.has("cos"))  importModules.push(TecendOsModule)
+    if (configure.has("sms") || configure.has("cos"))  importModules.push(TecentOsModule)
     if (configure.has("elastic")) importModules.push(ElasticSearchModule);
     if (configure.has("smtp")) importModules.push(SmtpModule);
     // 各个模块及其元数据
