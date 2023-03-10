@@ -1,9 +1,10 @@
-import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
+import { ObjectLiteral, SelectQueryBuilder, DataSource, Repository, ObjectType } from "typeorm";
 import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { Type } from "@nestjs/common";
 import { isNil } from "lodash"
 
+import { CUSTOM_REPOSITORY_METADATA } from "./constants";
 import { Configure } from "../core/configure";
 import { DYNAMIC_RELATIONS } from "./constants"
 import { DbConfig, DbConfigOptions, DynamicRelation, OrderQueryType } from "./types"
@@ -158,10 +159,8 @@ export const addSubscribers = async (
   const database = await configure.get<DbConfig>('database');
   if (isNil(database)) throw new Error(`Typeorm have not any config!`);
   const dbConfig = database.connections.find(({ name }) => name === dataSource);
-  // eslint-disable-next-line prettier/prettier, prefer-template
   if (isNil(dbConfig)) throw new Error('Database connection named' + dataSource + 'not exists!');
   const oldSubscribers = (dbConfig.subscribers ?? []) as any[];
-
   /**
    * 更新数据库配置,添加上新的订阅者
    */
@@ -216,3 +215,19 @@ export function getQrderByQuery<E extends ObjectLiteral>(
   }
   return qb.orderBy(`${alias}.${orderBy.name}`, `${orderBy.order}`);
 }
+
+/**
+ * 获取自定义Repository的实例
+ * @param dataSource 数据连接池
+ * @param Repo repository类
+ */
+export const getCustomRepository = <T extends Repository<E>, E extends ObjectLiteral>(
+  dataSource: DataSource,
+  Repo: ClassType<T>,
+): T => {
+  if (isNil(Repo)) return null;
+  const entity = Reflect.getMetadata(CUSTOM_REPOSITORY_METADATA, Repo);
+  if (!entity) return null;
+  const base = dataSource.getRepository<ObjectType<any>>(entity);
+  return new Repo(base.target, base.manager, base.queryRunner) as T;
+};

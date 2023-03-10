@@ -12,17 +12,24 @@ import { CoreModule } from "@/modules/core/core.module";
 import { TecentOsModule } from "@/modules/tencent-os/tecent-os.module";
 import { Configure } from "@/modules/core/configure";
 import { simpleCrudOptions } from "@/modules/rbac/helpers";
+import { PermissionChecker } from "@/modules/rbac/types";
+import { PermissionAction } from "@/modules/rbac/constants";
+import { BannerEntity } from "../../entities";
+
+const permissions: PermissionChecker[] = [
+    async (ab) => ab.can(PermissionAction.MANAGE, BannerEntity.name)
+]
 
 @ApiTags("文件管理-轮播图管理")
 @Depends(MediaModule, CoreModule, TecentOsModule)
 @Crud(async () => ({
     id: "banner",
     enabled: [
-        { name: "create", options: simpleCrudOptions([], "创建新的轮播图") },
-        { name: "update", options: simpleCrudOptions([], "更新指定轮播图") },
-        { name: "detail", options: simpleCrudOptions([], "查看指定轮播图详情") },
-        { name: "list", options: simpleCrudOptions([], "分页查询轮播图") },
-        { name: "delete", options: simpleCrudOptions([], "删除轮播图，支持批量删除") }
+        { name: "create", options: simpleCrudOptions(permissions, "创建新的轮播图") },
+        { name: "update", options: simpleCrudOptions(permissions, "更新指定轮播图") },
+        { name: "detail", options: simpleCrudOptions(permissions, "查看指定轮播图详情") },
+        { name: "list", options: simpleCrudOptions(permissions, "分页查询轮播图") },
+        { name: "delete", options: simpleCrudOptions(permissions, "删除轮播图，支持批量删除") }
     ],
     dtos: {
         create: CreateBannerDto,

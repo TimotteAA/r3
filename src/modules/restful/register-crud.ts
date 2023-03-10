@@ -14,6 +14,7 @@ export const registerCrud = async <T extends BaseController<any>>(
 ) => {
     const { id, enabled, dtos } = options;
     const methods: CrudItem[] = [];
+    // 添加启用的方法
     for (const value of enabled) {            
         // 将字符串改成对象类型
         const item = ((typeof value === "string") ? { name: value } : value) as CrudItem;
@@ -33,9 +34,18 @@ export const registerCrud = async <T extends BaseController<any>>(
         if (!isNil(baseDescriptor)) {
             let descriptor = Object.getOwnPropertyDescriptor(Target.prototype, name);
             descriptor = isNil(descriptor) ? baseDescriptor : descriptor;
+            // 权限有，但文档乱
+            // Object.defineProperty(Target.prototype, name, {
+            //     ...descriptor,
+            //     [name]: async function(...args: any[]) {
+            //         return descriptor.value.apply(this, args);
+            //     },
+            // });
+
+            // 文档对，但权限无
             Object.defineProperty(Target.prototype, name, {
                 ...descriptor,
-                [name]: async function(...args: any[]) {
+                async value(...args: any[]) {
                     return descriptor.value.apply(this, args);
                 },
             });

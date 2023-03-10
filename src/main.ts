@@ -3,7 +3,7 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 
 import { boot, createApp } from '@/modules/utils/app';
 
-import * as configs from "./modules/configs"
+import * as configs from "./configs"
 
 import { ContentModule } from './modules/content/content.module';
 import { MediaModule } from './modules/media/media.module';

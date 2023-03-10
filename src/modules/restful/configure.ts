@@ -13,7 +13,7 @@ export abstract class RestfulConfigure {
     constructor(protected configure: Configure) {}
     
     /**
-     * API配置
+     * Rest模块配置（API配置）
      */
     protected config!: ApiConfig;
 
@@ -33,7 +33,7 @@ export abstract class RestfulConfigure {
     protected _versions: string[] = [];
 
     /**
-     * 自动创建的RouteModule
+     * 根据controller自动创建的RouteModule
      */
     protected _modules: { [key: string]: Type<any> } = {};
 
@@ -74,7 +74,7 @@ export abstract class RestfulConfigure {
                 if (config.default === name) return true;
                 return config.enabled.includes(name);
             })
-            // 合并版本配置与总配置中的title、description、auth
+            // 合并version与总配置（模块配置）中的title、description、auth
             // 清楚path
             .map(([name, version]) => [
                 name,
@@ -134,19 +134,20 @@ export abstract class RestfulConfigure {
                         await createRouteModuleTree(
                             this.configure,
                             this._modules,
-                            version.routes,
+                            version.routes ?? [],
                             name
                         )
                     ).map((route) => ({
                         ...route,
-                        // 生成最后的路径路径
+                        // 添加路由前缀，生成最后的路径
+                        // name是对应的版本
                         path: genRoutePath(route.path, this.config.prefix?.route, name)
                     }))
                 )
             )
         ).reduce((o, n) => [...o, ...n], []);
 
-        // 生成一个默认省略版本号的路由
+        // 生成一个默认省略版本号的路由： /api/xxx
         const defaultVersion = this.config.versions[this._default];
         this._routes = [
             ...this._routes,

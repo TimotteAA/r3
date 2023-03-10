@@ -37,6 +37,7 @@ export class RestfulFactory extends RestfulConfigure {
      */
     factoryDocs<T extends INestApplication>(app: T) {
         const docs = Object.values(this._docs)
+            // 默认的，以及各个版本的路由文档
             .map((vdoc) => [vdoc.default, ...Object.values(vdoc.routes ?? {})])
             .reduce((o, n) => [...o, ...n], [])
             .filter((i) => !!i);
@@ -56,6 +57,7 @@ export class RestfulFactory extends RestfulConfigure {
                 );
             }
             builder.setVersion(version);
+            // console.log(version, include);
             const document = SwaggerModule.createDocument(app, builder.build(), {
                 include: include.length > 0 ? include : [() => undefined as any],
             });
@@ -112,6 +114,7 @@ export class RestfulFactory extends RestfulConfigure {
             path: trim(`${this.config.prefix?.doc}${isDefault ? '' : `/${name}`}`, '/'),
         };
         // 获取路由的文档（更深层次的文档配置）
+        // 默认路由不需要版本号
         const routesDoc = isDefault
             ? this.getRouteDocs(defaultDoc, voption.routes ?? [])
             : this.getRouteDocs(defaultDoc, voption.routes ?? [], name);
@@ -123,6 +126,7 @@ export class RestfulFactory extends RestfulConfigure {
             : this.getRouteModules(voption.routes ?? [], name);
         // 文档所依赖的模块
         const include = this.filterExcludeModules(routeModules);
+        // 版本DOC中有依赖的路由模块或者版本DOC中没有路由DOC则添加版本默认DOC
         if (include.length > 0 || !docConfig.routes) {
             docConfig.default = { ...defaultDoc, include };
         }
@@ -156,7 +160,7 @@ export class RestfulFactory extends RestfulConfigure {
         parent?: string,
     ): Record<string, SwaggerOption> {
         /**
-         * 合并Doc配置
+         * 合并父级的Doc配置
          *
          * @param {Omit<SwaggerOption, 'include'>} vDoc 版本文档配置
          * @param {RouteOption} route

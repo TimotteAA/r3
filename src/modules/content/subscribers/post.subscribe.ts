@@ -1,18 +1,23 @@
-import { EventSubscriber, EntitySubscriberInterface, InsertEvent, DataSource, LoadEvent } from 'typeorm';
+import { InsertEvent, DataSource, LoadEvent } from 'typeorm';
 
 import { TypeAction, TypeStuff } from '@/modules/actions/constants';
 import { ActionEntity } from '@/modules/actions/entities';
 import { PostEntity } from '../entities/post.entity';
 import { SanitizeService } from '../services/sanitize.service';
+import { Injectable } from '@nestjs/common';
+import { BaseSubscriber } from '@/modules/database/crud';
 
-@EventSubscriber()
-export class PostSubscriber implements EntitySubscriberInterface<PostEntity> {
+@Injectable()
+export class PostSubscriber extends BaseSubscriber<PostEntity> {
     constructor(
         private sanitizeService: SanitizeService, 
-        private dataSource: DataSource,
+        protected dataSource: DataSource,
     ) {
+        super(dataSource)
         this.dataSource.subscribers.push(this);
     }
+
+    protected entity = PostEntity;
 
     /**
      * Indicates that this subscriber only listen to Post events.

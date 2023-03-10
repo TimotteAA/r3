@@ -1,14 +1,19 @@
-import { EventSubscriber, EntitySubscriberInterface, DataSource, LoadEvent } from 'typeorm';
+import { DataSource, LoadEvent } from 'typeorm';
+import { Injectable } from '@nestjs/common';
 
 import { TypeAction, TypeStuff } from '@/modules/actions/constants';
 import { ActionEntity } from '@/modules/actions/entities';
 import { CommentEntity } from '../entities';
+import { BaseSubscriber } from '@/modules/database/crud';
 
-@EventSubscriber()
-export class CommentSubscriber implements EntitySubscriberInterface<CommentEntity> {
+@Injectable()
+export class CommentSubscriber extends BaseSubscriber<CommentEntity> {
+    protected entity = CommentEntity;
+
     constructor(
-        private dataSource: DataSource,
+        protected dataSource: DataSource,
     ) {
+        super(dataSource);
         this.dataSource.subscribers.push(this);
     }
 

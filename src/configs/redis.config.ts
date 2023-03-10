@@ -1,4 +1,4 @@
-import { createRedisConfig } from "../redis/helpers";
+import { createRedisConfig } from "../modules/redis/helpers";
 
 export const redis = createRedisConfig((configure) => ([{
     name: "default",

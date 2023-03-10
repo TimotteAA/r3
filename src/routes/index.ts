@@ -1,7 +1,7 @@
-import { env } from "../utils";
-import { ApiConfig } from "../restful/types";
+import { env } from "../modules/utils";
+import { ApiConfig } from "../modules/restful/types";
 import { v1 } from "./v1";
-import { Configure } from "../core/configure";
+import { Configure } from "../modules/core/configure";
 
 export const api = async (configure: Configure): Promise<ApiConfig> => ({
     title: env("APP_TITLE", "个人博客"),

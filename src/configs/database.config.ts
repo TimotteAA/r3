@@ -1,4 +1,4 @@
-import { createDbConfig } from "../database/helpers";
+import { createDbConfig } from "../modules/database/helpers";
 
 /**
  * 只需配置连接项

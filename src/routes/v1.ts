@@ -1,5 +1,5 @@
-import { Configure } from "../core/configure";
-import { VersionOption } from "../restful/types";
+import { Configure } from "../modules/core/configure";
+import { VersionOption } from "../modules/restful/types";
 import * as contentMaps from "@/modules/content/controllers";
 import * as userMaps from "@/modules/user/controller";
 import * as actionMaps from '@/modules/actions/controllers'

@@ -291,6 +291,7 @@ export class Configure {
             this.config = deepMerge(this.config, this.yamlPath, append ? "merge" : "replace")
         } else {
             set(this.config, key, value);
+            // console.log('after set', this.config.database)
         }
         return this;
     }

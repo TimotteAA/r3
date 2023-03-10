@@ -1,6 +1,7 @@
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
-import { OneToMany, OneToOne, ManyToOne, ManyToMany, SelectQueryBuilder, ObjectLiteral, FindTreeOptions } from "typeorm"
+import { OneToMany, OneToOne, ManyToOne, ManyToMany, SelectQueryBuilder, ObjectLiteral, FindTreeOptions, Repository, TreeRepository } from "typeorm"
 import { OrderType, QueryTrashMode } from './constants';
+import { BaseRepository, BaseTreeRepository } from "./crud";
 
 /**
  * 关联关系动态关联装饰器工厂函数入参
@@ -163,3 +164,11 @@ export type DbConfig = Record<string, any> & {
     connections: TypeormOption[];
 }
 
+/**
+ * Repository类型
+ */
+export type RepositoryType<E extends ObjectLiteral> =
+    | Repository<E>
+    | TreeRepository<E>
+    | BaseRepository<E>
+    | BaseTreeRepository<E>;

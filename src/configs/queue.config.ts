@@ -1,4 +1,4 @@
-import { createQueueConfig } from "../queue/helpers";
+import { createQueueConfig } from "../modules/queue/helpers";
 
 /**
  * queue基于默认的redis配置
