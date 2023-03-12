@@ -49,7 +49,7 @@ export class BannerEntity extends BaseEntity {
 
     @OneToOne(() => BaseFileEntity, (file) => file.banner, {
         cascade: true,
-        eager: true
+        // eager: true
     })
     image!: BaseFileEntity;
 }

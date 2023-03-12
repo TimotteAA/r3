@@ -66,7 +66,7 @@ export class AccountController {
     })
     @GUEST()
     @UseGuards(AuthGuard("github"))
-    async googleLogin(@Res() res: FastifyReply) {
+    async githubLogin(@Res() res: FastifyReply) {
         const apiUrl = await this.configure.get<string>("app.api")
 
         return res.status(302).redirect(`https://github.com/login/oauth/authorize?${stringify({

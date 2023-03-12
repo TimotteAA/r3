@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import { isNil } from "lodash"
+import { In } from "typeorm"
 
 import { BannerRepository, MediaRepository } from "../repositorys"
 import { BannerEntity } from "../entities"
@@ -16,6 +17,7 @@ export class BannerService extends BaseService<BannerEntity, BannerRepository> {
 
     async create(data: CreateBannerDto): Promise<BannerEntity> {
         const { image, ...rest } = data;
+        console.log("image", await this.mediaRepo.findOneByOrFail({id: image}))
         return this.repo.save({
             ...rest,
             image: await this.mediaRepo.findOneByOrFail({id: image})
@@ -47,7 +49,23 @@ export class BannerService extends BaseService<BannerEntity, BannerRepository> {
         return this.detail(oldItem.id);
     }
 
-    delete(ids: string[], trash?: boolean): Promise<BannerEntity[]> {
-        return super.delete(ids, false)
+    async delete(ids: string[], trash?: boolean): Promise<BannerEntity[]> {
+        const items = await this.repo.find({
+            where: { id: In(ids) as any },
+            withDeleted: this.enable_trash ? true : undefined,
+            relations: ['image']
+        });
+        const toDels = [];
+        for (const item of items) {
+            // console.log("item", item.image);
+            if (!isNil(item.image)) toDels.push(item.image);
+        }
+
+        if (toDels.length > 0) {
+            await this.mediaRepo.remove(toDels);
+        }
+
+        return this.repo.remove(items);
+        // return super.delete(ids, false);
     }
 }

@@ -21,40 +21,42 @@ import { ConfigureRegister, ConfigureFactory } from "../core/types";
  * @param options 
  */
 export const createDbOptions = (configure: Configure, options: DbConfigOptions) => {
-  // console.log("options", options);
-  const newOptions: DbConfigOptions = {
-    common: deepMerge({
-      charset: "utf8mb4",
-      logging: ['error'],
-      migrations: [],
-      paths: {
-        migrations: path.resolve(__dirname, "../../database/migrations"),
-      },
-    },
-    options.common ?? {},
-    "replace"
-    ),
-    // 加一个default数据库连接
-    connections: createConnectionOptions(options.connections ?? [])
-  }
-  // console.log("new Options", newOptions)
-  // 将common合并到connections中
-
-  newOptions.connections = newOptions.connections.map((connection) => {
-    // entities可能没传
-    const entities = connection.entities ?? [];
-    const newOption = { ...connection, entities };
-    return deepMerge(
-      newOptions.common,
-      {
-        ...newOption,
-        // synchronize: configure.getRunEnv() !== EnvironmentType.PRODUCTION,
-        autoLoadEntities: true
-      } as any,
-      "replace"
-    )
-  });
-  return newOptions as DbConfig;
+    // console.log("options", options);
+    const newOptions: DbConfigOptions = {
+        common: deepMerge({
+          charset: "utf8mb4",
+          logging: ['error'],
+          migrations: [],
+          paths: {
+            migration: path.resolve(__dirname, "../../database/migrations"),
+          },
+        },
+        options.common ?? {},
+        "replace"
+        ),
+        // 加一个default数据库连接
+        connections: createConnectionOptions(options.connections ?? [])
+      }
+      // console.log("new Options", newOptions)
+      // 将common合并到connections中
+    // @ts-ignore
+    newOptions.connections = newOptions.connections.map((connection) => {
+        // entities可能没传
+        const entities = connection.entities ?? [];
+        const newOption = { ...connection, entities };
+        return deepMerge(
+              newOptions.common,
+              {
+                  ...newOption,
+                  // synchronize: configure.getRunEnv() !== EnvironmentType.PRODUCTION,
+                  // 取消自动同步entity的结构到数据库中
+                  synchronize: false,
+                  autoLoadEntities: true
+              } as any,
+              "replace"
+        )
+    });
+    return newOptions as unknown as DbConfig;
 }
 
 /**
@@ -69,7 +71,7 @@ export const createDbConfig: (
         defaultRegister: (configure) => ({
             common: {
               charset: "utf8mb4",
-              logging: ['error']
+              logging: ['error'],
             },
             connections: []
         }),
@@ -231,3 +233,4 @@ export const getCustomRepository = <T extends Repository<E>, E extends ObjectLit
   const base = dataSource.getRepository<ObjectType<any>>(entity);
   return new Repo(base.target, base.manager, base.queryRunner) as T;
 };
+

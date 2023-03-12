@@ -1,7 +1,10 @@
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { OneToMany, OneToOne, ManyToOne, ManyToMany, SelectQueryBuilder, ObjectLiteral, FindTreeOptions, Repository, TreeRepository } from "typeorm"
+import yargs, { CommandModule } from "yargs";
+
 import { OrderType, QueryTrashMode } from './constants';
 import { BaseRepository, BaseTreeRepository } from "./crud";
+import { AppParams } from "../core/types";
 
 /**
  * 关联关系动态关联装饰器工厂函数入参
@@ -142,7 +145,7 @@ export type DbConfigOptions = {
     /**
      * 多个数据库连接的公共配置：字符集、日志
      */
-    common: Record<string, any>
+    common: Record<string, any> & ReRequired<DbAdditionalOption>;
     /**
      * 各个数据库链接配置
      */
@@ -154,7 +157,7 @@ export type DbConfigOptions = {
  */
 export type TypeormOption = Omit<TypeOrmModuleOptions, 'name' | 'migrations'> & {
     name: string
-}
+} & ReRequired<DbAdditionalOption>;
 
 /**
  * 最终数据库配置（hook加工后）
@@ -162,6 +165,15 @@ export type TypeormOption = Omit<TypeOrmModuleOptions, 'name' | 'migrations'> & 
 export type DbConfig = Record<string, any> & {
     common: Record<string, any>;
     connections: TypeormOption[];
+}
+
+type DbAdditionalOption = {
+    paths?: {
+        /**
+         * 迁移文件路径
+         */
+        migration: string;
+    }
 }
 
 /**
@@ -172,3 +184,111 @@ export type RepositoryType<E extends ObjectLiteral> =
     | TreeRepository<E>
     | BaseRepository<E>
     | BaseTreeRepository<E>;
+
+/**
+ * 一个cli命令
+ */
+export type CommandItem<T = Record<string, any>, U = Record<string, any>> = (
+    params: Required<AppParams>
+) => CommandModule<T, U>;
+
+/**
+ * 命令构造器的数组集合？
+ */
+export type CommandCollection = Array<CommandItem<any, any>>;
+
+/** ****************************** 数据结构迁移 **************************** */
+/**
+ * 基础数据库命令参数类型
+ */
+export type TypeOrmArguments = yargs.Arguments<{
+    /**
+     * 连接的数据库名称
+     */
+    connection?: string;
+}>;
+
+
+/**
+ * 手动创建迁移命令参数
+ */
+export type MigrationCreateArguments = TypeOrmArguments & MigrationCreateOptions;
+
+/**
+ * 运行迁移的命令参数
+ */
+export type MigrationRunArguments = TypeOrmArguments & MigrationRunOptions;
+
+/**
+ * 自动迁移命令参数
+ */
+export type MigrationGenerateArguments = TypeOrmArguments & MigrationGenerateOptions;
+
+/**
+ * 恢复迁移的命令参数
+ */
+export type MigrationRevertArguments = TypeOrmArguments & MigrationRevertOptions;
+
+/**
+ * 生成迁移命令的handler选项
+ */
+export interface MigrationGenerateOptions {
+    /**
+     * 迁移文件名称
+     */
+    name?: string;
+    /**
+     * 是否运行
+     */
+    run?: boolean;
+    /**
+     * 是否打印迁移文件所要执行的SQL
+     */
+    pretty?: boolean;
+    // outputJs?: boolean;
+    /**
+     * 只打印内容，不生成文件
+     */
+    dryrun?: boolean;
+    /**
+     * 是否只验证数据库是最新的而不是直接生成迁移
+     */
+    check?: boolean;
+}
+
+/**
+ * 运行迁移处理器选项
+ */
+export interface MigrationRunOptions extends MigrationRevertOptions {
+    /**
+     * 刷新数据库（删表重新运行）
+     */
+    refresh?: boolean;
+    /**
+     * 只删除表结构而不运行
+     */
+    onlydrop?: boolean;
+    clear?: boolean;
+}
+
+/**
+ * 恢复迁移处理器选项
+ */
+export interface MigrationRevertOptions {
+    /**
+     * 事务名称
+     */
+    transaction?: string;
+    /**
+     * 如果数据库表结构已改，是否模拟运行
+     */
+    fake?: boolean;
+}
+
+/**
+ * 创建迁移处理器选项
+ */
+export interface MigrationCreateOptions {
+    name: string;
+    // outputJs?: boolean;
+}

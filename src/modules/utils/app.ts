@@ -17,8 +17,6 @@ import { App } from "../core/app";
 import { Creator, CreatorData } from "../core/types";
 import { TecentOsModule } from "../tencent-os/tecent-os.module";
 import { SmtpModule } from "../smtp/smtp.module";
-import { echoApi } from "../restful/helpers";
-import { RestfulFactory } from "../restful/factory";
 
 /**
  * 构建应用启动模块
@@ -112,7 +110,7 @@ async function createImportModules(
         // console.log("module", m);
         // 执行模块装饰器
         // console.log("module", m, "metadata", metadata);
-        Module(omit(metadata, ['global']))(option.module);
+        Module(omit(metadata, ['global', 'commands']))(option.module);
         if (metadata.global) Global()(option.module);
         maps[option.module.name] = { module: option.module, meta: metadata }
     };
@@ -138,15 +136,11 @@ export function createApp(options: CreateOptions): Creator {
 
 export async function boot(
     creator: () => Promise<CreatorData>,
+    listened?: (params: CreatorData) => () => Promise<void>
 ) {
     const { app } = await creator();
     const configure = app.get(Configure);
     const host = await configure.get<string>("app.host");
     const port = await configure.get<number>("app.port");
-    await app.listen(port, host, (err, address) => {
-        // 输出文档
-        const configure = app.get(Configure);
-        const rest = app.get(RestfulFactory)
-        echoApi(configure, rest)
-    });
+    await app.listen(port, host, listened({ app, configure } as any));
 }

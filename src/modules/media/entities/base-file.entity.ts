@@ -21,6 +21,12 @@ export class BaseFileEntity extends BaseEntity {
   @Column({ comment: "存储bucket", nullable: true })
   bucketPrefix?: string;
 
+  /**
+   * 存储url的虚拟字段
+   */
+  @Expose()
+  url?: string;
+
   @Type(() => Date)
   @Expose()
   @CreateDateColumn()
@@ -29,7 +35,8 @@ export class BaseFileEntity extends BaseEntity {
   @OneToOne(() => BannerEntity, (banner) => banner.image, {
     onUpdate: "CASCADE",
     onDelete: 'CASCADE',
-    nullable: true
+    nullable: true,
+    // eager: true
   })
   @JoinColumn()
   banner?: BannerEntity;

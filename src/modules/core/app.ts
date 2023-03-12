@@ -67,7 +67,7 @@ export class App {
      * @param options 
      */
     static async create(options: CreateOptions) {
-        const { builder, configs, configure } = options;
+        const { builder, configs, configure, commands = [] } = options;
         let modules = {};
         try {
             // 初始化应用配置
@@ -129,6 +129,6 @@ export class App {
             console.error(err)
         };
 
-        return { configure: this._configure, app: this._app, modules }
+        return { configure: this._configure, app: this._app, modules, commands }
     }
 }

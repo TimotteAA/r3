@@ -1,6 +1,5 @@
 import { Job, Worker } from "bullmq";
 import { Repository } from "typeorm";
-import chalk from "chalk";
 import { omit } from "lodash";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -11,6 +10,7 @@ import { CodeEntity } from "../entities";
 import { SmtpSendParams } from "@/modules/smtp/types";
 import { EMAIL_CAPTCHA_JOB, SEND_CAPTCHA_QUEUE, SMS_CAPTCHA_JOB, } from "../constants";
 import { SendCaptchaQueueJob, SmsCaptchaOption, EmailCaptchaOption } from "../types";
+import { panic } from "@/modules/core/helpers";
 
 @Injectable()
 export class CaptchaWorker {
@@ -48,8 +48,8 @@ export class CaptchaWorker {
         return await this.codeRepo.save(omit(captcha, ['createtAt', 'updatetAt']))
       }
       return false;
-    } catch (err) {
-      console.log(chalk.red(err));
+    } catch (err: any) {
+      panic({error: err, message: "发送验证码失败"});
       throw new Error(err as any);
     }
   }

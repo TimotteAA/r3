@@ -35,20 +35,23 @@ export const registerCrud = async <T extends BaseController<any>>(
             let descriptor = Object.getOwnPropertyDescriptor(Target.prototype, name);
             descriptor = isNil(descriptor) ? baseDescriptor : descriptor;
             // 权限有，但文档乱
-            // Object.defineProperty(Target.prototype, name, {
-            //     ...descriptor,
-            //     [name]: async function(...args: any[]) {
-            //         return descriptor.value.apply(this, args);
-            //     },
-            // });
-
-            // 文档对，但权限无
             Object.defineProperty(Target.prototype, name, {
                 ...descriptor,
-                async value(...args: any[]) {
+                // async value(...args: any[]) {
+                //     return descriptor.value.apply(this, args);
+                // },
+                [name]: async function(...args: any[]) {
                     return descriptor.value.apply(this, args);
                 },
             });
+
+            // // 文档对，但权限无
+            // Object.defineProperty(Target.prototype, name, {
+            //     ...descriptor,
+            //     async value(...args: any[]) {
+            //         return descriptor.value.apply(this, args);
+            //     },
+            // });
         }
   
         const descriptor = Object.getOwnPropertyDescriptor(Target.prototype, name);

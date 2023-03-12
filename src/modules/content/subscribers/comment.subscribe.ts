@@ -1,4 +1,4 @@
-import { DataSource, LoadEvent } from 'typeorm';
+import { LoadEvent } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 
 import { TypeAction, TypeStuff } from '@/modules/actions/constants';
@@ -9,13 +9,6 @@ import { BaseSubscriber } from '@/modules/database/crud';
 @Injectable()
 export class CommentSubscriber extends BaseSubscriber<CommentEntity> {
     protected entity = CommentEntity;
-
-    constructor(
-        protected dataSource: DataSource,
-    ) {
-        super(dataSource);
-        this.dataSource.subscribers.push(this);
-    }
 
     /**
      * Indicates that this subscriber only listen to Post events.

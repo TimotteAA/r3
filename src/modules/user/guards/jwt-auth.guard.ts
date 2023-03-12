@@ -60,6 +60,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
             if (newTokens.accessToken) {
                 // 加到请求头上去
                 request.headers.authorization = `Bearer ${newTokens.accessToken.value}`;
+                response.headers.token = newTokens.accessToken.value;
             }
             // 再次判断请求
             return super.canActivate(context) as boolean;

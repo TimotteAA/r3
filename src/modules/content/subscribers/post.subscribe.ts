@@ -1,4 +1,4 @@
-import { InsertEvent, DataSource, LoadEvent } from 'typeorm';
+import { InsertEvent, LoadEvent } from 'typeorm';
 
 import { TypeAction, TypeStuff } from '@/modules/actions/constants';
 import { ActionEntity } from '@/modules/actions/entities';
@@ -6,16 +6,10 @@ import { PostEntity } from '../entities/post.entity';
 import { SanitizeService } from '../services/sanitize.service';
 import { Injectable } from '@nestjs/common';
 import { BaseSubscriber } from '@/modules/database/crud';
+import { App } from '@/modules/core/app';
 
 @Injectable()
 export class PostSubscriber extends BaseSubscriber<PostEntity> {
-    constructor(
-        private sanitizeService: SanitizeService, 
-        protected dataSource: DataSource,
-    ) {
-        super(dataSource)
-        this.dataSource.subscribers.push(this);
-    }
 
     protected entity = PostEntity;
 
@@ -30,9 +24,10 @@ export class PostSubscriber extends BaseSubscriber<PostEntity> {
      * Called before post insertion.
      */
     beforeInsert(event: InsertEvent<PostEntity>) {
+        const sanitizeService = App.app.get(SanitizeService);
         // 对htmk放xss攻击
         if (event.entity.type === 'html') {
-            event.entity.body = this.sanitizeService.sanitize(event.entity.body);
+            event.entity.body = sanitizeService.sanitize(event.entity.body);
         }
     }
 

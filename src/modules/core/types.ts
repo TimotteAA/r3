@@ -1,8 +1,10 @@
 import { ModuleMetadata, Type, PipeTransform } from '@nestjs/common';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { IAuthGuard } from '@nestjs/passport';
+import { Ora } from "ora";
 
 import { Configure } from './configure';
+import { CommandCollection } from '../database/types';
 
 // App类型配置
 
@@ -118,6 +120,11 @@ export interface CreateOptions {
      * @param params
      */
     meta?: (params: AppParams) => ModuleMetadata;
+
+    /**
+     * app创建时的命令
+     */
+    commands?: CommandCollection;
 }
 
 /**
@@ -125,6 +132,10 @@ export interface CreateOptions {
  */
 export interface CreatorData extends Required<AppParams> {
     modules: ModuleBuildMap;
+    /**
+     * 应用命令
+     */
+    commands?: CommandCollection;
 }
 
 /**
@@ -206,6 +217,10 @@ export interface ConfigStorageOption {
  */
 export type ModuleBuilderMeta = ModuleMetadata & {
     global?: boolean;
+    /**
+     * 模块专属命令
+     */
+    commands?: CommandCollection;
 }
 
 /**
@@ -218,3 +233,22 @@ export type ModuleMetaRegister<P extends Record<string, any>> = (
 
 export type ConnectionOption<T extends Record<string, any>> = { name?: string } & T;
 export type ConnectionRst<T extends Record<string, any>> = ({name: string} & T)[]
+
+export interface PanicOption {
+    /**
+     * 报错信息
+     */
+    message: string;
+    /**
+     * loading的ora对象
+     */
+    spinner?: Ora;
+    /**
+     * 抛出的异常信息
+     */
+    error?: any;
+    /**
+     * 是否退出进程
+     */
+    exit?: boolean;
+}

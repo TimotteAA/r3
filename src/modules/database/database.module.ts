@@ -2,6 +2,7 @@ import { DynamicModule, Type, Provider, ModuleMetadata } from '@nestjs/common';
 import { getDataSourceToken, TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { CUSTOM_REPOSITORY_METADATA } from '@/modules/database/constants';
 import { DataSource } from 'typeorm';
+
 import {
     IsExistConstraint,
     IsUniqueConstraint,
@@ -12,10 +13,12 @@ import {
 import { ModuleBuilder } from '../core/decorators';
 import { DbConfig } from './types';
 
+import * as commandMaps from "./commands";
+
+
 @ModuleBuilder(async configure => {
     if (!configure.has("database")) {
         throw new Error("数据库配置不存在")
-        process.exit(1)
     }
     const imports: ModuleMetadata['imports'] = [];
     const options = await configure.get<DbConfig>("database");
@@ -34,6 +37,7 @@ import { DbConfig } from './types';
             IsUniqueTreeConstraint,
             IsUniqueTreeUpdateConstraint,
         ],
+        commands: Object.values(commandMaps)
     };
 })
 export class DatabaseModule {

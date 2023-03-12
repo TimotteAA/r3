@@ -45,7 +45,7 @@ export class CreateBannerDto {
 
     @IsNumber()
     @IsOptional({always: true})
-    customOrder?: number;
+    customOrder?: number = 0;
 }
 
 @CustomDtoValidation({groups: ['update']})

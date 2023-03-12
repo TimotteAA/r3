@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from "@nestjs/common";
-import { ApiOperation, ApiTags, ApiConsumes } from "@nestjs/swagger";
+import { ApiOperation, ApiTags, ApiConsumes, ApiBearerAuth } from "@nestjs/swagger";
 
 import { BaseController } from "@/modules/restful/controller";
 import { Crud } from "@/modules/restful/decorators";
@@ -21,6 +21,7 @@ const permissions: PermissionChecker[] = [
 ]
 
 @ApiTags("文件管理-轮播图管理")
+@ApiBearerAuth()
 @Depends(MediaModule, CoreModule, TecentOsModule)
 @Crud(async () => ({
     id: "banner",

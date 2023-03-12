@@ -1,8 +1,11 @@
 import { Module, ModuleMetadata, Type } from "@nestjs/common";
+import chalk from "chalk";
 import { isNil, isArray, isObject, toNumber } from "lodash";
+import yargs, { CommandModule } from "yargs";
 
+import { CommandItem } from "../database/types";
 import { deepMerge } from "../utils";
-import { ConfigureRegister, ConnectionOption, ConnectionRst, AppConfig, ConfigureFactory } from "./types";
+import { ConfigureRegister, ConnectionOption, ConnectionRst, AppConfig, ConfigureFactory, PanicOption, CreatorData } from "./types";
 
 export function mergeMeta(meta: ModuleMetadata, custom: ModuleMetadata) {
     const keys = Array.from(new Set([...Object.keys(meta), ...Object.keys(custom)]));
@@ -110,4 +113,92 @@ export function toBoolean(value?: string | boolean): boolean {
     } catch (e) {
         return value as unknown as boolean;
     }
+}
+
+/**
+ * 加工处理各个模块定义的command
+ * @param params 
+ */
+export async function createCommands(params: CreatorData): Promise<CommandModule<any, any>[]> {
+    const { app, modules } = params;
+    // 每个模块上的命令
+    const moduleCommands: Array<CommandItem<any, any>> = Object.values(modules)
+        .map((m) => m.meta.commands ?? [])
+        .reduce((o, n) => [...o, ...n], []);
+
+    const commands = [...params.commands, ...moduleCommands].map((item) => {
+        const command = item(params);
+        return {
+            ...command,
+            handler: async (args: yargs.Arguments<any>) => {
+                const handler = command.handler as (
+                    ...argsb: yargs.Arguments<any>
+                ) => Promise<void>;
+                await handler({ ...params, ...args });
+                await app.close();
+                process.exit();
+            }
+        }
+    });
+    return commands;
+}
+
+/**
+ * 构建cli
+ * @param builder 
+ */
+export async function buildCli(builder: () => Promise<CreatorData>) {
+    const params = await builder();
+    const commands = await createCommands(params);
+    console.log();
+    // 注册命令
+    commands.forEach((command) => yargs.command(command));
+    // 注册对应的handler
+    yargs
+        .usage('Usage: $0 <command> [options]')
+        .scriptName("cli")
+        .demandCommand(1, '')
+        .fail((msg, err, y) => {
+            if (!msg && !err) {
+                yargs.showHelp();
+                process.exit;
+            }
+            if (msg) console.error(chalk.red(msg));
+            if (err) console.error(chalk.red(err.message));
+            process.exit()
+        })
+        .strict()
+        .alias('v', 'version')
+        .help('h')
+        .alias('h', 'help').argv
+}
+
+/**
+ * 处理命令报错的函数
+ * @param option 
+ */
+export function panic(option: PanicOption | string) {
+    console.log();
+    if (typeof option === "string") {
+        console.log(chalk.red(`\n❌ ${option}`));
+        process.exit(1);
+    }
+    const { error, spinner, message, exit = true } = option;
+    if (error) console.log(chalk.red(error));
+    spinner ? spinner.fail(chalk.red(`\n❌ ${message}`)) : console.log(chalk.red(`\n❌ ${message}`));
+    if (exit) process.exit(1);
+}
+
+/**
+ * 生成固定长度的仅包含字母的字符串
+ * @param length 
+ */
+export const getRandomCharString = (length: number) => {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
 }

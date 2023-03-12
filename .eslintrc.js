@@ -40,6 +40,7 @@ module.exports = {
     'plugin:prettier/recommended',
   ],
   rules: {
+    'prettier/prettier': 'error',
     /* ********************************** ES6+ ********************************** */
     'no-console': 0,
     'no-var-requires': 0,

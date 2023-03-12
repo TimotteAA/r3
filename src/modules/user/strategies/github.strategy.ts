@@ -8,7 +8,7 @@ import { Configure } from '@/modules/core/configure';
  * google oauth策略
  */
 @Injectable()
-export class GoogleStrategy extends PassportStrategy(Strategy, "github") {
+export class GithubStrategy extends PassportStrategy(Strategy, "github") {
     constructor(protected configure: Configure) {
         super({
             clientID: configure.env("GITHUB_CLIENT_ID"),

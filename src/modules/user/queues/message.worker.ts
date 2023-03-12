@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { Job, Worker } from "bullmq";
 import { isNil } from "lodash";
-import chalk from "chalk";
+
+import { panic } from "@/modules/core/helpers";
 import { SAVE_MESSAGE_QUEUE } from "../constants";
 import { SaveMessageQueueJob } from "../types"
 import { MessageReceiveRepository, MessageRepository, UserRepository } from "../repositorys";
@@ -49,8 +50,8 @@ export class MessageWorker {
       message.receives = receives;
       await message.save({reload: true})
     } catch (err: any) {
-      console.log(chalk.red(err));
-      throw new Error(err)
+      panic({message: "保存消息失败", error: err});
+      process.exit(0);
     }
   }
 }
