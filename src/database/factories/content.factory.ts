@@ -14,6 +14,7 @@ export type IPostFactoryOptions = Partial<{
     isPublished: boolean;
     categories: CategoryEntity[];
     comments: CommentEntity[];
+    author?: ClassToPlain<UserEntity>
 }>;
 
 /**
