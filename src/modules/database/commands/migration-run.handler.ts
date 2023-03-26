@@ -1,5 +1,4 @@
 import { join, resolve } from 'path';
-
 import chalk from 'chalk';
 import { isNil } from 'lodash';
 import ora from 'ora';
@@ -11,7 +10,8 @@ import { EnvironmentType } from '@/modules/core/constants';
 import { panic } from '@/modules/core/helpers';
 
 import { DbConfig, MigrationRunArguments } from '../types';
-
+import { getDbConfig, runSeeder } from '../helpers';
+import { SeedResolver } from '../resolver';
 import { TypeormMigrationRun } from './typeorm-migration-run';
 
 /**
@@ -69,7 +69,22 @@ export const MigrationRunHandler = async (
     } catch (error) {
         if (dataSource && dataSource.isInitialized) await dataSource.destroy();
         panic({ spinner, message: 'Run migrations failed!', error });
-    } finally {
-        if (dataSource && dataSource.isInitialized) await dataSource.destroy();
     }
+
+    if (args.seed) {
+        try {
+            spinner.start('Start run seeder')
+            const runner = (await getDbConfig(args.connection)).seedRunner ?? SeedResolver;
+            await runSeeder(runner, {
+                connection: args.connection,
+                transaction: true
+            }, spinner, configure);
+            spinner.succeed(`\n 👍 ${chalk.greenBright.underline(`Finished Seeding`)}`)
+        } catch (err) {
+            if (dataSource && dataSource.isInitialized) await dataSource.destroy();
+            panic({ spinner, message: `Run seeder failed`, error: err });
+        }
+    }
+
+    if (dataSource && dataSource.isInitialized) await dataSource.destroy();
 };

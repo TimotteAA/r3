@@ -1,10 +1,14 @@
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
-import { OneToMany, OneToOne, ManyToOne, ManyToMany, SelectQueryBuilder, ObjectLiteral, FindTreeOptions, Repository, TreeRepository } from "typeorm"
+import { OneToMany, OneToOne, ManyToOne, ManyToMany, SelectQueryBuilder, ObjectLiteral, FindTreeOptions, Repository, TreeRepository, DataSource, EntityManager, ObjectType, EntityTarget } from "typeorm"
 import yargs, { CommandModule } from "yargs";
+import { Ora } from "ora";
+import { Faker } from "@faker-js/faker";
 
 import { OrderType, QueryTrashMode } from './constants';
 import { BaseRepository, BaseTreeRepository } from "./crud";
 import { AppParams } from "../core/types";
+import { Configure } from "../core/configure";
+import { FactoryResolver } from "./resolver";
 
 /**
  * 关联关系动态关联装饰器工厂函数入参
@@ -157,7 +161,7 @@ export type DbConfigOptions = {
  */
 export type TypeormOption = Omit<TypeOrmModuleOptions, 'name' | 'migrations'> & {
     name: string
-} & ReRequired<DbAdditionalOption>;
+} & Required<DbAdditionalOption>;
 
 /**
  * 最终数据库配置（hook加工后）
@@ -173,7 +177,20 @@ type DbAdditionalOption = {
          * 迁移文件路径
          */
         migration: string;
-    }
+    };
+    /**
+     * 填充类
+     */
+    seedRunner?: SeederConstructor;
+    /**
+     * 填充类列表
+     */
+    seeders?: SeederConstructor[];
+
+    /**
+     * 数据构建函数列表
+     */
+    factories?: (() => DbFactoryOption<any, any>)[];
 }
 
 /**
@@ -269,6 +286,10 @@ export interface MigrationRunOptions extends MigrationRevertOptions {
      */
     onlydrop?: boolean;
     clear?: boolean;
+    /**
+     * 是否在迁移时运行seed
+     */
+    seed?: boolean;
 }
 
 /**
@@ -292,3 +313,133 @@ export interface MigrationCreateOptions {
     name: string;
     // outputJs?: boolean;
 }
+
+/***************************数据库迁移配置****************************/
+/**
+ * 数据填充处理器选项
+ */
+export interface SeederOptions {
+    connection?: string;
+    transaction?: boolean;
+}
+
+export interface SeederOptions {
+    /**
+     * 连接名称
+     */
+    connection?: string;
+    /**
+     * 是否开启事务
+     */
+    transaction?: boolean;
+}
+
+/**
+ * 数据填充的参数类型
+ */
+export interface SeederLoadParams {
+    /**
+     * 数据库连接名称
+     */
+    connection: string;
+    /**
+     * 数据库连接池
+     */
+    dataSource: DataSource;
+
+    /**
+     * EntityManager实例
+     */
+    em: EntityManager;
+
+    /**
+     * Factory解析器
+     */
+    factorier?: DbFactory;
+    /**
+     * Factory函数列表
+     */
+    factories: FactoryOptions;
+
+    /**
+     * 项目配置类
+     */
+    configure: Configure;
+}
+
+/**
+ * 数据填充类接口
+ */
+export interface SeederConstructor {
+    new (spinner: Ora, args: SeederOptions): Seeder;
+}
+
+/**
+ * 数据填充类方法对象
+ * load方法填充数据
+ */
+export interface Seeder {
+    load: (params: SeederLoadParams) => Promise<void>;
+}
+
+/**
+ * 数据填充命令参数
+ */
+export type SeederArguments = TypeOrmArguments & SeederOptions;
+
+/********************数据填充工厂********************** */
+
+/**
+ * Factory自定义参数覆盖
+ */
+export type FactoryOverride<Entity> = {
+    [Property in keyof Entity]?: Entity[Property];
+}
+
+/**
+ * 数据填充函数映射对象
+ */
+export type FactoryOptions = {
+    [entityName: string]: DbFactoryOption<any, any>;
+}
+
+/**
+ * Factory解析器
+ */
+export interface DbFactory {
+    <Entity>(entity: EntityTarget<Entity>): <Options> (
+        options?: Options,
+    ) => FactoryResolver<Entity, Options>;
+}
+
+/**
+ * Factory解析后的元数据
+ */
+export type DbFactoryOption<E, O> = {
+    entity: ObjectType<E>;
+    handler: DbFactoryHandler<E, O>;
+}
+
+/**
+ * Factory构造器
+ */
+export type DbFactoryBuilder = (
+    dataSource: DataSource,
+    factories: {
+        [entityName: string]: DbFactoryOption<any, any>;
+    }
+) => DbFactory;
+
+/**
+ * Factory定义器
+ * 返回对应的entity与faker函数
+ */
+export type DefineFactory = <E, O>(
+    entity: ObjectType<E>,
+    handler: DbFactoryHandler<E, O>
+) => () => DbFactoryOption<E, O>
+
+/**
+ * 各个模块的Factory处理器
+ */
+export type DbFactoryHandler<E, O> = (faker: Faker, options: O) => Promise<E>;

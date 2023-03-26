@@ -3,6 +3,7 @@ lockfileVersion: 5.4
 specifiers:
   '@casl/ability': ^6.3.3
   '@elastic/elasticsearch': ^8.6.0
+  '@faker-js/faker': ^7.6.0
   '@fastify/multipart': ^7.4.0
   '@fastify/static': ^6.9.0
   '@nestjs/axios': ^2.0.0
@@ -41,6 +42,7 @@ specifiers:
   '@types/supertest': ^2.0.11
   '@types/uuid': ^9.0.0
   '@types/ws': ^8.5.4
+  '@types/yaml': ^1.9.7
   '@types/yargs': ^17.0.22
   '@typescript-eslint/eslint-plugin': ^5.48.0
   '@typescript-eslint/parser': ^5.48.0
@@ -104,6 +106,7 @@ specifiers:
 dependencies:
   '@casl/ability': registry.npmmirror.com/@casl/ability/6.3.3
   '@elastic/elasticsearch': registry.npmmirror.com/@elastic/elasticsearch/8.6.0
+  '@faker-js/faker': registry.npmmirror.com/@faker-js/faker/7.6.0
   '@fastify/multipart': registry.npmmirror.com/@fastify/multipart/7.4.0
   '@fastify/static': registry.npmmirror.com/@fastify/static/6.9.0
   '@nestjs/axios': registry.npmmirror.com/@nestjs/axios/2.0.0_gbvmnnpga2emn6d46hrbgojju4
@@ -181,6 +184,7 @@ devDependencies:
   '@types/sanitize-html': registry.npmmirror.com/@types/sanitize-html/2.8.0
   '@types/supertest': registry.npmmirror.com/@types/supertest/2.0.12
   '@types/ws': registry.npmmirror.com/@types/ws/8.5.4
+  '@types/yaml': registry.npmmirror.com/@types/yaml/1.9.7
   '@types/yargs': registry.npmmirror.com/@types/yargs/17.0.22
   '@typescript-eslint/eslint-plugin': registry.npmmirror.com/@typescript-eslint/eslint-plugin/5.48.0_k73wpmdolxikpyqun3p36akaaq
   '@typescript-eslint/parser': registry.npmmirror.com/@typescript-eslint/parser/5.48.0_iukboom6ndih5an6iafl45j2fe
@@ -778,6 +782,13 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
+
+  registry.npmmirror.com/@faker-js/faker/7.6.0:
+    resolution: {integrity: sha512-XK6BTq1NDMo9Xqw/YkYyGjSsg44fbNwYRx7QK2CuoQgyy+f1rrTDHoExVM5PsyXCtfl2vs2vVJ0MN0yN6LppRw==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@faker-js/faker/-/faker-7.6.0.tgz}
+    name: '@faker-js/faker'
+    version: 7.6.0
+    engines: {node: '>=14.0.0', npm: '>=6.0.0'}
+    dev: false
 
   registry.npmmirror.com/@fastify/accept-negotiator/1.1.0:
     resolution: {integrity: sha512-OIHZrb2ImZ7XG85HXOONLcJWGosv7sIvM2ifAPQVhg9Lv7qdmMBNVaai4QTdyuaqbKM5eO6sLSQOYI7wEQeCJQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@fastify/accept-negotiator/-/accept-negotiator-1.1.0.tgz}
@@ -2503,6 +2514,15 @@ packages:
     version: 8.5.4
     dependencies:
       '@types/node': registry.npmmirror.com/@types/node/16.18.11
+    dev: true
+
+  registry.npmmirror.com/@types/yaml/1.9.7:
+    resolution: {integrity: sha512-8WMXRDD1D+wCohjfslHDgICd2JtMATZU8CkhH8LVJqcJs6dyYj5TGptzP8wApbmEullGBSsCEzzap73DQ1HJaA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@types/yaml/-/yaml-1.9.7.tgz}
+    name: '@types/yaml'
+    version: 1.9.7
+    deprecated: This is a stub types definition. yaml provides its own type definitions, so you do not need this installed.
+    dependencies:
+      yaml: registry.npmmirror.com/yaml/2.2.1
     dev: true
 
   registry.npmmirror.com/@types/yargs-parser/21.0.0:
@@ -10889,7 +10909,6 @@ packages:
     name: yaml
     version: 2.2.1
     engines: {node: '>= 14'}
-    dev: false
 
   registry.npmmirror.com/yargs-parser/20.2.9:
     resolution: {integrity: sha512-y11nGElTIV+CT3Zv9t7VKl+Q3hTQoT9a1Qzezhhl6Rp21gJ/IVTW7Z3y9EWXhuUBC2Shnf+DX0antecpAwSP8w==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/yargs-parser/-/yargs-parser-20.2.9.tgz}

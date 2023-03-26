@@ -1,4 +1,6 @@
 import { createDbConfig } from "../modules/database/helpers";
+import ContentSeeder from "@/database/seeders/content.seeder";
+import { ContentFactory } from "@/database/factories/content.factory";
 
 /**
  * 只需配置连接项
@@ -15,9 +17,11 @@ export const database = createDbConfig((register) => {
                 password: register.env("DB_AUTH"),
                 database: register.env("DB_DATABASE"),
                 // // 开发环境自动同步
-                synchronize: true,
+                // synchronize: true,
                 // // 自动加载entities
                 // autoLoadEntities: true,
+                seeders: [ContentSeeder],
+                factories: [ContentFactory]
             }
         ]
     }

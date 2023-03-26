@@ -1,4 +1,4 @@
-import { ObjectLiteral, SelectQueryBuilder, DataSource, Repository, ObjectType } from "typeorm";
+import { ObjectLiteral, SelectQueryBuilder, DataSource, Repository, ObjectType, EntityTarget, EntityManager, DataSourceOptions } from "typeorm";
 import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { Type } from "@nestjs/common";
@@ -7,13 +7,15 @@ import { isNil } from "lodash"
 import { CUSTOM_REPOSITORY_METADATA } from "./constants";
 import { Configure } from "../core/configure";
 import { DYNAMIC_RELATIONS } from "./constants"
-import { DbConfig, DbConfigOptions, DynamicRelation, OrderQueryType } from "./types"
+import { DbConfig, DbConfigOptions, DbFactoryBuilder, DefineFactory, DynamicRelation, FactoryOptions, OrderQueryType, Seeder, SeederConstructor, SeederOptions, TypeormOption } from "./types"
 import { deepMerge } from "../utils";
 import path from "path";
-import { createConnectionOptions } from "../core/helpers";
+import { createConnectionOptions, panic } from "../core/helpers";
 // import { EnvironmentType } from "../core/constants";
 import { ConfigureRegister, ConfigureFactory } from "../core/types";
-
+import { App } from "../core/app";
+import { FactoryResolver } from "./resolver";
+import { Ora } from "ora";
 
 /**
  * 加工数据库配置
@@ -77,6 +79,16 @@ export const createDbConfig: (
         }),
         hook: (_, value) => createDbOptions(_, value as DbConfigOptions)
     }
+}
+
+/**
+ * 获取指定数据库连接的配置
+ */
+export async function getDbConfig(cname = 'default') {
+    const { connections = [] }: DbConfig = await App.configure.get<DbConfig>('database');
+    const dbConfig = connections.find(({name}) => name === cname);
+    if (isNil(dbConfig)) panic(`Database connection named ${cname} not exists!`);
+    return dbConfig as TypeormOption;
 }
 
 /**
@@ -191,31 +203,31 @@ export function getQrderByQuery<E extends ObjectLiteral>(
   alias: string,
   orderBy?: OrderQueryType,
 ): SelectQueryBuilder<E> {
-  if (isNil(orderBy)) return qb;
-  if (typeof orderBy === 'string') {
-      return qb.orderBy(`${alias}.${orderBy}`, 'DESC');
-  }
-  if (Array.isArray(orderBy)) {
-      let i = 0;
+    if (isNil(orderBy)) return qb;
+    if (typeof orderBy === 'string') {
+        return qb.orderBy(`${alias}.${orderBy}`, 'DESC');
+    }
+    if (Array.isArray(orderBy)) {
+        let i = 0;
 
-      for (const item of orderBy) {
-          // 第一个orderBy
-          if (i === 0) {
-              qb =
-                  typeof item === 'string'
-                      ? qb.orderBy(`${alias}.${item}`, 'DESC')
-                      : qb.orderBy(`${alias}.${item.name}`, `${item.order}`);
-              i++;
-          } else {
-              qb =
-                  typeof item === 'string'
-                      ? qb.addOrderBy(`${alias}.${item}`, 'DESC')
-                      : qb.addOrderBy(`${alias}.${item.name}`, `${item.order}`);
-          }
-      }
-      return qb;
-  }
-  return qb.orderBy(`${alias}.${orderBy.name}`, `${orderBy.order}`);
+        for (const item of orderBy) {
+            // 第一个orderBy
+            if (i === 0) {
+                qb =
+                    typeof item === 'string'
+                        ? qb.orderBy(`${alias}.${item}`, 'DESC')
+                        : qb.orderBy(`${alias}.${item.name}`, `${item.order}`);
+                i++;
+            } else {
+                qb =
+                    typeof item === 'string'
+                        ? qb.addOrderBy(`${alias}.${item}`, 'DESC')
+                        : qb.addOrderBy(`${alias}.${item.name}`, `${item.order}`);
+            }
+        }
+        return qb;
+    }
+    return qb.orderBy(`${alias}.${orderBy.name}`, `${orderBy.order}`);
 }
 
 /**
@@ -227,10 +239,134 @@ export const getCustomRepository = <T extends Repository<E>, E extends ObjectLit
   dataSource: DataSource,
   Repo: ClassType<T>,
 ): T => {
-  if (isNil(Repo)) return null;
-  const entity = Reflect.getMetadata(CUSTOM_REPOSITORY_METADATA, Repo);
-  if (!entity) return null;
-  const base = dataSource.getRepository<ObjectType<any>>(entity);
-  return new Repo(base.target, base.manager, base.queryRunner) as T;
+    if (isNil(Repo)) return null;
+    const entity = Reflect.getMetadata(CUSTOM_REPOSITORY_METADATA, Repo);
+    if (!entity) return null;
+    const base = dataSource.getRepository<ObjectType<any>>(entity);
+    return new Repo(base.target, base.manager, base.queryRunner) as T;
 };
 
+/**
+ * 定义各个模块的数据工厂
+ * @param entity 指定entity
+ * @param handler 处理器
+ */
+export const defineFactory: DefineFactory = (entity, handler) => () => ({
+  entity,
+  handler
+});
+
+/**
+ * 根据传入的entity类或函数获取名称
+ * @param entity 
+ */
+export function entityName<T>(entity: EntityTarget<T>): string {
+    // 传入entity类
+    if (entity instanceof Function) return entity.name;
+    // 函数
+    if (!isNil(entity)) return new (entity as any)().constructor.name;
+    throw new Error("Entity is not defined")
+}
+
+/**
+ * 固定dataSource与工厂的二级科里化函数
+ * @param dataSource 
+ * @param factories 
+ */
+export const factoryBuilder: DbFactoryBuilder = 
+    (dataSource, factories) => (entity) => (settings) => {
+        const name = entityName(entity);
+        if (!factories[name]) {
+          throw new Error(`has none factory for entity named ${name}`);
+        }
+        return new FactoryResolver(
+            name, 
+            entity, 
+            dataSource.createEntityManager(),
+            factories[name].handler,
+            settings    
+        )
+    }
+
+/**
+ * 取消外键
+ * @param em 
+ * @param type 
+ * @param disabled 
+ */
+export async function resetForeignKey(
+    em: EntityManager,
+    type = 'mysql',
+    disabled = true
+): Promise<EntityManager> {
+    let key: string;
+    let query: string;
+    if (type === "sqlite") {
+        key = disabled ? 'OFF' : 'ON';
+        query = `PRAGMA foreign_keys=${key};`
+    } else {
+        key = disabled ? '0' : '1';
+        query = `SET FOREIGN_KEY_CHECKS = ${key};`;
+    }
+    await em.query(query);
+    return em;
+}
+
+export async function runSeeder(
+    Class: SeederConstructor,
+    args: SeederOptions,
+    spinner: Ora,
+    configure: Configure,
+): Promise<DataSource> {
+    const seeder: Seeder = new Class(spinner, args);
+    // 数据库连接配置 
+    const dbConfig = await getDbConfig(args.connection);
+    // 创建数据源
+    const dataSource = new DataSource({ ...dbConfig } as DataSourceOptions);
+    await dataSource.initialize();
+    // 工厂map
+    const factoryMaps: FactoryOptions = {};
+    for (const factory of dbConfig.factories) {
+        const { entity, handler } = factory();
+        factoryMaps[entity.name] = { entity, handler };
+    } 
+    if (typeof args.transaction === "boolean" && !args.transaction) {
+        // 数据填充不开启事务
+        const em = await resetForeignKey(dataSource.manager, dataSource.options.type);
+        await seeder.load({
+          factorier: factoryBuilder(dataSource, factoryMaps),
+          factories: factoryMaps,
+          dataSource,
+          em,
+          configure,
+          connection: args.connection ?? 'default'
+        });
+        await resetForeignKey(em, dataSource.options.type, false);
+    } else {
+        const queryRunner = dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+        try {
+            // 数据填充开启事务
+            const em = await resetForeignKey(dataSource.manager, dataSource.options.type);
+            await seeder.load({
+                factorier: factoryBuilder(dataSource, factoryMaps),
+                factories: factoryMaps,
+                dataSource,
+                em,
+                configure,
+                connection: args.connection ?? 'default'
+            });
+            await resetForeignKey(em, dataSource.options.type, false);
+            // 提交事务
+            await queryRunner.commitTransaction();
+        } catch (err) {
+            console.log(err);
+            await queryRunner.rollbackTransaction();
+        } finally {
+            await queryRunner.release();
+        }
+    }
+    if (dataSource.isInitialized) await dataSource.destroy();
+    return dataSource;
+}

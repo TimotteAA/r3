@@ -20,3 +20,21 @@ export const deepMerge = <T1, T2>(
     return deepmerge(x, y, options) as T2 extends T1 ? T1 : T1 & T2;
 };
 
+export const getRandonIndex = (count: number) => Math.floor(Math.random() * count);
+
+export const getRandonItemData = <T extends Record<string, any>>(list: T[]) => {
+    return list[getRandonIndex(list.length)];
+}
+
+/**
+ * 根据数组，随机再获取一个数组
+ * @param list 
+ */
+export const getRandListData = <T extends Record<string, any>>(list: T[]) => {
+    const result: T[] = [];
+    for (let i = 0; i < getRandonIndex(list.length); i++) {
+        const random = getRandonItemData(list);
+        result.push(random);
+    };
+    return result;
+}

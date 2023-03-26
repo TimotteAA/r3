@@ -1,0 +1,105 @@
+import { DataSource, EntityManager, In } from "typeorm";
+import path from "path";
+import { existsSync, readFileSync } from "fs-extra";
+
+import { CategoryEntity, CommentEntity, PostEntity } from "@/modules/content/entities";
+import { BaseSeeder } from "@/modules/database/crud/seeder";
+import { DbFactory } from "@/modules/database/types";
+import { categories, CategoryData, posts, PostData} from "../factories/content.data";
+import { IPostFactoryOptions } from "../factories/content.factory";
+import { panic } from "@/modules/core/helpers";
+import { getCustomRepository } from "@/modules/database/helpers";
+import { CategoryRepository } from "@/modules/content/repositorys";
+import { faker } from "@faker-js/faker";
+
+export default class ContentSeeder extends BaseSeeder {
+    protected truncates = [PostEntity, CategoryEntity, CommentEntity];
+
+    protected factorier!: DbFactory;
+
+    async run(_factorier: DbFactory, _dataSource: DataSource, _em: EntityManager): Promise<any> {
+        this.factorier = _factorier;
+        await this.loadCategories(categories);
+        await this.loadPosts(posts);
+    }
+
+    /**
+     * 根据factory数据创建entity保存到数据库中
+     * @param data 
+     * @param parent 
+     */
+    private async loadCategories(data: CategoryData[], parent?: CategoryEntity): Promise<void> {
+        let order = 0;
+        for (const item of data) {
+            const category = new CategoryEntity();
+            category.content = item.content;
+            category.customOrder = order;
+            if (parent) category.parent = parent;
+            await this.em.save(category);
+            order++;
+            if (item.children) {
+                await this.loadCategories(item.children, category);
+            }
+        }
+    }
+
+    /**
+     * 给指定文章创建评论
+     * @param post 
+     * @param count 
+     * @param parent 
+     */
+    private async genRandomComments(post: PostEntity, count: number, parent?: CommentEntity) {
+        const comments: CommentEntity[] = [];
+        for (let i = 0; i < count; i++) {
+            const comment = new CommentEntity();
+            comment.content = faker.lorem.paragraph(Math.floor(Math.random() * 5) + 1);
+            comment.post = post;
+            if (parent) {
+                comment.parent = parent;
+            }
+            comments.push(await this.em.save(comment));
+            if (Math.random() >= 0.8) {
+                comment.children = await this.genRandomComments(
+                    post,
+                    Math.floor(count * 2),
+                    comment
+                )
+                await this.em.save(comment);
+            }
+        }
+        return comments;
+    }
+
+    private async loadPosts(posts: PostData[]) {
+        for (const item of posts) {
+            const options: IPostFactoryOptions = {};
+            const filePath = path.resolve(__dirname, "../../assets/posts", item.contentFile);
+            if (!existsSync(filePath)) {
+                panic({
+                    spinner: this.spinner,
+                    message: `post content file ${filePath} not exists!`
+                })
+            }
+            options.title = item.title;
+            options.body = readFileSync(filePath, 'utf-8');
+            options.isPublished = true;
+            // 处理item的可选字段
+            if (item.summary) {
+                options.summary = item.summary;
+            }
+            if (item.categories) {
+                options.categories = await getCustomRepository(
+                    this.dataSource,
+                    CategoryRepository
+                ).find({
+                    where: {
+                        content: In(item.categories)
+                    }
+                })
+            };
+            const post = await this.factorier(PostEntity)(options).create();
+            await this.genRandomComments(post, Math.floor(Math.random() * 5));
+        }
+    }
+}

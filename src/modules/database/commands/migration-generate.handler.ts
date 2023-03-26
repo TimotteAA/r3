@@ -39,6 +39,7 @@ export const MigrationGenerateHandler = async (
         if (isNil(dbConfig)) panic(`Database connection named ${cname} not exists!`);
         console.log();
         const dir = dbConfig.paths.migration ?? resolve(__dirname, '../../../database/migrations');
+        console.log('dir', dir)
         const runner = new TypeormMigrationGenerate();
         // console.log(((dbConfig.entities ?? []) as ClassType<any>[]).map((e) => e.name));
         // process.exit();
