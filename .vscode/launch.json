@@ -5,9 +5,9 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "debug nestplus",
+            "name": "debug",
             "request": "launch",
-            "runtimeArgs": ["run-script", "start:debug"],
+            "runtimeArgs": ["run-script", "cli"],
             "autoAttachChildProcesses": true,
             "console": "integratedTerminal",
             "runtimeExecutable": "pnpm",

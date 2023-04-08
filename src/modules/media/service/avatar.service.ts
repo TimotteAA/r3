@@ -30,7 +30,7 @@ export class AvatarService extends BaseService<AvatarEntity, AvatarRepository> {
     const { file, user, relation, description } = data;
     const mediaEntity = new AvatarEntity();
     // oss存储key
-    const ossKey = this.cosService.generateKey(file.filename);
+    const ossKey = await this.cosService.generateKey(file.filename);
 
     mediaEntity.key = ossKey;
     mediaEntity.ext = extname(ossKey);

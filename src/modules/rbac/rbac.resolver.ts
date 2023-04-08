@@ -3,10 +3,10 @@ import { Injectable, OnApplicationBootstrap } from "@nestjs/common";
 import { DataSource, EntityManager, Not, In } from "typeorm";
 import { isNil, omit } from "lodash";
 
-import { PermissionType, Role, Menu } from "./types";
-import { MenuType, SystemRoles } from "./constants";
+import { PermissionType, Role } from "./types";
+import { SystemRoles } from "./constants";
 import { deepMerge } from "../utils";
-import { PermissionEntity, RoleEntity, MenuEntity } from "./entities";
+import { PermissionEntity, RoleEntity } from "./entities";
 import { getUserConfig } from "../user/helpers";
 import { UserEntity } from "../user/entities";
 import { UserConfig } from "../user/types";
@@ -66,46 +66,6 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
     }
   ]
   
-  /**
-   * 默认菜单（每个用户都有的菜单）
-   */
-  protected _menus: Menu[] = [
-    {
-      name: "首页",
-      path: "/dashboard",
-      component: "Layout",
-      type: MenuType.DIRECTORY,
-      static: true,
-    },
-    {
-      name: "文档",
-      path: "/document",
-      component: "Layout",
-      static: true,
-      type: MenuType.DIRECTORY,
-      children: [
-        {
-          name: "nestjs文档",
-          path: "https://nestjs.com/",
-          type: MenuType.MENU,
-          external: true,
-        },
-        {
-          name: "vue文档",
-          path: "https://vuejs.org/",
-          type: MenuType.MENU,
-          external: true,
-        },
-        {
-          name: "react文档",
-          path: "https://reactjs.org/",
-          type: MenuType.MENU,
-          external: true,
-        }
-      ]
-    }
-  ]
-
   constructor(protected dataSource: DataSource) {}
 
   setOptions(options: AbilityOptions<A, C>) {
@@ -124,9 +84,9 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
     return this._permissions;
   }
 
-  get menus() {
-    return this._menus;
-  }
+  // get menus() {
+  //   return this._menus;
+  // }
 
   /**
    * 每个模块添加角色
@@ -152,34 +112,30 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
     })
   }
 
-  addMenus(data: Menu[]) {
-    this._menus.push(...data);
-  }
-
   async onApplicationBootstrap() {
-    const queryRunner = this.dataSource.createQueryRunner();
-    // 连接到数据库
-    await queryRunner.connect()    
-    // 开启事务
-    await queryRunner.startTransaction();
-    // console.log(chalk.red(1231231))
+    console.log("asdasdas")
+    // const queryRunner = this.dataSource.createQueryRunner();
+    // // 连接到数据库
+    // await queryRunner.connect()    
+    // // 开启事务
+    // await queryRunner.startTransaction();
+    // // console.log(chalk.red(1231231))
 
-    try {
-      // 同步模块角色
-      await this.syncRoles(queryRunner.manager);
-      // 同步模块权限
-      await this.syncPermissions(queryRunner.manager);
+    // try {
+    //   // 同步模块角色
+    //   await this.syncRoles(queryRunner.manager);
+    //   // 同步模块权限
+    //   await this.syncPermissions(queryRunner.manager);
 
-      await this.syncMenus(queryRunner.manager)
 
-      await queryRunner.commitTransaction()
+    //   await queryRunner.commitTransaction()
 
-    } catch (err) {
-      console.error(err);
-      await queryRunner.rollbackTransaction();
-    } finally {
-      await queryRunner.release();
-    }
+    // } catch (err) {
+    //   console.error(err);
+    //   await queryRunner.rollbackTransaction();
+    // } finally {
+    //   await queryRunner.release();
+    // }
   }
 
   /**
@@ -389,47 +345,47 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
     }
   }
 
-  protected async syncMenus(manager: EntityManager) {
-    await this.saveMenus(manager, this.menus, null)
-  }
+  // protected async syncMenus(manager: EntityManager) {
+  //   await this.saveMenus(manager, this.menus, null)
+  // }
 
-  protected async saveMenus(manager: EntityManager, 
-    menus: Menu[], 
-    parent: MenuEntity | null  
-  ) {
-    for (const menu of menus) {
-      const { children, permission, ...rest } = menu;
-      const old = await manager.findOneBy(MenuEntity, {
-        name: rest.name
-      })
+  // protected async saveMenus(manager: EntityManager, 
+  //   menus: Menu[], 
+  //   parent: MenuEntity | null  
+  // ) {
+  //   for (const menu of menus) {
+  //     const { children, permission, ...rest } = menu;
+  //     const old = await manager.findOneBy(MenuEntity, {
+  //       name: rest.name
+  //     })
 
-      if (!isNil(old)) {
-        await manager.update(MenuEntity, old.id, {
-          ...rest,
-          parent,
-          p: !isNil(permission) 
-            ? await manager.findOneByOrFail(PermissionEntity, {
-              name: permission
-            }) 
-            : null
-        })
-      } else {
-        await manager.save(MenuEntity, {
-          ...rest,
-          parent,
-          p: !isNil(permission) 
-          ? await manager.findOneByOrFail(PermissionEntity, {
-            name: permission
-          }) 
-          : null
-        })
-      }
-      const m = await manager.findOneBy(MenuEntity, {
-        name: menu.name
-      });
-      if (!isNil(children) && children.length > 0) {
-        await this.saveMenus(manager, children, m)
-      }
-    }
-  }
+  //     if (!isNil(old)) {
+  //       await manager.update(MenuEntity, old.id, {
+  //         ...rest,
+  //         parent,
+  //         p: !isNil(permission) 
+  //           ? await manager.findOneByOrFail(PermissionEntity, {
+  //             name: permission
+  //           }) 
+  //           : null
+  //       })
+  //     } else {
+  //       await manager.save(MenuEntity, {
+  //         ...rest,
+  //         parent,
+  //         p: !isNil(permission) 
+  //         ? await manager.findOneByOrFail(PermissionEntity, {
+  //           name: permission
+  //         }) 
+  //         : null
+  //       })
+  //     }
+  //     const m = await manager.findOneBy(MenuEntity, {
+  //       name: menu.name
+  //     });
+  //     if (!isNil(children) && children.length > 0) {
+  //       await this.saveMenus(manager, children, m)
+  //     }
+  //   }
+  // }
 }

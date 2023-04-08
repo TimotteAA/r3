@@ -65,68 +65,85 @@ export const simpleCrudOptions = (
 });
 
 export const addRolePermissions = () => ([
-  {
-      name: "system.role.create",
-      rule: {
-          action: PermissionAction.CREATE,
-          subject: RoleEntity
-      },
-      customOrder: 2
-  },
-  {
-      name: "system.role.update",
-      rule: {
-          action: PermissionAction.UPDATE,
-          subject: RoleEntity,
-      },
-      customOrder: 2   
-  },
-  {
-      name: "system.role.delete",
-      rule: {
-          action: PermissionAction.DELETE,
-          subject: RoleEntity,
-      },
-      customOrder: 2
-  },
-  {
-      name: "system.role.restore",
-      rule: {
-          action: PermissionAction.RESTORE,
-          subject: RoleEntity,
-      },
-      customOrder: 2
-  },
-  {
-      name: "system.role.read_detail",
-      rule: {
-          action: PermissionAction.READ_DETAIL,
-          subject: RoleEntity,
-      },
-      customOrder: 2
-  },
-  {
-      name: "system.role.read_list",
-      rule: {
-          action: PermissionAction.READ_LIST,
-          subject: RoleEntity,
-      },
-      customOrder: 2
-  },
-  {
-      name: "system.permission.read_list",
-      rule: {
-          action: PermissionAction.READ_LIST,
-          subject: PermissionEntity,
-      },
-      customOrder: 1
+    {
+        name: "role.manage",
+        rule: {
+            action: PermissionAction.MANAGE,
+            subject: RoleEntity
+        },
+        customOrder: 3
     },
-  {
-      name: "system.permission.read_detail",
-      rule: {
-          action: PermissionAction.READ_DETAIL,
-          subject: PermissionEntity,
-      },
-      customOrder: 1
-  }
+    {
+        name: "permission.manage",
+        rule: {
+            action: PermissionAction.MANAGE,
+            subject: PermissionEntity
+        },
+        customOrder: 4
+    },
+
+//   {
+//       name: "system.role.create",
+//       rule: {
+//           action: PermissionAction.CREATE,
+//           subject: RoleEntity
+//       },
+//       customOrder: 2
+//   },
+//   {
+//       name: "system.role.update",
+//       rule: {
+//           action: PermissionAction.UPDATE,
+//           subject: RoleEntity,
+//       },
+//       customOrder: 2   
+//   },
+//   {
+//       name: "system.role.delete",
+//       rule: {
+//           action: PermissionAction.DELETE,
+//           subject: RoleEntity,
+//       },
+//       customOrder: 2
+//   },
+//   {
+//       name: "system.role.restore",
+//       rule: {
+//           action: PermissionAction.RESTORE,
+//           subject: RoleEntity,
+//       },
+//       customOrder: 2
+//   },
+//   {
+//       name: "system.role.read_detail",
+//       rule: {
+//           action: PermissionAction.READ_DETAIL,
+//           subject: RoleEntity,
+//       },
+//       customOrder: 2
+//   },
+//   {
+//       name: "system.role.read_list",
+//       rule: {
+//           action: PermissionAction.READ_LIST,
+//           subject: RoleEntity,
+//       },
+//       customOrder: 2
+//   },
+//   {
+//       name: "system.permission.read_list",
+//       rule: {
+//           action: PermissionAction.READ_LIST,
+//           subject: PermissionEntity,
+//       },
+//       customOrder: 1
+//     },
+//   {
+//       name: "system.permission.read_detail",
+//       rule: {
+//           action: PermissionAction.READ_DETAIL,
+//           subject: PermissionEntity,
+//       },
+//       customOrder: 1
+//   }
 ]) 

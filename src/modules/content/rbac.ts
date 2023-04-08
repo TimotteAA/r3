@@ -3,7 +3,7 @@ import { ModuleRef } from "@nestjs/core";
 import { RbacResolver } from "../rbac/rbac.resolver";
 import { PermissionAction, SystemRoles } from "../rbac/constants";
 import { CommentEntity, PostEntity } from "./entities";
-import { addContentMenus, addContentPermissions } from "./helpers";
+import { addContentPermissions } from "./helpers";
 
 /**
  * 模块启动时，添加权限与角色
@@ -73,8 +73,8 @@ export class ContentRbac implements OnModuleInit {
       }
     ]);
 
-    resolver.addMenus(
-      addContentMenus()
-    )
+    // resolver.addMenus(
+    //   addContentMenus()
+    // )
   }
 }

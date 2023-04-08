@@ -27,7 +27,7 @@ export class MediaService extends BaseService<BaseFileEntity, MediaRepository> {
         const { file, relation } = data;
         const item = new BaseFileEntity();
 
-        const ossKey = this.cosService.generateKey(file.filename);
+        const ossKey = await this.cosService.generateKey(file.filename);
         item.key = ossKey;
         item.ext = extname(ossKey);
         item.bucketPrefix = bucketPrefix;

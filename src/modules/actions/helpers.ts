@@ -1,37 +1,14 @@
-import { PermissionAction, MenuType } from "../rbac/constants";
+import { PermissionAction } from "../rbac/constants";
 import { ActionEntity } from "./entities";
 
 export const addActionPermissions = () => ([
     {
-        name: "action.stuff.read_list",
+        name: "action.manage",
         rule: {
-            action: PermissionAction.READ_LIST,
+            action: PermissionAction.MANAGE,
             subject: ActionEntity
         },
-        customOrder: 13,
+        customOrder: 33,
     },
 ])
 
-export const addActionMenus = () => ([
-    {
-        name: "action管理",
-        path: "/action",
-        type: MenuType.DIRECTORY,
-        component: "Layout",
-        children: [
-            {
-                name: "点赞管理",
-                path: "/action/thumbs-up",
-                type: MenuType.DIRECTORY,
-                component: "/views/action/thumbs/index.vue",
-                children: [
-                    {
-                        name: "创建用户",
-                        type: MenuType.PERMISSION,
-                        permission: "action.stuff.read_list"
-                    }, 
-                ]
-            }
-        ]
-    }
-])

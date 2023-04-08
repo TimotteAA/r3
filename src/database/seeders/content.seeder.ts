@@ -24,6 +24,7 @@ export default class ContentSeeder extends BaseSeeder {
 
     async run(_factorier: DbFactory, _dataSource: DataSource, _em: EntityManager): Promise<any> {
         this.factorier = _factorier;
+        // console.log("factorier", this.factorier);
         await this.loadCategories(categories);
         await this.loadPosts(posts);
     }
@@ -58,7 +59,8 @@ export default class ContentSeeder extends BaseSeeder {
         const comments: CommentEntity[] = [];
         for (let i = 0; i < count; i++) {
             const comment = new CommentEntity();
-            comment.content = faker.lorem.paragraph(1);
+            // faker.lorem.
+            comment.content = faker.lorem.sentence();
             comment.post = post;
             if (parent) {
                 comment.parent = parent;
@@ -67,7 +69,7 @@ export default class ContentSeeder extends BaseSeeder {
                 comment.author = author;
             }
             comments.push(await this.em.save(comment));
-            if (Math.random() >= 0.8) {
+            if (Math.random() >= 0.99) {
                 comment.children = await this.genRandomComments(
                     post,
                     Math.floor(count * 2),
@@ -83,8 +85,10 @@ export default class ContentSeeder extends BaseSeeder {
     private async loadPosts(posts: PostData[]) {
         // 所有的分类
         const allCates = await this.em.find(CategoryEntity);
+
         // fake author
         const admin = await getUserConfig<UserConfig['super']>("super");
+        console.error("12311111111111111111111")
         const author = await UserEntity.findOneOrFail({
             where: {
                 username: admin.username

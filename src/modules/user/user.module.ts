@@ -19,7 +19,7 @@ import * as serviceMaps from './services';
 import * as queueMaps from "./queues";
 import * as gatewayMaps from "./gateways";
 
-import { addEntities } from '../database/helpers';
+import { addEntities, addSubscribers } from '../database/helpers';
 import { MediaModule } from '../media/media.module';
 import { ModuleBuilder } from '../core/decorators';
 
@@ -46,7 +46,7 @@ const entities = [AccessTokenEntity, RefreshTokenEntity, UserEntity, CodeEntity,
         HttpModule
     ],
     providers: [
-        UserSubscriber,
+        // UserSubscriber,
         ...strategies,
         ...services,
         LocalAuthGuard,
@@ -54,7 +54,8 @@ const entities = [AccessTokenEntity, RefreshTokenEntity, UserEntity, CodeEntity,
         JwtWsGuard,
         ...queues,
         ...gateways,
-        UserRbac
+        UserRbac,
+        ...(await addSubscribers(configure, [UserSubscriber]))
     ],
     exports: [...services, ...queues, DatabaseModule.forRepository([...repos])],
 }))

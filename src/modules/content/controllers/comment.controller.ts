@@ -49,6 +49,7 @@ export class CommentController {
         @Query()
         options: QueryCommentTreeDto,
     ) {
+        console.log("comment tree")
         return this.commentService.findTrees(options);
     }
 
@@ -62,6 +63,7 @@ export class CommentController {
         @Query()
         options: ApiQueryCategoryDto
     ) {
+        console.log("commentsasdadasd")
         return this.commentService.paginate(options);
     }
 

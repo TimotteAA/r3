@@ -95,7 +95,7 @@ export const createAppConfig: (configure: ConfigureRegister<Partial<AppConfig>>)
         port: configure.env("APP_PORT", toNumber, 3100),
         host: configure.env("APP_HOST", "127.0.0.1"),
         https: configure.env("APP_HTTPS", toBoolean, false),
-        timezone: configure.env("APP_TIMEZONE", "Asis/Shanghai"),
+        timezone: configure.env("APP_TIMEZONE", "Asia/Shanghai"),
         locale: configure.env("APP_LOCALE", 'zh-cn')
     })
 })
@@ -150,7 +150,9 @@ export async function createCommands(params: CreatorData): Promise<CommandModule
 export async function buildCli(builder: () => Promise<CreatorData>) {
     const params = await builder();
     const commands = await createCommands(params);
-    console.log();
+    // console.log("111111111111111111111111111111");
+    console.log()
+    // console.error("1231412412412")
     // 注册命令
     commands.forEach((command) => yargs.command(command));
     // 注册对应的handler

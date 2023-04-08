@@ -79,9 +79,9 @@ export class CosService {
    * 生成存储的key
    * @param file 
    */
-  generateKey(file: string) {
+  async generateKey(file: string) {
     // 柑橘当前时间生成key名
-    const filename = `${getTime().format('YYYYMMDDHHmmss')}${randomBytes(4)
+    const filename = `${(await getTime()).format('YYYYMMDDHHmmss')}${randomBytes(4)
       .toString('hex')
       .slice(0, 8)}${extname(file)}`;
     return filename

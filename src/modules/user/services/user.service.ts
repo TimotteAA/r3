@@ -16,6 +16,7 @@ type FindParams = Omit<QueryUserDto, "limit" | 'page'>
 @Injectable()
 export class UserService extends BaseService<UserEntity, UserRepository> implements OnModuleInit {
     async onModuleInit() {
+        console.log("user module init>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
         const adminConf = await getUserConfig<UserConfig['super']>("super")
         const admin = await this.repo.findOneBy({
             username: adminConf.username

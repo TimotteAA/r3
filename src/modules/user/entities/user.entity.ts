@@ -21,7 +21,6 @@ import { AvatarEntity } from '@/modules/media/entities';
 import { getUserConfig } from '../helpers';
 import { DynamicRelation } from '@/modules/database/types';
 import { ActionEntity } from '@/modules/actions/entities/action.entity';
-import { MenuEntity } from '@/modules/rbac/entities';
 
 const relations = () => getUserConfig<DynamicRelation[]>("relations")
 
@@ -137,8 +136,4 @@ export class UserEntity extends BaseEntity {
         cascade: true
     })
     actions: ActionEntity[]
-
-    @Type(() => MenuEntity)
-    @Expose()
-    menus: MenuEntity[];
 }

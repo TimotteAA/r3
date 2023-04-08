@@ -25,7 +25,10 @@ export class CommentEntity extends BaseEntity {
     id!: string;
 
     @Expose()
-    @Column()
+    @Column({
+        type: "varchar",
+        length: "1000"
+    })
     content!: string;
 
     // 一

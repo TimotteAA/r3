@@ -37,12 +37,12 @@ export const registerCrud = async <T extends BaseController<any>>(
             // 权限有，但文档乱
             Object.defineProperty(Target.prototype, name, {
                 ...descriptor,
-                // async value(...args: any[]) {
-                //     return descriptor.value.apply(this, args);
-                // },
-                [name]: async function(...args: any[]) {
+                async value(...args: any[]) {
                     return descriptor.value.apply(this, args);
                 },
+                // [name]: async function(...args: any[]) {
+                //     return descriptor.value.apply(this, args);
+                // },
             });
 
             // // 文档对，但权限无

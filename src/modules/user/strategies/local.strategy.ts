@@ -23,7 +23,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     async validate(credential: string, password: string): Promise<any> {
         const user = await this.authService.validateUser(credential, password);
         if (!user) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException({}, "登录的用户不存在");
         }
         /**
          * 序列化后放到request.user上

@@ -1,9 +1,8 @@
 import { AbilityTuple, MongoQuery, RawRuleFrom } from "@casl/ability";
 import { UserEntity } from "@/modules/user/entities";
-import { BaseEntity, Column, Entity, JoinTable, ManyToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Exclude, Expose } from "class-transformer";
 import { RoleEntity } from "./role.entity";
-import { MenuEntity } from "./menu.entity";
 
 @Exclude()
 @Entity("rbac_permission")
@@ -35,10 +34,6 @@ export class PermissionEntity<
   @ManyToMany(() => RoleEntity, (role: RoleEntity) => role.permissions)
   @JoinTable()
   roles!: RoleEntity[]
-
-  @Expose()
-  @OneToOne(() => MenuEntity, (menu) => menu.p)
-  menu!: MenuEntity
 
   @ManyToMany(() => UserEntity, (user: UserEntity) => user.permissions)
   @JoinTable()

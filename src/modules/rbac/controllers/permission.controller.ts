@@ -14,10 +14,9 @@ import { RbacModule } from "../rbac.module";
 /**
  * 权限：权限管理员
  */
-const permissions: Record<"read_list" | "read_detail", PermissionChecker[]> = {
-  read_list: [async(ab) => ab.can(PermissionAction.READ_LIST, PermissionEntity.name)],
-  read_detail: [async (ab) => ab.can(PermissionAction.READ_DETAIL, PermissionEntity.name)],
-}
+const permissions: PermissionChecker[] = [
+  async ab => ab.can(PermissionAction.MANAGE, PermissionEntity.name)
+]
 
 @ApiTags("权限管理")
 @ApiBearerAuth()
@@ -25,8 +24,8 @@ const permissions: Record<"read_list" | "read_detail", PermissionChecker[]> = {
 @Crud(async () => ({
   id: "permission",
   enabled: [
-    { name: "list", options: simpleCrudOptions(permissions['read_list'], "分页查询权限")},
-    { name: "detail", options: simpleCrudOptions(permissions['read_detail'], "查看权限详情") }
+    { name: "list", options: simpleCrudOptions(permissions, "分页查询权限")},
+    { name: "detail", options: simpleCrudOptions(permissions, "查看权限详情") }
   ],
   dtos: {
     query: QueryPermissionDto

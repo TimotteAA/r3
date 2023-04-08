@@ -52,7 +52,7 @@ export const createDbOptions = (configure: Configure, options: DbConfigOptions) 
                   ...newOption,
                   // synchronize: configure.getRunEnv() !== EnvironmentType.PRODUCTION,
                   // 取消自动同步entity的结构到数据库中
-                  synchronize: false,
+                  synchronize: true,
                   autoLoadEntities: true
               } as any,
               "replace"
@@ -330,9 +330,10 @@ export async function runSeeder(
         const { entity, handler } = factory();
         factoryMaps[entity.name] = { entity, handler };
     } 
+    console.log('factoryMaps', factoryMaps)
     if (typeof args.transaction === "boolean" && !args.transaction) {
         // 数据填充不开启事务
-        const em = await resetForeignKey(dataSource.manager, dataSource.options.type);
+        const em = await resetForeignKey(dataSource.manager, dataSource.options.type, true);
         await seeder.load({
           factorier: factoryBuilder(dataSource, factoryMaps),
           factories: factoryMaps,
@@ -348,7 +349,7 @@ export async function runSeeder(
         await queryRunner.startTransaction();
         try {
             // 数据填充开启事务
-            const em = await resetForeignKey(dataSource.manager, dataSource.options.type);
+            const em = await resetForeignKey(dataSource.manager, dataSource.options.type, true);
             await seeder.load({
                 factorier: factoryBuilder(dataSource, factoryMaps),
                 factories: factoryMaps,

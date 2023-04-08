@@ -24,11 +24,13 @@ dayjs.extend(dayOfYear);
  * 获取时间
  * @param options 
  */
-export const getTime = (options?: TimeOptions) => {
+export const getTime = async (options?: TimeOptions) => {
     if (!options) return dayjs();
     const { date, format, locale, strict, zonetime } = options;
     // 时区与local配置
-    const config = App.app.get<AppConfig>("app")
+    console.log(App.app)
+    const config = await App.configure.get<AppConfig>("app")
+    console.log("1231223123123132")
 
     // 每次创建一个新的时间对象
     // 如果没有传入local或timezone则使用应用配置

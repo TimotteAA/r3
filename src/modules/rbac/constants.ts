@@ -20,8 +20,6 @@ export enum PermissionAction {
     RESTORE = 'restore'
 }
 
-export type ApiActionType = "create" | "read_detail" |
-    "read_list" | "update" | "delete" | 'restore';
 /**
  * 菜单类型
  */

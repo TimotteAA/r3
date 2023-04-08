@@ -217,8 +217,8 @@ export class CaptchaJob {
       return this.codeRepo.create({ media, type, action, code: captchaCode });
     }
     // 判断是否到达频率上限
-    const now = getTime();
-    const canSend = now.isAfter(getTime({date: captcha.updatedAt}).add(config.limit, "second"))
+    const now = await getTime();
+    const canSend = now.isAfter((await getTime({date: captcha.updatedAt})).add(config.limit, "second"))
     if (!canSend) {
       throw new BadRequestException("发送验证码达到频率上限")
     }

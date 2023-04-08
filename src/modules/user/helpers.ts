@@ -151,68 +151,85 @@ ConfigureFactory<RePartial<UserConfig>, UserConfig> = (register) => ({
 
 export const addUserPermissions = () => ([
     {
-        name: "system.user.create",
+        name: "user.manage",
         rule: {
-            action: PermissionAction.CREATE,
+            action: PermissionAction.MANAGE,
             subject: UserEntity
         },
-        customOrder: 3,
+        customOrder: 0,
     },
     {
-        name: "system.user.update",
+        name: "message.manage",
         rule: {
-            action: PermissionAction.UPDATE,
-            subject: UserEntity
-        },
-        customOrder: 3,   
-    },
-    {
-        name: "system.user.delete",
-        rule: {
-            action: PermissionAction.DELETE,
-            subject: UserEntity
-        },
-        customOrder: 3,
-    },
-    {
-        name: "system.user.restore",
-        rule: {
-            action: PermissionAction.RESTORE,
-            subject: UserEntity
-        },
-        customOrder: 3,
-    },
-    {
-        name: "system.user.read_detail",
-        rule: {
-            action: PermissionAction.READ_DETAIL,
-            subject: UserEntity
-        },
-        customOrder: 3,
-    },
-    {
-        name: "system.user.read_list",
-        rule: {
-            action: PermissionAction.READ_LIST,
-            subject: UserEntity
-        },
-        customOrder: 3,
-    },
-    // 站内信管理
-    {
-        name: "system.message.read_list",
-        rule: {
-            action: PermissionAction.READ_LIST,
+            action: PermissionAction.MANAGE,
             subject: MessageEntity
         },
-        customOrder: 5,
+        customOrder: 10,
     },
-    {
-        name: "system.message.delete",
-        rule: {
-            action: PermissionAction.READ_LIST,
-            subject: MessageEntity
-        },
-        customOrder: 5,
-    },
+
+    // {
+    //     name: "system.user.create",
+    //     rule: {
+    //         action: PermissionAction.CREATE,
+    //         subject: UserEntity
+    //     },
+    //     customOrder: 3,
+    // },
+    // {
+    //     name: "system.user.update",
+    //     rule: {
+    //         action: PermissionAction.UPDATE,
+    //         subject: UserEntity
+    //     },
+    //     customOrder: 3,   
+    // },
+    // {
+    //     name: "system.user.delete",
+    //     rule: {
+    //         action: PermissionAction.DELETE,
+    //         subject: UserEntity
+    //     },
+    //     customOrder: 3,
+    // },
+    // {
+    //     name: "system.user.restore",
+    //     rule: {
+    //         action: PermissionAction.RESTORE,
+    //         subject: UserEntity
+    //     },
+    //     customOrder: 3,
+    // },
+    // {
+    //     name: "system.user.read_detail",
+    //     rule: {
+    //         action: PermissionAction.READ_DETAIL,
+    //         subject: UserEntity
+    //     },
+    //     customOrder: 3,
+    // },
+    // {
+    //     name: "system.user.read_list",
+    //     rule: {
+    //         action: PermissionAction.READ_LIST,
+    //         subject: UserEntity
+    //     },
+    //     customOrder: 3,
+    // },
+    // // 站内信管理
+    // {
+    //     name: "system.message.read_list",
+    //     rule: {
+    //         action: PermissionAction.READ_LIST,
+    //         subject: MessageEntity
+    //     },
+    //     customOrder: 5,
+    // },
+    // {
+    //     name: "system.message.delete",
+    //     rule: {
+    //         action: PermissionAction.READ_LIST,
+    //         subject: MessageEntity
+    //     },
+    //     customOrder: 5,
+    // },
 ])

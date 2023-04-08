@@ -21,6 +21,14 @@ export class LocalAuthGuard extends AuthGuard('local') {
                 .reduce((n, o) => ({ ...n, ...o }), {});
             throw new BadRequestException(Object.values(messages));
         }
-        return super.canActivate(context) as boolean;
+        console.log(1231231)
+        try {
+            const res = await super.canActivate(context) as boolean;
+            console.log('res', res);
+            
+        } catch (err) {
+            console.log("error", err)
+        }
+        return true;
     }
 }

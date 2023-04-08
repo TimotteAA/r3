@@ -4,7 +4,7 @@ import { ModuleRef } from "@nestjs/core";
 import { PermissionAction, SystemRoles } from "../rbac/constants";
 import { RbacResolver } from "../rbac/rbac.resolver";
 import { ActionEntity } from "./entities";
-import { addActionMenus, addActionPermissions } from "./helpers";
+import { addActionPermissions } from "./helpers";
 
 @Injectable()
 export class ActionRbac implements OnModuleInit {
@@ -47,6 +47,6 @@ export class ActionRbac implements OnModuleInit {
             },
         ])
 
-        resolver.addMenus(addActionMenus())
+        // resolver.addMenus(addActionMenus())
     }
 }

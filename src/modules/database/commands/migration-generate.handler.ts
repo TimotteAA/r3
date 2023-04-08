@@ -39,13 +39,11 @@ export const MigrationGenerateHandler = async (
         if (isNil(dbConfig)) panic(`Database connection named ${cname} not exists!`);
         console.log();
         const dir = dbConfig.paths.migration ?? resolve(__dirname, '../../../database/migrations');
-        console.log('dir', dir)
         const runner = new TypeormMigrationGenerate();
         // console.log(((dbConfig.entities ?? []) as ClassType<any>[]).map((e) => e.name));
         // process.exit();
         const dataSource = new DataSource({ ...dbConfig } as DataSourceOptions);
         console.log();
-        // 调用runner生成迁移文件
         await runner.handler({
             name: args.name ?? getRandomCharString(6),
             dir,
@@ -56,6 +54,7 @@ export const MigrationGenerateHandler = async (
         spinner.succeed(chalk.greenBright.underline('\n 👍 Finished generate migration'));
         if (args.run) {
             console.log();
+            console.log(chalk.red("run"))
             await MigrationRunHandler(configure, { connection: args.connection } as any);
         }
     } catch (error) {

@@ -21,6 +21,9 @@ import { UserRepository } from '../repositorys';
 import { CosService } from '@/modules/tencent-os/services';
 import { AvatarEntity } from '@/modules/media/entities';
 
+
+
+
 @Injectable()
 export class AuthService {
     constructor(
@@ -57,7 +60,7 @@ export class AuthService {
      * @returns
      */
     async login(user: UserEntity) {
-        const { accessToken } = await this.tokenService.generateAccessToken(user, getTime());
+        const { accessToken } = await this.tokenService.generateAccessToken(user, await getTime());
         // 返回给前端
         return accessToken.value;
     }
@@ -88,7 +91,7 @@ export class AuthService {
         // 用户首次用git登录
         if (isNil(exists)) {
             const avatar = new AvatarEntity;
-            const key =  this.cosService.generateKey(avatarUrl);
+            const key = await this.cosService.generateKey(avatarUrl);
             
             avatar.user = user;
             avatar.key = key;
@@ -237,7 +240,7 @@ export class AuthService {
         // 查询用户的condition
         const condition = { phone };
         const user = await this.userService.findOneByCondition(condition);
-        const { accessToken } = await this.tokenService.generateAccessToken(user, getTime());
+        const { accessToken } = await this.tokenService.generateAccessToken(user,await  getTime());
         return { token: accessToken.value };
     }
 
@@ -252,7 +255,7 @@ export class AuthService {
         // 查询用户的condition
         const condition = { email };
         const user = await this.userService.findOneByCondition(condition);
-        const { accessToken } = await this.tokenService.generateAccessToken(user, getTime());
+        const { accessToken } = await this.tokenService.generateAccessToken(user, await getTime());
         return { token: accessToken.value };
     }
  
@@ -283,7 +286,7 @@ export class AuthService {
      * @returns
      */
     async createToken(id: string) {
-        const now = getTime()
+        const now = await getTime()
         let user: UserEntity;
         try {
             user = await this.userService.detail(id);
@@ -303,7 +306,7 @@ export class AuthService {
         // console.log(getTime({date: captcha.updatedAt}).add(timeObj.limit, "second"))
         // console.log(getTime());
         const age = await getUserConfig<number>("captchaTime.age")
-        const isValid = getTime({date: captcha.updatedAt}).add(age, "second").isAfter(getTime());
+        const isValid = (await getTime({date: captcha.updatedAt})).add(age, "second").isAfter(await getTime());
         return isValid;
     }
 

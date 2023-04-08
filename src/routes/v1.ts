@@ -48,7 +48,7 @@ export const v1 = async (configure: Configure): Promise<VersionOption> => ({
           children: [
                 {
                     name: 'content',
-                    path: 'content',
+                    path: '',
                     controllers: Object.values(contentMaps),
                 },
                 {

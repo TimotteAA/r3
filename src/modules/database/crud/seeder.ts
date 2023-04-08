@@ -40,7 +40,7 @@ export abstract class BaseSeeder implements Seeder {
         this.dataSource = dataSource;
         this.factories = factories;
 
-        // 开发环境下清空数据库
+        // 开发环境下清空数据库 
         if (this.configure.getRunEnv() !== EnvironmentType.PRODUCTION) {
             for (const truncate of this.truncates) {
                 await this.em.clear(truncate);

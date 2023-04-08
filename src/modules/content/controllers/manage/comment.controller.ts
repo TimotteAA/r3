@@ -12,14 +12,9 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Depends } from '@/modules/restful/decorators';
 import { ContentModule } from '../../content.module';
 
-// const permissions: PermissionChecker[] = [
-//     async ab => ab.can(PermissionAction.MANAGE, CommentEntity.name)
-// ]
-
-const permissions: Record<"read_list" | "delete", PermissionChecker> = {
-    "read_list": async (ab) => ab.can(PermissionAction.READ_LIST, CommentEntity.name),
-    "delete": async (ab) => ab.can(PermissionAction.DELETE, CommentEntity.name)
-}
+const permissions: PermissionChecker[] = [
+    async ab => ab.can(PermissionAction.MANAGE, CommentEntity.name)
+]
 
 @ApiTags("评论管理")
 @ApiBearerAuth()
@@ -27,8 +22,8 @@ const permissions: Record<"read_list" | "delete", PermissionChecker> = {
 @Crud(() => ({
     id: "comment",
     enabled: [
-        { name: "list", options: simpleCrudOptions([permissions['read_list']], "评论分类列表查询，支持查询某个作者、某篇文章的评论" ) },
-        { name: "delete", options: simpleCrudOptions([permissions['delete']], "删除评论，支持批量删除") }
+        { name: "list", options: simpleCrudOptions(permissions, "评论分类列表查询，支持查询某个作者、某篇文章的评论" ) },
+        { name: "delete", options: simpleCrudOptions(permissions, "删除评论，支持批量删除") }
     ],
     dtos: {
         query: ManageCommentQuery

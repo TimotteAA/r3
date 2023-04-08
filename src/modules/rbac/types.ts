@@ -4,7 +4,7 @@ import { FastifyRequest as Request } from "fastify";
 import { UserEntity } from "../user/entities";
 
 import { CrudMethodOption, CrudMethod, CrudOptions } from "@/modules/restful/types";
-import { RoleEntity, PermissionEntity, MenuEntity } from "./entities";
+import { RoleEntity, PermissionEntity } from "./entities";
 
 /**
  * 角色类型：角色名、别名、描述、权限
@@ -12,12 +12,6 @@ import { RoleEntity, PermissionEntity, MenuEntity } from "./entities";
 export type Role = Pick<ClassToPlain<RoleEntity>, "name" | "label" | "description"> & {
   permissions: string[]
 }
-
-export type Menu = Pick<ClassToPlain<MenuEntity>, "name" | "path" | "external"
-  | "component" | "type" | 'static'> & {
-    children?: Menu[];
-    permission?: string;
-  }
 
 /**
  * 权限类型：名称、别名、描述、具体的rule，去掉了casl中的conditions，自定义了conditions

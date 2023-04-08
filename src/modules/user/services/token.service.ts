@@ -28,7 +28,7 @@ export class TokenService {
         const { user, refreshToken } = token;
         if (refreshToken) {
             // 判断refreshToken是否过期
-            const now = getTime()
+            const now = await getTime()
             // 过期了
             if (now.isAfter(refreshToken.expired_at)) return null;
             const token = await this.generateAccessToken(user, now);
@@ -61,7 +61,7 @@ export class TokenService {
         accessToken.expired_at = now.add(jwtConfig.token_expired, 'second').toDate();
         // 保存accessToken
         await accessToken.save();
-        const refreshToken = await this.generateRefreshToken(accessToken, getTime());
+        const refreshToken = await this.generateRefreshToken(accessToken, await getTime());
         return { accessToken, refreshToken };
     }
 
