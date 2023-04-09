@@ -113,29 +113,29 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
   }
 
   async onApplicationBootstrap() {
-    console.log("asdasdas")
-    // const queryRunner = this.dataSource.createQueryRunner();
-    // // 连接到数据库
-    // await queryRunner.connect()    
-    // // 开启事务
-    // await queryRunner.startTransaction();
-    // // console.log(chalk.red(1231231))
+    // console.log("asdasdas")
+    const queryRunner = this.dataSource.createQueryRunner();
+    // 连接到数据库
+    await queryRunner.connect()    
+    // 开启事务
+    await queryRunner.startTransaction();
+    // console.log(chalk.red(1231231))
 
-    // try {
-    //   // 同步模块角色
-    //   await this.syncRoles(queryRunner.manager);
-    //   // 同步模块权限
-    //   await this.syncPermissions(queryRunner.manager);
+    try {
+      // 同步模块角色
+      await this.syncRoles(queryRunner.manager);
+      // 同步模块权限
+      await this.syncPermissions(queryRunner.manager);
 
 
-    //   await queryRunner.commitTransaction()
+      await queryRunner.commitTransaction()
 
-    // } catch (err) {
-    //   console.error(err);
-    //   await queryRunner.rollbackTransaction();
-    // } finally {
-    //   await queryRunner.release();
-    // }
+    } catch (err) {
+      console.error(err);
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   /**
