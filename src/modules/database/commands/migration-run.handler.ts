@@ -70,19 +70,20 @@ export const MigrationRunHandler = async (
         if (dataSource && dataSource.isInitialized) await dataSource.destroy();
         panic({ spinner, message: 'Run migrations failed!', error });
     }
-
     if (args.seed) {
         try {
-            spinner.start('Start run seeder')
+            spinner.start('Start run seeder');
             const runner = (await getDbConfig(args.connection)).seedRunner ?? SeedResolver;
-            await runSeeder(runner, {
-                connection: args.connection,
-                transaction: true
-            }, spinner, configure);
-            spinner.succeed(`\n 👍 ${chalk.greenBright.underline(`Finished Seeding`)}`)
-        } catch (err) {
+            await runSeeder(
+                runner,
+                { connection: args.connection, transaction: true },
+                spinner,
+                configure,
+            );
+            spinner.succeed(`\n 👍 ${chalk.greenBright.underline(`Finished Seeding`)}`);
+        } catch (error) {
             if (dataSource && dataSource.isInitialized) await dataSource.destroy();
-            panic({ spinner, message: `Run seeder failed`, error: err });
+            panic({ spinner, message: `Run seeder failed`, error });
         }
     }
 

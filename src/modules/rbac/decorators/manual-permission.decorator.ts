@@ -14,5 +14,4 @@ export const ManualPermission = (
   // console.log("....")
   // console.log("target prototype", target, target.prototype, method)
   Reflect.defineMetadata(PERMISSION_CHECKERS, checkers, target.prototype, method)
-  // SetMetadata(PERMISSION_CHECKERS, checkers)
 }

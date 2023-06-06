@@ -24,8 +24,8 @@ export const database = createDbConfig((configure) => {
                 // synchronize: true,
                 // // // 自动加载entities
                 // autoLoadEntities: true,
-                seeders: [ContentSeeder, UserSeeder],
-                factories: [ContentFactory, UserFactory]
+                seeders: [UserSeeder, ContentSeeder],
+                factories: [UserFactory, ContentFactory]
             }
         ]
     }

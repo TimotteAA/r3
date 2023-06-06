@@ -10,13 +10,17 @@ import { decrypt, getUserConfig } from "../helpers";
 import { SystemRoles } from '@/modules/rbac/constants';
 import { PermissionRepository, RoleRepository } from '@/modules/rbac/repository';
 import { UserConfig } from '../types'; 
+import { Configure } from '@/modules/core/configure';
 
 type FindParams = Omit<QueryUserDto, "limit" | 'page'>
 
 @Injectable()
 export class UserService extends BaseService<UserEntity, UserRepository> implements OnModuleInit {
     async onModuleInit() {
-        console.log("user module init>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        // 在运行cli时防止报错
+        // console.log(await this.configure.get("app"));
+        if (!(await this.configure.get<boolean>("app.server", false))) return null;
+        // console.log("user module init>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
         const adminConf = await getUserConfig<UserConfig['super']>("super")
         const admin = await this.repo.findOneBy({
             username: adminConf.username
@@ -39,7 +43,8 @@ export class UserService extends BaseService<UserEntity, UserRepository> impleme
 
     constructor(protected repo: UserRepository,
         protected roleRepo: RoleRepository,
-        protected permissionRepo: PermissionRepository    
+        protected permissionRepo: PermissionRepository,
+        protected configure: Configure    
     ) {
         super(repo);
     }

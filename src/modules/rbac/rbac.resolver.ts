@@ -10,6 +10,7 @@ import { PermissionEntity, RoleEntity } from "./entities";
 import { getUserConfig } from "../user/helpers";
 import { UserEntity } from "../user/entities";
 import { UserConfig } from "../user/types";
+import { Configure } from "../core/configure";
 
 /**
  * 获取管理对象的字符串名
@@ -66,7 +67,9 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
     }
   ]
   
-  constructor(protected dataSource: DataSource) {}
+  constructor(protected dataSource: DataSource,
+    protected configure: Configure  
+  ) {}
 
   setOptions(options: AbilityOptions<A, C>) {
     if (!this.setuped) {
@@ -113,7 +116,10 @@ export class RbacResolver<A extends AbilityTuple = AbilityTuple, C extends Mongo
   }
 
   async onApplicationBootstrap() {
-    // console.log("asdasdas")
+    // console.log("app start ->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    // 在运行cli时防止报错
+    if (!(await this.configure.get<boolean>("app.server", false))) return;
+
     const queryRunner = this.dataSource.createQueryRunner();
     // 连接到数据库
     await queryRunner.connect()    

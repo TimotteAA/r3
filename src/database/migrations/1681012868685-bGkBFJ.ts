@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class AjbeGm1680953875235 implements MigrationInterface {
-    name = 'AjbeGm1680953875235'
+export class BGkBFJ1681012868685 implements MigrationInterface {
+    name = 'BGkBFJ1681012868685'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE \`content_categories\` (\`id\` varchar(36) NOT NULL, \`content\` varchar(255) NOT NULL COMMENT '分类内容', \`customOrder\` int NOT NULL COMMENT '自定义排序' DEFAULT '0', \`deletedAt\` datetime(6) NULL, \`mpath\` varchar(255) NULL DEFAULT '', \`parentId\` varchar(36) NULL, FULLTEXT INDEX \`IDX_03bd2d5552bacd48f6c860912a\` (\`content\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`);

@@ -54,7 +54,14 @@ export const simpleCrudOptions = (
   hook: (target, method) => {
       if (permissions) ManualPermission(target, method, permissions);
       if (apiSummary) {
-        // console.log("apiSummary", apiSummary, target.name, method)
+        // const descriptor = Object.getOwnPropertyDescriptor(target.prototype, method);
+        // Object.defineProperty(target.prototype, method, {
+        //   ...descriptor,
+        //   async value(...args: any) {
+        //     return descriptor.value.apply(this, args);
+        //   }
+        // })
+        console.log("apiSummary", apiSummary, target.name, method, Object.getOwnPropertyDescriptor(target.prototype, method))
         ApiOperation({ summary: apiSummary })(
             target,
             method,

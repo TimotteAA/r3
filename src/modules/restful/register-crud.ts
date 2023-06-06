@@ -26,15 +26,38 @@ export const registerCrud = async <T extends BaseController<any>>(
             continue;
         methods.push(item);
     }
+
   
     // 添加参数、路径装饰器、序列化选项、是否允许匿名访问等
     for (const { name, options = {} } of methods) {
         // 自己的描述符
-        const baseDescriptor = Object.getOwnPropertyDescriptor(BaseController.prototype, name);
-        if (!isNil(baseDescriptor)) {
-            let descriptor = Object.getOwnPropertyDescriptor(Target.prototype, name);
-            descriptor = isNil(descriptor) ? baseDescriptor : descriptor;
-            // 权限有，但文档乱
+        // const baseDescriptor = Object.getOwnPropertyDescriptor(BaseController.prototype, name);
+        // if (!isNil(baseDescriptor)) {
+        //     let descriptor = Object.getOwnPropertyDescriptor(Target.prototype, name);
+        //     descriptor = isNil(descriptor) ? baseDescriptor : descriptor;
+        //     // 权限有，但文档乱
+        //     Object.defineProperty(Target.prototype, name, {
+        //         ...descriptor,
+        //         async value(...args: any[]) {
+        //             return descriptor.value.apply(this, args);
+        //         },
+        //         // [name]: async function(...args: any[]) {
+        //         //     return descriptor.value.apply(this, args);
+        //         // },
+        //     });
+
+        //     // // 文档对，但权限无
+        //     // Object.defineProperty(Target.prototype, name, {
+        //     //     ...descriptor,
+        //     //     async value(...args: any[]) {
+        //     //         return descriptor.value.apply(this, args);
+        //     //     },
+        //     // });
+        // }
+
+        if (isNil(Object.getOwnPropertyDescriptor(Target.prototype, name))) {
+            const descriptor = Object.getOwnPropertyDescriptor(BaseController.prototype, name);
+
             Object.defineProperty(Target.prototype, name, {
                 ...descriptor,
                 // async value(...args: any[]) {
@@ -42,19 +65,12 @@ export const registerCrud = async <T extends BaseController<any>>(
                 // },
                 [name]: async function(...args: any[]) {
                     return descriptor.value.apply(this, args);
-                },
+                }
             });
-
-            // // 文档对，但权限无
-            // Object.defineProperty(Target.prototype, name, {
-            //     ...descriptor,
-            //     async value(...args: any[]) {
-            //         return descriptor.value.apply(this, args);
-            //     },
-            // });
         }
   
         const descriptor = Object.getOwnPropertyDescriptor(Target.prototype, name);
+        // console.log("descriptor", descriptor);
   
         // 添加入参
         const [_, ...params] = Reflect.getMetadata("design:paramtypes", Target.prototype, name);
@@ -77,9 +93,9 @@ export const registerCrud = async <T extends BaseController<any>>(
             );
             ApiBody({type: dtos.update})(Target, name, descriptor);
         } else if (name === "list") {
-            if (Target.name === "UserController") {
-              console.log(name, options)
-            }
+            // if (Target.name === "UserController") {
+            //   console.log(name, options)
+            // }
             const dto = dtos.query ?? ListQueryDto
             Reflect.defineMetadata(
                 "design:paramtypes",
@@ -93,7 +109,7 @@ export const registerCrud = async <T extends BaseController<any>>(
         } else if (name === "restore") {
             ApiBody({type: RestoreDto})(Target, name, descriptor)
         }
-  
+
         if (options.allowGuest) {
             Reflect.defineMetadata(ALLOW_GUEST, true, Target.prototype, name);
         }
@@ -110,10 +126,7 @@ export const registerCrud = async <T extends BaseController<any>>(
             serialize = {}
         }
         SerializeOptions(serialize)(Target, name, descriptor);
-        // 添加路由装饰器
-        if (Target.name === "UserController") {
-            // console.log(name)
-        }
+
         switch (name) {
             case 'list':
                 Get()(Target, name, descriptor);

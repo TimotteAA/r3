@@ -11,7 +11,6 @@ import { camelCase } from 'typeorm/util/StringUtils';
 import { MigrationGenerateOptions } from '../types';
 /**
  * Generates a new migration file with sql needs to be executed to update schema.
- * 基于typeorm进行修改：https://github.com/typeorm/typeorm/blob/master/src/commands/MigrationGenerateCommand.ts
  */
 type HandlerOptions = MigrationGenerateOptions & {
     dataSource: DataSource;
@@ -19,7 +18,7 @@ type HandlerOptions = MigrationGenerateOptions & {
 export class TypeormMigrationGenerate {
     async handler(args: HandlerOptions) {
         const timestamp = new Date().getTime();
-        const extension = 'ts';
+        const extension = '.ts';
         // const extension = args.outputJs ? '.js' : '.ts';
         const directory = args.dir.startsWith('/')
             ? args.dir

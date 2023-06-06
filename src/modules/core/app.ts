@@ -6,6 +6,7 @@ import { ConfigStorageOption, CreateOptions } from "./types";
 import { createBootModule } from "../utils/app";
 import { isNil } from "lodash";
 import { RestfulFactory } from "../restful/factory";
+import { panic } from "./helpers";
 
 export class App {
     /**
@@ -126,7 +127,7 @@ export class App {
                 await this._app.init()
             }
         } catch (err) {
-            console.error(err)
+            panic({error: err, message: "❌ 创建App实例失败！"})
         };
 
         return { configure: this._configure, app: this._app, modules, commands }

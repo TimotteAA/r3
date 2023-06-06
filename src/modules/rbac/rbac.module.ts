@@ -27,7 +27,7 @@ const services = Object.values(serviceMaps);
     {
       provide: RbacResolver,
       useFactory: async (dataSource: DataSource) => {
-          const resolver = new RbacResolver(dataSource);
+          const resolver = new RbacResolver(dataSource, configure);
           resolver.setOptions({});
           return resolver;
       },

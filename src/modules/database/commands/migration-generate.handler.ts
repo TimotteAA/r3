@@ -54,7 +54,6 @@ export const MigrationGenerateHandler = async (
         spinner.succeed(chalk.greenBright.underline('\n 👍 Finished generate migration'));
         if (args.run) {
             console.log();
-            console.log(chalk.red("run"))
             await MigrationRunHandler(configure, { connection: args.connection } as any);
         }
     } catch (error) {

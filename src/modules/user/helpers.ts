@@ -24,7 +24,7 @@ export const getUserConfig = async <T> (key?: string) => {
  */
 export const encrypt = async (password: string) => {
     const hash = await getUserConfig<number>("hash");
-    console.log("hash", hash)
+    // console.log("hash", hash)
     return bcrypt.hashSync(password, hash);
 };
 
